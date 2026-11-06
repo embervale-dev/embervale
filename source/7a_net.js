@@ -26,7 +26,7 @@ function netLeave() { bcast({ t: 'bye', id: NET.id }); try { NET.peer && NET.pee
 function wireConn(c) {
   c.on('open', () => { NET.conns.set(c.peer, c); if (!NET.host) { NET.status = 'guest'; send(c, { t: 'hello', id: NET.id, name: netName() }); netPost('🌐 Connected to the room'); sfx('shrine'); } renderMenu(); });
   c.on('data', m => netRecv(c, m));
-  c.on('close', () => { if (G.duel && G.duel.opp === c.peer) endDuel(); NET.conns.delete(c.peer); const p = NET.players.get(c.peer); NET.players.delete(c.peer); if (p) netPost(`👋 ${p.name} left`); if (NET.host) bcast({ t: 'bye', id: c.peer }); else if (c.peer.startsWith(PEER_PREFIX)) { netPost('🌐 The host closed the room'); NET.status = 'off'; NET.coopGuest = false; if (G.duel) endDuel(null); } removeRemote(c.peer); renderMenu(); });
+  c.on('close', () => { if (G.duel && G.duel.opp === c.peer) endDuel(); NET.conns.delete(c.peer); const p = NET.players.get(c.peer); NET.players.delete(c.peer); if (p) netPost(`👋 ${esc(p.name)} left`); if (NET.host) bcast({ t: 'bye', id: c.peer }); else if (c.peer.startsWith(PEER_PREFIX)) { netPost('🌐 The host closed the room'); NET.status = 'off'; NET.coopGuest = false; if (G.duel) endDuel(null); } removeRemote(c.peer); renderMenu(); });
 }
 // ---------- messages ----------
 function netRecv(c, m) {
