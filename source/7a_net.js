@@ -67,7 +67,7 @@ function netChat(text) { text = String(text || '').trim(); if (!text || NET.stat
 // ---------- presence: send my state ----------
 function myState() { return { t: 'st', id: NET.id, name: netName(), lvl: S.lvl, cls: S.cls, col: (S.cos && S.cos.color) || CLS[S.cls].col, x: P.x, y: P.y, face: P.face, hp: P.hp, mhp: ST.maxHp, area: netArea(), sw: P.swingT > 0 ? 1 : 0, dg: P.dodgeT > 0 ? 1 : 0 }; }
 { const _uN = update; update = function (dt) { _uN(dt); if (NET.status !== 'host' && NET.status !== 'guest' || !S || !P) return; const now = performance.now();
-  if (now - NET.lastSend > 80) { NET.lastSend = now; const st = myState(); if (NET.host) bcast(st); else toHost(st); }
+  if (now - NET.lastSend > 50) { NET.lastSend = now; const st = myState(); if (NET.host) bcast(st); else toHost(st); }
   if (NET.host && now - NET.lastEns > 100 && netArea().startsWith('coop') && G.mode === 'play') { NET.lastEns = now; sendEns(); }
   for (const [id, p] of NET.players) { p.rx += (p.tx - p.rx) * Math.min(1, dt * 12); p.ry += (p.ty - p.ry) * Math.min(1, dt * 12); if (now - (p.seen || 0) > 15000) { NET.players.delete(id); removeRemote(id); } }
   if (G.duel) duelTick(dt); if (NET.pendingFloor && !G.menu) recvFloor(NET.pendingFloor); }; }
