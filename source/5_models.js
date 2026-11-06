@@ -113,7 +113,7 @@ function makeWeapon(t) {
     case 'bow': { const a = mk(GEO.halfTor, wood, .45, .45, .45, .1, 0, 0, g); a.rotation.z = -Math.PI / 2; a.scale.z = .3; mk(GEO.box, mat('#eeeeee'), .005, .9, .005, .1, 0, 0, g, false); break; }
     case 'xbow': mk(GEO.box, wood, .55, .06, .08, .25, 0, 0, g); { const a = mk(GEO.halfTor, metal, .3, .3, .3, .48, 0, 0, g); a.rotation.x = Math.PI / 2; a.rotation.z = Math.PI / 2; } mk(GEO.box, mat('#aaa'), .4, .02, .02, .3, .04, 0, g); break;
     case 'cannon': X(GEO.cyl, mat('#3a3a40', { metal: .8, rough: .35 }), .55, .09, .3); X(GEO.tor, gold, .1, .1, .56); mk(GEO.box, wood, .18, .2, .08, .05, -.1, 0, g); break;
-    case 'staff': { const s = mk(GEO.cyl, wood, .03, 1.3, .03, .05, .35, 0, g); s.rotation.z = -.2; mk(GEO.sph, mat(w.col, { em: 2.2 }), .1, .1, .1, -.08, 1.0, 0, g, false); mk(GEO.torThin, gold, .14, .14, .14, -.08, 1.0, 0, g, false); break; }
+    case 'staff': { const s = mk(GEO.cyl, wood, .03, 1.3, .03, .05, .35, 0, g); s.rotation.z = -.2; mk(GEO.sph, mat(w.col, { em: 2.2 }), .1, .1, .1, .18, 1.0, 0, g, false); mk(GEO.torThin, gold, .14, .14, .14, .18, .96, 0, g, false); break; }
     case 'wand': X(GEO.cyl, mat('#5a2a4a'), .38, .02, .19); mk(GEO.oct, mat(w.col, { em: 2.5 }), .05, .05, .05, .42, 0, 0, g, false); break;
     case 'tome': mk(GEO.box, mat('#8a2a2a'), .26, .07, .32, .12, 0, 0, g); mk(GEO.box, mat('#f0e0b0'), .24, .075, .28, .13, 0, 0, g); mk(GEO.oct, mat(w.col, { em: 2 }), .05, .05, .05, .13, .12, 0, g, false); break;
     case 'chakram': { const c = mk(GEO.tor, mat(w.col, { metal: .8, rough: .2, em: .4 }), .18, .18, .18, .18, 0, 0, g); c.rotation.x = Math.PI / 2; break; }
