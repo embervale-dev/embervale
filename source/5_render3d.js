@@ -636,7 +636,7 @@ function drawOverlay() {
     if (e.elite || e.type === 'gimp') { X.font = 'bold 11px "Trebuchet MS",sans-serif'; X.fillStyle = e.elite ? ELITES[e.elite] : '#ffd54a'; X.strokeStyle = 'rgba(0,0,0,.8)'; X.lineWidth = 3; const t = e.elite ? `${eliteName(e)} ${e.d.n}` : `${e.d.n} — ${Math.ceil(e.life)}s`; X.strokeText(t, s.x, s.y - 5); X.fillText(t, s.x, s.y - 5); }
   }
   // labels
-  const label = (x, y, z, txt, col, font = 'bold 12px "Trebuchet MS",sans-serif', glow) => { const s = proj(x, y, z); if (!s.vis) return; X.font = font; X.lineWidth = glow ? 4 : 3; X.strokeStyle = 'rgba(0,0,0,.9)'; X.strokeText(txt, s.x, s.y); if (glow) { X.shadowColor = glow; X.shadowBlur = 10 + 4 * Math.sin(G.t * 4); } X.fillStyle = col; X.fillText(txt, s.x, s.y); X.shadowBlur = 0; };
+  const label = (x, y, z, txt, col, font = 'bold 12px "Trebuchet MS",sans-serif', glow) => { const s = proj(x, y, z); if (!s.vis) return; X.font = font; X.lineWidth = glow ? 4 : 3; X.strokeStyle = 'rgba(0,0,0,.9)'; X.strokeText(txt, s.x, s.y); X.fillStyle = col; X.fillText(txt, s.x, s.y); };
   for (const p of G.pick) if (p.k === 'item' && dist(p, P) < 230 && p.it.r >= (S.opts.labels || 0)) label(p.x, p.y, .85, `${icon(p.it)} ${p.it.name}${typeof pickMark === 'function' ? pickMark(p) : ''}`, RAR[p.it.r].c, p.it.r >= 7 ? 'bold 17px Georgia,serif' : p.it.r >= 4 ? 'bold 14px Georgia,serif' : p.it.r >= 2 ? 'bold 12px "Trebuchet MS",sans-serif' : undefined, p.it.r >= 4 ? RAR[p.it.r].c : null);
   for (const n of G.npcs) { label(n.x, n.y, 2.9, n.ic, '#fff', '22px "Apple Color Emoji","Segoe UI Emoji",sans-serif'); label(n.x, n.y, 2.5, n.n, '#ffe2a8', 'bold 14px Georgia,serif'); }
   for (const v of G.vill || []) {

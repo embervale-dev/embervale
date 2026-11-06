@@ -2,7 +2,7 @@ EMBERVALE — The Fading Flame
 ============================
 
 HOW TO PLAY
-  Double-click "Embervale.html". It opens in your web browser (Chrome, Edge,
+  Double-click "index.html". It opens in your web browser (Chrome, Edge,
   Firefox or Safari). No install and no internet needed.
 
   New players start with a short tutorial (Chapter 0) that teaches everything.
@@ -34,5 +34,4 @@ SAVES
   or move it to another computer, and "Import save" to load it.
   "Reset all progress" on the title screen wipes everything.
 
-Sharing with friends: just send them "Embervale.html"
-(or only the Embervale.html file — that single file is the whole game).
+Sharing with friends: just send them "index.html"
