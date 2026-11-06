@@ -32,6 +32,16 @@ SK.push(
   { id: 'singularity', b: 2, t: 3, n: 'Singularity', ic: ico('sk-singularity'), a: 1, max: 5, mp: 45, cd: 16, d: r => `Open a black hole at the cursor for 4s that drags foes in and deals ${40 + 10 * r}% weapon damage 4×/s.` },
 );
 SK.forEach(s => SKI[s.id] = s);
+// skill icon colours: gradient-painted by element/theme (see icoC in 0_icons.js)
+const SK_COL = {
+  vit: '#ff4a5a', whirl: '#c8d4e4', brut: '#ff6a3a', slam: '#c89a5a', iron: '#a8b4c8', berserk: '#ff3a2a', blood: '#e0203a', leap: '#ffb04a',
+  fury: '#ff7a2a', blades: '#d8e4f4', warcry: '#ffcc4a',
+  swift: '#5affb0', shadow: '#9a7aff', prec: '#ffe060', arrows: '#e8c890', quick: '#7ae0ff', poison: '#7aff3a', deadeye: '#ff5a4a',
+  wolves: '#9ad0ff', fortune: '#ffd84a', knives: '#d0d8e8', snare: '#c8a070',
+  arcane: '#b07aff', fireball: '#ff8a2a', elem: '#ff9af0', nova: '#8ae8ff', focus: '#7ab8ff', chain: '#ffe85a', power: '#d27aff',
+  heal: '#5aff7a', meteor: '#ff5a1a', warp: '#7affe0', fblink: '#a8f0ff', singularity: '#a04aff',
+};
+for (const s of SK) if (SK_COL[s.id]) s.ic = icoC(icoKeyOf(s.ic), SK_COL[s.id]);
 
 // ---- 4 new legendary powers ----
 Object.assign(UNQ, {

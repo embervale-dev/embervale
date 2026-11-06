@@ -16,8 +16,8 @@ function initHUD() {
     <div class="globe hp"><div class="liq"></div><div class="shine"></div><div class="gt"></div></div>
     <div class="hcenter">
       <div id="h-slots">${slots}
-        <div class="slot surge" id="slv"><div class="ic">${ico('fire')}</div><div class="cd"></div><div class="cdt"></div><div class="key">V</div></div>
-        <div class="slot" id="slp"><div class="ic">${ico('potion')}</div><div class="cdt"></div><div class="key">1</div></div>
+        <div class="slot surge" id="slv"><div class="ic">${icoC('fire', '#ff8a2a')}</div><div class="cd"></div><div class="cdt"></div><div class="key">V</div></div>
+        <div class="slot" id="slp"><div class="ic">${icoC('potion', '#4aff6a')}</div><div class="cdt"></div><div class="key">1</div></div>
         <div class="slot wep" id="slw"><div class="ic"></div><div class="ic2"></div><div class="key">Tab</div></div>
       </div>
       <div id="h-xp"><div class="lvb"></div><div class="trk"><div class="fill"></div><div class="ticks"></div><span class="xpt"></span></div></div>
