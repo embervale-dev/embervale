@@ -57,7 +57,6 @@ const SFX2 = {
   hit() { const j = jit(); vn({ d: .08, v: .16, f: 1900, slide: 500 }); vt({ f: 170 * j, d: .1, type: 'square', v: .05, slide: -80, lp: 900 }); },
   crit() { const j = jit(); vn({ d: .12, v: .2, f: 3200, slide: 700 }); vt({ f: 190 * j, d: .12, type: 'square', v: .06, slide: -90, lp: 1100 }); vt({ f: 1500 * j, d: .2, type: 'triangle', v: .05, slide: -300, delay: .01, wet: .35 }); },
   kill() { const j = jit(); vt({ f: 340 * j, d: .18, type: 'triangle', v: .09, slide: -220 }); vn({ d: .1, v: .07, f: 1200, slide: 300, delay: .02 }); },
-  hurt() { vt({ f: 200 * jit(), d: .26, type: 'sawtooth', v: .12, slide: -110, lp: 800 }); vn({ d: .2, v: .16, f: 900, slide: 250 }); },
   dodge() { vn({ d: .16, v: .09, f: 1500, type: 'bandpass', q: .7, slide: 5200 }); },
   zap() { vt({ f: 1900 * jit(), d: .15, type: 'sawtooth', v: .05, slide: -1600, lp: 4000 }); vn({ d: .12, v: .05, f: 6000, type: 'highpass' }); },
   boom() { vt({ f: 120, d: .5, v: .3, slide: -85 }); vn({ d: .6, v: .3, f: 1400, slide: 120 }); vn({ d: .25, v: .1, f: 4000, type: 'highpass', delay: .02 }); },
