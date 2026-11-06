@@ -1,0 +1,38 @@
+EMBERVALE — The Fading Flame
+============================
+
+HOW TO PLAY
+  Double-click "Embervale.html". It opens in your web browser (Chrome, Edge,
+  Firefox or Safari). No install and no internet needed.
+
+  New players start with a short tutorial (Chapter 0) that teaches everything.
+  Press H in-game for the Wiki, or Esc for the Menu.
+
+CONTROLS
+  WASD move  •  Mouse aim  •  Left-click attack  •  Space dodge
+  Q E R F skills  •  V Ember Surge  •  1 potion  •  Tab swap weapon
+  I inventory  •  K skills  •  M map  •  Esc menu  •  H wiki
+  E (in Haven) talk to villagers  •  Click the minimap to zoom
+  All combat keys can be changed in Settings -> Controls.
+
+THINGS TO DISCOVER
+  Nemesis monsters, real-time villager Expeditions, Weekly Hunts,
+  the Collector's Ledger and Renown ranks, weapon Lineage, Challenge
+  Totems, pet evolution and kill streaks.
+  11 item rarities, from Common up to the near-mythical Eternal
+  (Ancient and above carry two legendary powers), item Ascension,
+  20 weapon types, each with its own signature Art and Mastery track,
+  elemental weapon infusions, weapon Awakening, Light/Medium/Heavy armor,
+  armor tempering, item sets, crafting at Brann's workbench, skill runes, regional floor
+  hazards, secret rooms behind cracked walls, Ember Braziers, caged
+  villagers to rescue, Haven requests, the Guardian Gauntlet and the
+  Weekly Invasion. The Wiki (H) explains every one of them.
+
+SAVES
+  Progress saves automatically in your browser (3 save slots).
+  Use "Save Slots -> Export" on the title screen to back up a character
+  or move it to another computer, and "Import save" to load it.
+  "Reset all progress" on the title screen wipes everything.
+
+Sharing with friends: just send them "Embervale-Share.zip"
+(or only the Embervale.html file — that single file is the whole game).
