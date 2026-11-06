@@ -503,68 +503,68 @@ h1,h2,h3,.tab,.fitt{font-weight:600}
 ::-webkit-scrollbar-thumb{background:#7a5c36;border:2px solid var(--ink);border-radius:0}
 ::-webkit-scrollbar-thumb:hover{background:#c19a55}
 
-/* ================= ROUNDED & CLEAN (final layer over the pixel UI: soft corners, clean thin borders, gentle depth) ================= */
-html #px{--r-lg:16px;--r-md:12px;--r-sm:9px;--r-xs:6px;--edge:1px solid rgba(193,154,85,.55);--edge2:1px solid #3b3144;--depth:0 6px 18px rgba(0,0,0,.38)}
+/* ================= SMOOTH UI MODE (only when body has .smooth; Settings > Interface style) (final layer over the pixel UI: soft corners, clean thin borders, gentle depth) ================= */
+html #px.smooth{--r-lg:16px;--r-md:12px;--r-sm:9px;--r-xs:6px;--edge:1px solid rgba(193,154,85,.55);--edge2:1px solid #3b3144;--depth:0 6px 18px rgba(0,0,0,.38)}
 /* clean frames instead of pixel border-images */
-html #px :is(.hpan,#h-target,#lvcard,#tutbox,#hintbox,.dlgbox,#freeze .fz,#h-slots,.panel:not(.ttl):not(.dlg),#tip .tc,#tip .tc[class*=rt]){border-image:none!important;border:var(--edge)!important;border-radius:var(--r-md)!important;box-shadow:var(--depth)!important}
-html #px .panel:not(.ttl):not(.dlg){border-radius:var(--r-lg)!important;box-shadow:0 18px 60px rgba(0,0,0,.55)!important}
-html #px .dlgbox{border-radius:var(--r-lg)!important}
-html #px #tip .tc{border-radius:var(--r-md)!important}
-html #px #tip .tc[class*=rt]{border-color:var(--rc,#c19a55)!important;border-width:1.5px!important}
-html #px #tip .tc .rchip{border-radius:20px!important;border-width:1px!important}
-html #px #h-slots{border-radius:var(--r-lg)!important;padding:7px!important}
+html #px.smooth :is(.hpan,#h-target,#lvcard,#tutbox,#hintbox,.dlgbox,#freeze .fz,#h-slots,.panel:not(.ttl):not(.dlg),#tip .tc,#tip .tc[class*=rt]){border-image:none!important;border:var(--edge)!important;border-radius:var(--r-md)!important;box-shadow:var(--depth)!important}
+html #px.smooth .panel:not(.ttl):not(.dlg){border-radius:var(--r-lg)!important;box-shadow:0 18px 60px rgba(0,0,0,.55)!important}
+html #px.smooth .dlgbox{border-radius:var(--r-lg)!important}
+html #px.smooth #tip .tc{border-radius:var(--r-md)!important}
+html #px.smooth #tip .tc[class*=rt]{border-color:var(--rc,#c19a55)!important;border-width:1.5px!important}
+html #px.smooth #tip .tc .rchip{border-radius:20px!important;border-width:1px!important}
+html #px.smooth #h-slots{border-radius:var(--r-lg)!important;padding:7px!important}
 /* buttons */
-html #px :is(.btn,.mb){border-image:none!important;border:1px solid #8a6a3a!important;border-radius:var(--r-sm)!important;box-shadow:0 2px 0 rgba(0,0,0,.35)!important}
-html #px :is(.btn,.mb):hover{border-color:var(--gold)!important}
-html #px .btn:active{box-shadow:inset 0 2px 3px rgba(0,0,0,.4)!important;padding:5px 13px 4px!important}
-html #px .btn.on{border-color:#ffd88a!important}
-html #px .btn.bigb{border-radius:var(--r-md)!important}
-html #px .pclose{border-radius:var(--r-sm)!important;border:1px solid rgba(255,255,255,.15)!important}
+html #px.smooth :is(.btn,.mb){border-image:none!important;border:1px solid #8a6a3a!important;border-radius:var(--r-sm)!important;box-shadow:0 2px 0 rgba(0,0,0,.35)!important}
+html #px.smooth :is(.btn,.mb):hover{border-color:var(--gold)!important}
+html #px.smooth .btn:active{box-shadow:inset 0 2px 3px rgba(0,0,0,.4)!important;padding:5px 13px 4px!important}
+html #px.smooth .btn.on{border-color:#ffd88a!important}
+html #px.smooth .btn.bigb{border-radius:var(--r-md)!important}
+html #px.smooth .pclose{border-radius:var(--r-sm)!important;border:1px solid rgba(255,255,255,.15)!important}
 /* slots & item cells */
-html #px .slot{border-image:none!important;border:1.5px solid #4a3c2c!important;border-radius:var(--r-md)!important}
-html #px .slot.ready,html #px .slot:hover{border-color:#c19a55!important}
-html #px .slot.surge{border-radius:50%!important}html #px .slot.surge.full{border-color:var(--gold)!important}
-html #px .slot .key,html #px .slot .mpc{border-radius:var(--r-xs)!important}
-html #px .cell{border-radius:var(--r-sm)!important;border-width:1.5px!important}
-html #px .cell:is(.r4,.r5,.r6),html #px .cell:is(.r7,.r8,.r9,.r10,.r11){box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--rc) 35%,transparent),0 0 0 1px color-mix(in srgb,var(--rc) 45%,transparent)!important}
-html #px :is(.hubt i,.mb i,.cell i){border-radius:20px!important;border-width:1px!important}
+html #px.smooth .slot{border-image:none!important;border:1.5px solid #4a3c2c!important;border-radius:var(--r-md)!important}
+html #px.smooth .slot.ready,html #px.smooth .slot:hover{border-color:#c19a55!important}
+html #px.smooth .slot.surge{border-radius:50%!important}html #px.smooth .slot.surge.full{border-color:var(--gold)!important}
+html #px.smooth .slot .key,html #px.smooth .slot .mpc{border-radius:var(--r-xs)!important}
+html #px.smooth .cell{border-radius:var(--r-sm)!important;border-width:1.5px!important}
+html #px.smooth .cell:is(.r4,.r5,.r6),html #px.smooth .cell:is(.r7,.r8,.r9,.r10,.r11){box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--rc) 35%,transparent),0 0 0 1px color-mix(in srgb,var(--rc) 45%,transparent)!important}
+html #px.smooth :is(.hubt i,.mb i,.cell i){border-radius:20px!important;border-width:1px!important}
 /* tabs, cards, hub, panels inside menus */
-html #px .tab{border-radius:var(--r-sm) var(--r-sm) 0 0!important}
-html #px .tabs.sub .tab{border-radius:20px!important;border-width:1px!important}
-html #px .fitbar{border-radius:var(--r-md)!important;border:var(--edge2)!important}html #px .fitt{border-radius:var(--r-sm)!important;border-width:1px!important}
-html #px :is(.card,.hubt,.stats,.branch,.tier,.node,.gemb,.star,.unlhint,.mtip,.fitpg .pgn){border-radius:var(--r-md)!important;border-width:1px!important}
-html #px :is(.tier .req,.plus,.bk,.sock,.recb,.rchip,.sbadge){border-radius:var(--r-xs)!important;border-width:1px!important}
-html #px .sw{border-radius:50%!important}
-html #px .logl{border-radius:var(--r-xs)!important}
-html #px .smrow{border-bottom:1px solid #2b2336!important}
-html #px .panel h2,html #px .tabs,html #px #tip hr,html #px #tip .tn{border-width:1px!important}
-html #px .panel h3::after,html #px .hubsec::after{height:1px!important}
+html #px.smooth .tab{border-radius:var(--r-sm) var(--r-sm) 0 0!important}
+html #px.smooth .tabs.sub .tab{border-radius:20px!important;border-width:1px!important}
+html #px.smooth .fitbar{border-radius:var(--r-md)!important;border:var(--edge2)!important}html #px.smooth .fitt{border-radius:var(--r-sm)!important;border-width:1px!important}
+html #px.smooth :is(.card,.hubt,.stats,.branch,.tier,.node,.gemb,.star,.unlhint,.mtip,.fitpg .pgn){border-radius:var(--r-md)!important;border-width:1px!important}
+html #px.smooth :is(.tier .req,.plus,.bk,.sock,.recb,.rchip,.sbadge){border-radius:var(--r-xs)!important;border-width:1px!important}
+html #px.smooth .sw{border-radius:50%!important}
+html #px.smooth .logl{border-radius:var(--r-xs)!important}
+html #px.smooth .smrow{border-bottom:1px solid #2b2336!important}
+html #px.smooth .panel h2,html #px.smooth .tabs,html #px.smooth #tip hr,html #px.smooth #tip .tn{border-width:1px!important}
+html #px.smooth .panel h3::after,html #px.smooth .hubsec::after{height:1px!important}
 /* bars */
-html #px :is(.pbar,.qbar,.cbar,#h-target .tbar){border-radius:20px!important;overflow:hidden;outline:none!important;border:1px solid #2b2336!important}
-html #px :is(.pbar div,.qbar div,.cbar div,#h-target .tbar div){border-radius:20px!important}
-html #px #h-boss .bbar{border-radius:20px!important;outline:none!important;border:1.5px solid #7a5c36!important;overflow:hidden}
-html #px #h-xp{border-radius:20px!important;outline:none!important;border:1.5px solid #7a5c36!important;overflow:hidden}
-html #px #h-xp .lvb{border-radius:20px 0 0 20px!important}html #px #h-xp .trk{border-radius:0 20px 20px 0;overflow:hidden}
-html #px #h-xp .fill{transition:width .3s ease-out!important}
+html #px.smooth :is(.pbar,.qbar,.cbar,#h-target .tbar){border-radius:20px!important;overflow:hidden;outline:none!important;border:1px solid #2b2336!important}
+html #px.smooth :is(.pbar div,.qbar div,.cbar div,#h-target .tbar div){border-radius:20px!important}
+html #px.smooth #h-boss .bbar{border-radius:20px!important;outline:none!important;border:1.5px solid #7a5c36!important;overflow:hidden}
+html #px.smooth #h-xp{border-radius:20px!important;outline:none!important;border:1.5px solid #7a5c36!important;overflow:hidden}
+html #px.smooth #h-xp .lvb{border-radius:20px 0 0 20px!important}html #px.smooth #h-xp .trk{border-radius:0 20px 20px 0;overflow:hidden}
+html #px.smooth #h-xp .fill{transition:width .3s ease-out!important}
 /* HUD pieces */
-html #px .buff{border-radius:var(--r-sm)!important}
-html #px .globe{outline:none!important;border:3px solid #7a5c36!important;box-shadow:0 0 0 2px var(--ink),var(--depth)!important}
-html #px .hpan.mini,html #px .mini{outline:none!important;border:3px solid #7a5c36!important;box-shadow:0 0 0 2px var(--ink),var(--depth)!important}
-html #px .fpips i{border-radius:20px!important;border-width:1px!important}
-html #px #lootfeed div,html #px #toast div{border-radius:var(--r-sm)!important;border-width:1px!important}
-html #px #lootfeed div{border-left-width:3px!important}
-html #px #toast div{border-left-width:4px!important;box-shadow:var(--depth)!important}
-html #px .dport{border-radius:50%!important}
-html #px #tutbox .tdots i{border-radius:20px!important}
-html #px #tutbox .ttip{border-radius:var(--r-xs)!important}
+html #px.smooth .buff{border-radius:var(--r-sm)!important}
+html #px.smooth .globe{outline:none!important;border:3px solid #7a5c36!important;box-shadow:0 0 0 2px var(--ink),var(--depth)!important}
+html #px.smooth .hpan.mini,html #px.smooth .mini{outline:none!important;border:3px solid #7a5c36!important;box-shadow:0 0 0 2px var(--ink),var(--depth)!important}
+html #px.smooth .fpips i{border-radius:20px!important;border-width:1px!important}
+html #px.smooth #lootfeed div,html #px.smooth #toast div{border-radius:var(--r-sm)!important;border-width:1px!important}
+html #px.smooth #lootfeed div{border-left-width:3px!important}
+html #px.smooth #toast div{border-left-width:4px!important;box-shadow:var(--depth)!important}
+html #px.smooth .dport{border-radius:50%!important}
+html #px.smooth #tutbox .tdots i{border-radius:20px!important}
+html #px.smooth #tutbox .ttip{border-radius:var(--r-xs)!important}
 /* inputs & scrollbars */
-html #px input[type=range]{border-radius:20px!important;border-width:1px!important}
-html #px input[type=range]::-webkit-slider-thumb{border-radius:50%!important;width:16px!important;height:16px!important;border-width:2px!important;box-shadow:none!important}
-html #px ::-webkit-scrollbar-thumb{border-radius:10px!important}
-html #px input,html #px select{border-radius:var(--r-sm)!important}
+html #px.smooth input[type=range]{border-radius:20px!important;border-width:1px!important}
+html #px.smooth input[type=range]::-webkit-slider-thumb{border-radius:50%!important;width:16px!important;height:16px!important;border-width:2px!important;box-shadow:none!important}
+html #px.smooth ::-webkit-scrollbar-thumb{border-radius:10px!important}
+html #px.smooth input,html #px.smooth select{border-radius:var(--r-sm)!important}
 /* cleaner spacing */
-html #px .panel h2{margin-bottom:10px!important}
-html #px .card{padding:9px 12px!important}
+html #px.smooth .panel h2{margin-bottom:10px!important}
+html #px.smooth .card{padding:9px 12px!important}
 </style></head>
 <body id="px">
 <canvas id="g3"></canvas>
