@@ -540,11 +540,12 @@ function drawFx3D() {
   // swings
   for (const s of G.swings) {
     const k = s.t / s.max;
-    if (s.thrust) { const a = PL.rect.get(); a.position.set(P.x * U, .7, P.y * U); a.rotation.set(0, -s.a, 0); a.scale.set(s.thrust * U, 1, s.w * U * .8); a.material.color.set(s.col); a.material.opacity = k * .5; a.material.blending = T3.AdditiveBlending; }
+    const sx = s.ax ?? P.x, sy = s.ay ?? P.y;   // a friend's swing (multiplayer) follows them, yours follows you
+    if (s.thrust) { const a = PL.rect.get(); a.position.set(sx * U, .7, sy * U); a.rotation.set(0, -s.a, 0); a.scale.set(s.thrust * U, 1, s.w * U * .8); a.material.color.set(s.col); a.material.opacity = k * .5; a.material.blending = T3.AdditiveBlending; }
     else {
       const a = PL.arc.get(); const key = 'arc' + s.arc.toFixed(2);
       if (!GEO[key]) { const gg = new T3.RingGeometry(.35, 1, 28, 1, -s.arc / 2, s.arc); gg.rotateX(-Math.PI / 2); GEO[key] = gg; }
-      a.geometry = GEO[key]; a.position.set(P.x * U, .65, P.y * U); a.rotation.set(0, -s.a, 0); a.scale.set(s.r * U, 1, s.r * U); a.material.color.set(s.col); a.material.opacity = k * .55;
+      a.geometry = GEO[key]; a.position.set(sx * U, .65, sy * U); a.rotation.set(0, -s.a, 0); a.scale.set(s.r * U, 1, s.r * U); a.material.color.set(s.col); a.material.opacity = k * .55;
     }
   }
   // bolts

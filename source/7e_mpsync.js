@@ -22,12 +22,12 @@ function capturePP() { for (const b of G.pp) { if (MPS.seen.has(b)) continue; MP
 function ghostFx(m) { if (!Array.isArray(m.fx) || m.area !== netArea()) return;
   for (const f of m.fx.slice(0, 40)) { if (!Array.isArray(f)) continue;
     if (f[0] === 'p' && PP_KINDS.includes(f[7]) && G.gpp.length < 150) G.gpp.push({ x: num(f[1], -1e5, 1e5), y: num(f[2], -1e5, 1e5), vx: num(f[3], -3000, 3000), vy: num(f[4], -3000, 3000), r: num(f[5], 1, 60), col: okCol(f[6]), kind: f[7], life: num(f[8], .05, 3), spin: 0, ghost: 1 });
-    else if (f[0] === 's' && G.swings.length < 60) { const s = { x: num(f[1], -1e5, 1e5), y: num(f[2], -1e5, 1e5), a: num(f[3], -20, 20), r: num(f[5], 0, 600), t: num(f[8], .05, .5), max: num(f[8], .05, .5), col: okCol(f[9]) }; if (f[6]) { s.thrust = num(f[6], 0, 800); s.w = num(f[7], 1, 300); } else s.arc = num(f[4], 0, 6.3); G.swings.push(s); }
+    else if (f[0] === 's' && G.swings.length < 60) { const s = { x: num(f[1], -1e5, 1e5), y: num(f[2], -1e5, 1e5), ax: num(f[1], -1e5, 1e5), ay: num(f[2], -1e5, 1e5), rid: String(m.id || '').replace(/[^\w-]/g, ''), a: num(f[3], -20, 20), r: num(f[5], 0, 600), t: num(f[8], .05, .5), max: num(f[8], .05, .5), col: okCol(f[9]) }; if (f[6]) { s.thrust = num(f[6], 0, 800); s.w = num(f[7], 1, 300); } else s.arc = num(f[4], 0, 6.3); G.swings.push(s); }
     else if (f[0] === 'r' && G.rings.length < 80) G.rings.push({ x: num(f[1], -1e5, 1e5), y: num(f[2], -1e5, 1e5), r: num(f[3], 1, 800), col: okCol(f[4]), t: num(f[5], .05, 2), max: num(f[5], .05, 2) }); } }
 { const _nrS = netRecv; netRecv = function (c, m) { _nrS(c, m); if (m && m.t === 'st') { const p = NET.players.get(String(m.id || '').replace(/[^\w-]/g, '')); if (p) { p.pose = Array.isArray(m.pose) && m.pose.length === POSE_KEYS.length ? m.pose.map(v => num(v, -20, 20)) : null; p.yaw = num(m.yaw, -20, 20); p.py = num(m.py, -1, 5); } ghostFx(m); } }; }
 // ghost projectiles just fly (no hits) and stop at walls
 function updGhosts(dt) { if (!G.gpp.length) return; for (const b of G.gpp) { b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; if (b.kind === 'boom') b.spin += dt * 20; if (b.life <= 0 || (M && solidAt(b.x, b.y))) b.dead = true; } G.gpp = G.gpp.filter(b => !b.dead); }
-{ const _uG = update; update = function (dt) { _uG(dt); if (G.mode === 'play' && !G.menu) updGhosts(dt); else if (G.mode !== 'play') G.gpp = []; }; }
+{ const _uG = update; update = function (dt) { _uG(dt); for (const s of G.swings) if (s.rid) { const p = NET.players.get(s.rid); if (p) { s.ax = p.rx; s.ay = p.ry; } } if (G.mode === 'play' && !G.menu) updGhosts(dt); else if (G.mode !== 'play') G.gpp = []; }; }
 // friends' models play their real pose
 { const _rS = render3D; render3D = function (dt) { _rS(dt); if (!R3 || NET.status === 'off') return; const k = Math.min(1, dt * 20);
   for (const [id, r] of REM) { const p = NET.players.get(id); if (!p || !p.pose || !r.g.visible) continue;
