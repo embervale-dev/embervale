@@ -34,5 +34,5 @@ SAVES
   or move it to another computer, and "Import save" to load it.
   "Reset all progress" on the title screen wipes everything.
 
-Sharing with friends: just send them "Embervale-Share.zip"
+Sharing with friends: just send them "Embervale.html"
 (or only the Embervale.html file — that single file is the whole game).

@@ -11078,23 +11078,23 @@ for (const k in TUNE_SRC) TUNES[k] = TUNE_SRC[k].map(sec => ({
 const MD_ION = ION, MD_MIX = MIX, MD_DOR = DOR, MD_AEO = AEO;
 for (const k of Object.keys(THEMES)) delete THEMES[k];
 Object.assign(THEMES, {
-  title: { tune: 'HERO', root: 233.1, mode: MD_ION, bpm: 88, perc: 0, lp: 3000 },
-  town: { tune: 'FOLK', root: 261.6, mode: MD_ION, bpm: 120, perc: 2, lp: 3400 },
-  r0: { tune: 'HERO', root: 261.6, mode: MD_ION, bpm: 108, perc: 1, lp: 3200 },
-  r1: { tune: 'QUEST', root: 220, mode: MD_DOR, bpm: 104, perc: 1, lp: 2800 },
-  r2: { tune: 'HERO', root: 246.9, mode: MD_MIX, bpm: 112, perc: 2, lp: 3200 },
-  r3: { tune: 'QUEST', root: 233.1, mode: MD_AEO, bpm: 100, perc: 1, lp: 2600 },
-  r4: { tune: 'HERO', root: 293.7, mode: MD_ION, bpm: 114, perc: 2, lp: 3400 },
-  r5: { tune: 'QUEST', root: 277.2, mode: MD_MIX, bpm: 116, perc: 2, lp: 3200 },
-  r6: { tune: 'HERO', root: 277.2, mode: MD_ION, bpm: 110, perc: 1, lp: 3200 },
-  r7: { tune: 'MARCH', root: 261.6, mode: MD_DOR, bpm: 120, perc: 3, lp: 3000 },
-  r8: { tune: 'QUEST', root: 246.9, mode: MD_ION, bpm: 124, perc: 2, lp: 3400 },
-  r9: { tune: 'HERO', root: 293.7, mode: MD_ION, bpm: 108, perc: 1, lp: 3400 },
-  r10: { tune: 'QUEST', root: 261.6, mode: MD_MIX, bpm: 114, perc: 2, lp: 3200 },
-  r11: { tune: 'MARCH', root: 277.2, mode: MD_AEO, bpm: 108, perc: 2, lp: 2800 },
-  abyss: { tune: 'MARCH', root: 233.1, mode: MD_AEO, bpm: 112, perc: 2, lp: 2800 },
-  boss: { tune: 'MARCH', root: 220, mode: MD_AEO, bpm: 132, perc: 3, lp: 3200 },
-  trial: { tune: 'MARCH', root: 246.9, mode: MD_DOR, bpm: 126, perc: 3, lp: 3200 },
+  title:  { tune: 'HERO',  root: 220,   mode: MD_AEO, bpm: 60,  perc: 0, lp: 2400 },  // the fading flame: wistful, hopeful
+  town:   { tune: 'FOLK',  root: 261.6, mode: MD_ION, bpm: 84,  perc: 0, lp: 3000 },  // Haven: warm hearth
+  r0:  { tune: 'HERO',  root: 246.9, mode: MD_DOR, bpm: 72,  perc: 0, lp: 2600 },     // Whispering Woods
+  r1:  { tune: 'QUEST', root: 196,   mode: MD_AEO, bpm: 58,  perc: 0, lp: 1800 },     // Sunken Crypt
+  r2:  { tune: 'QUEST', root: 233.1, mode: MD_AEO, bpm: 76,  perc: 1, lp: 2400 },     // Ashen Dunes
+  r3:  { tune: 'MARCH', root: 207.7, mode: MD_AEO, bpm: 60,  perc: 0, lp: 1700 },     // Bloodmoon Marsh
+  r4:  { tune: 'HERO',  root: 246.9, mode: MD_AEO, bpm: 64,  perc: 0, lp: 2800 },     // Frostpeak Hollows
+  r5:  { tune: 'QUEST', root: 233.1, mode: MD_DOR, bpm: 64,  perc: 0, lp: 1900 },     // Fungal Depths
+  r6:  { tune: 'HERO',  root: 277.2, mode: MD_ION, bpm: 68,  perc: 0, lp: 2400 },     // Coral Grotto
+  r7:  { tune: 'MARCH', root: 220,   mode: MD_DOR, bpm: 92,  perc: 2, lp: 2400 },     // Molten Forge
+  r8:  { tune: 'QUEST', root: 246.9, mode: MD_DOR, bpm: 96,  perc: 1, lp: 2600 },     // Clockwork Halls
+  r9:  { tune: 'HERO',  root: 293.7, mode: MD_ION, bpm: 70,  perc: 0, lp: 3000 },     // Sky Ruins
+  r10: { tune: 'QUEST', root: 261.6, mode: MD_AEO, bpm: 64,  perc: 0, lp: 2600 },     // Crystal Spire
+  r11: { tune: 'MARCH', root: 196,   mode: MD_AEO, bpm: 56,  perc: 0, lp: 1500 },     // The Hollow Void
+  abyss: { tune: 'MARCH', root: 207.7, mode: MD_AEO, bpm: 80, perc: 1, lp: 1900 },
+  boss:  { tune: 'MARCH', root: 220,   mode: MD_AEO, bpm: 108, perc: 3, lp: 2600 },
+  trial: { tune: 'MARCH', root: 246.9, mode: MD_DOR, bpm: 100, perc: 2, lp: 2600 },
 });
 
 // ---------- instruments ----------
@@ -11141,7 +11141,10 @@ const LUTE_ARP = [0, 4, 7, 4, 9, 4, 7, 4];   // rolling root-fifth-octave-third 
 
 musicTick = function () {
   if (!AC || AC.state !== 'running') return;
-  if (!MUS.gain) { MUS.gain = AC.createGain(); MUS.gain.gain.value = 0; MUS.gain.connect(AC.destination); MUS.next = AC.currentTime + .1; }
+  if (!MUS.gain) { MUS.gain = AC.createGain(); MUS.gain.gain.value = 0; MUS.gain.connect(AC.destination); MUS.next = AC.currentTime + .1;
+    const dl = AC.createDelay(1.5), fb = AC.createGain(), wet = AC.createGain(), lpf = AC.createBiquadFilter();   // soft hall-like echo
+    dl.delayTime.value = .44; fb.gain.value = .4; wet.gain.value = .32; lpf.type = 'lowpass'; lpf.frequency.value = 1700;
+    MUS.gain.connect(dl); dl.connect(lpf); lpf.connect(fb); fb.connect(dl); lpf.connect(wet); wet.connect(AC.destination); }
   const want = wantTheme();
   if (want !== MUS.theme) { MUS.gain.gain.cancelScheduledValues(AC.currentTime); MUS.gain.gain.setTargetAtTime(0, AC.currentTime, .25); if (!MUS.pend || MUS.pend.k !== want) MUS.pend = { k: want, at: AC.currentTime + .9 }; }
   if (MUS.pend && AC.currentTime >= MUS.pend.at) { MUS.theme = MUS.pend.k; MUS.pend = null; MUS.step = 0; MUS.next = AC.currentTime + .05; MUS.gain.gain.setTargetAtTime(musicVol() * .55, AC.currentTime, .6); }
@@ -11151,7 +11154,7 @@ musicTick = function () {
   while (MUS.next < AC.currentTime + .25) {
     const s = MUS.step, t = MUS.next, pos = s % 8, bar = Math.floor(s / 8) % 8, secI = Math.floor(s / 64) % 2, sec = tune[secI], ch = sec.ch[bar];
     // strings: one soft chord per bar
-    if (pos === 0) for (const k of [0, 2, 4]) mpad(sc(ch + k, -1), t, e8 * 8, .016, T.lp);
+    if (pos === 0) for (const k of [0, 2, 4]) mpad(sc(ch + k, -1), t, e8 * 8, .026, T.lp);
     // bass on beats 1 and 3 (root, then fifth)
     if (pos === 0) mbass(sc(ch, -2), t, e8 * 3.6, .16);
     if (pos === 4) mbass(sc(ch + 4, -2), t, e8 * 3, .12);
@@ -11159,7 +11162,7 @@ musicTick = function () {
     mlute(sc(ch + LUTE_ARP[pos], -1), t, e8 * 2.6, pos % 4 === 0 ? .075 : .055);
     // flute melody (+ harmony a third below in the B section)
     for (const n of sec.bars[bar]) if (n.s === pos) {
-      mlead(sc(n.d, 0), t, e8 * n.len * .96, .105);
+      mlead(sc(n.d, 0), t, e8 * n.len * .96, .09);
       if (secI === 1) mlead(sc(n.d - 2, 0), t, e8 * n.len * .96, .045);
     }
     // hand percussion

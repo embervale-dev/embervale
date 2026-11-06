@@ -3,7 +3,7 @@
 A single-player 3D action-adventure RPG that runs entirely in your browser. No install, no internet needed.
 
 ## Play
-- **Download:** grab `Embervale.html` (or `Embervale-Share.zip`) and double-click it.
+- **Download:** grab `Embervale.html` and double-click it.
 - **Online:** if GitHub Pages is enabled for this repo, `index.html` is the game.
 
 See `How to play.txt` for controls. New players start with a guided tutorial.
@@ -20,6 +20,6 @@ The game is plain JavaScript in `source/`, concatenated into one HTML file:
 ```
 cd source && sh build.sh
 ```
-This writes `Embervale.html` and `Embervale-Share.zip` in the parent folder. `index.html` is a copy of `Embervale.html` for GitHub Pages.
+This writes `Embervale.html` in the parent folder. `index.html` is a copy of `Embervale.html` for GitHub Pages.
 
 Made by GrimL0ck using Claudy.
