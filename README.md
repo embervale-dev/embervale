@@ -22,4 +22,4 @@ cd source && sh build.sh
 ```
 This writes `index.html` in the parent folder, which is both the playable single-file game and the page GitHub Pages serves.
 
-Made by GrimL0ck using Claudy.
+Made by GrimL0ck & neonxsl.
