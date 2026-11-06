@@ -123,7 +123,7 @@ musicTick = function () {
       if (secI === 1) mlead(sc(n.d - 2, 0), t, e8 * n.len * .96, .045);
     }
     // hand percussion
-    const p = T.perc;
+    const p = Math.min(3, T.perc + (MUS.combat && T.perc < 3 ? 1 : 0));   // combat adds a pulse of percussion
     if (p >= 1) {
       if (pos === 0) mperc('kick', t, p === 1 ? .16 : .22);
       if (p >= 2 && pos === 4) mperc('kick', t, .2);

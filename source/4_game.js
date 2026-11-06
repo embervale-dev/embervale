@@ -477,7 +477,7 @@ function dropItem(it, x, y) {
   else if (it.r >= 4) { sfx('legend'); toast(`${RAR[it.r].n} item dropped!`, RAR[it.r].c); shake(4); }
 }
 function bossDefeated(e) {
-  G.boss = null; G.exit = { x: e.x, y: e.y }; shake(24); G.slow = 1.2;
+  G.boss = null; G.exit = { x: e.x, y: e.y }; shake(24); G.slow = 1.2; sfx('bossdown');
   const n = ri(2, 3); for (let i = 0; i < n; i++) dropItem(genItem(G.pw + 1, { minR: i === 0 ? 2 : 1, bonus: .25 }), e.x, e.y);
   drop('ore', ri(5, 8), e.x, e.y); drop('shard', ri(8, 14), e.x, e.y);
   S.stats.bosses++; quest('boss');
@@ -522,7 +522,7 @@ function hurtPlayer(amt, src) {
 }
 function die() {
   G.mode = 'dead'; P.hp = 0; S.stats.deaths++; G.lostGold = S.opts.relaxed || G.tutorial ? 0 : Math.floor(S.gold * .15); S.gold -= G.lostGold;
-  burst(P.x, P.y, '#ff3030', 60, 260, 1.4, 4); sfx('boom'); saveGame();
+  burst(P.x, P.y, '#ff3030', 60, 260, 1.4, 4); sfx('boom'); sfx('death'); saveGame();
   setTimeout(() => openMenu('dead'), 1100);
 }
 
@@ -904,7 +904,7 @@ function checkInteract() {
   if (G.exit && dist(P, G.exit) < 34) { if (typeof bossExit === 'function') { if (bossExit()) return; } else { if (G.abyss) nextFloor(); else { sfx('stairs'); goTown(); } return; } }
   for (const c of G.chests) {
     if (c.open || dist(P, c) > 36) continue;
-    c.open = true;
+    c.open = true; sfx('chest');
     if (c.mimic) { const e = mkEnemy('mimic', c.x, c.y, { awake: true, mimic: true, elite: true }); e.elite = 'Frenzied'; c.gone = true; toast('It was a Mimic!', '#ff6a4a'); sfx('boss'); }
     else {
       sfx('item'); burst(c.x, c.y, '#ffd54a', 26, 200, .7, 3, .6);
