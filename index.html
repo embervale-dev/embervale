@@ -12217,6 +12217,15 @@ WIKI_TXT.world.push(['Monster Trophies', 'Each monster type and guardian can dro
 // Lobby with room codes • see friends in Haven • chat • co-op PvE (host's floor is shared) • PvP duels (first to 3)
 const NET = { peer: null, host: false, code: '', id: '', conns: new Map(), players: new Map(), status: 'off', err: '', coopGuest: false, area: '', nid: 0, chat: [], duel: null, lastSend: 0, lastEns: 0, swapTo: null };
 const PVP_SCALE = .3, NET_MAX = 4, PEER_PREFIX = 'embervale-dev-';
+// our own TURN relay (coturn on the VPS): 'turns' on 443 gets through networks that block UDP (e.g. school wifi). PeerJS's public relay stays as a fallback.
+const NET_ICE = { iceServers: [
+  { urls: 'stun:turn.neonxsl.dev:3478' },
+  { urls: ['turns:turn.neonxsl.dev:443?transport=tcp', 'turn:turn.neonxsl.dev:3478?transport=udp', 'turn:turn.neonxsl.dev:3478?transport=tcp'], username: 'embervale', credential: '640bed7b5eca1953d9f201c893e030ec' },
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
+] };
+// add ?relay=1 to the URL to force every connection through the relay (to test the school-wifi path from home)
+if (/[?&]relay=1\b/.test(location.search)) NET_ICE.iceTransportPolicy = 'relay';
 function netName() { return (S && S.netName) || (S && CLS[S.cls] ? `Kindled ${CLS[S.cls].n}` : 'Kindled'); }
 function loadPeerJS() { return new Promise((res, rej) => { if (window.Peer) return res(); const s = document.createElement('script'); s.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'; s.onload = () => res(); s.onerror = () => rej(new Error('Could not load the multiplayer library — you need an internet connection.')); document.head.appendChild(s); }); }
 function netArea() { if (!S || G.mode === 'title') return 'menu'; if (G.duel) return 'duel'; if (G.inTown) return 'town'; if (NET.host && NET.conns.size && !G.tutorial && !G.trial) return 'coop:' + G.levelId; if (NET.coopGuest) return NET.area; return 'solo'; }
@@ -12228,12 +12237,12 @@ function toHost(m) { const c = [...NET.conns.values()][0]; send(c, m); }
 function netPost(text) { NET.chat.push(text); if (NET.chat.length > 40) NET.chat.shift(); if (G.menu === 'mp') renderMenu(); }
 // ---------- hosting & joining ----------
 async function netHost() { try { NET.status = 'connecting'; renderMenu(); await loadPeerJS(); const code = Array.from({ length: 5 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join('');
-  const p = new Peer(PEER_PREFIX + code, { debug: 0 }); NET.peer = p; NET.host = true; NET.code = code;
+  const p = new Peer(PEER_PREFIX + code, { debug: 0, config: NET_ICE }); NET.peer = p; NET.host = true; NET.code = code;
   p.on('open', id => { NET.id = id; NET.status = 'host'; netPost(`🌐 Room <b>${code}</b> is open — share the code with friends`); sfx('shrine'); renderMenu(); });
   p.on('connection', c => { if (NET.conns.size >= NET_MAX - 1) { c.on('open', () => { send(c, { t: 'full' }); setTimeout(() => c.close(), 300); }); return; } wireConn(c); });
   p.on('error', e => netFail(e)); } catch (e) { netFail(e); } }
 async function netJoin(code) { code = String(code || '').trim().toUpperCase(); if (code.length < 4) { toast('Enter the room code your friend shared', '#ff8a8a'); return; }
-  try { NET.status = 'connecting'; renderMenu(); await loadPeerJS(); const p = new Peer(undefined, { debug: 0 }); NET.peer = p; NET.host = false; NET.code = code;
+  try { NET.status = 'connecting'; renderMenu(); await loadPeerJS(); const p = new Peer(undefined, { debug: 0, config: NET_ICE }); NET.peer = p; NET.host = false; NET.code = code;
     p.on('open', id => { NET.id = id; const c = p.connect(PEER_PREFIX + code, { reliable: true, serialization: 'json' }); wireConn(c); setTimeout(() => { if (NET.status === 'connecting') netFail(new Error('No room with that code (or the host is offline).')); }, 12000); });
     p.on('error', e => netFail(e)); } catch (e) { netFail(e); } }
 function netFail(e) { NET.err = (e && (e.type === 'unavailable-id' ? 'That room code is taken — try again.' : e.type === 'peer-unavailable' ? 'No room with that code (or the host is offline).' : e.message)) || 'Connection failed'; NET.status = 'off'; try { NET.peer && NET.peer.destroy(); } catch (x) { } NET.peer = null; NET.conns.clear(); NET.players.clear(); if (G.menu === 'mp') renderMenu(); toast('🌐 ' + NET.err, '#ff8a8a'); }
