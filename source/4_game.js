@@ -901,7 +901,7 @@ function checkInteract() {
     G.memory.used = true; const reg = G.region; sfx('shrine'); burst(G.memory.x, G.memory.y, '#ffe9a0', 40, 200, 1, 3, 1);
     playStory('mem' + reg, RMEM[reg], () => { const x = Math.round(xpNeed(S.lvl) * .3); gainXP(x / (1 + ST.xp / 100)); toast(`✨ Ember Memory witnessed — +${fmt(x)} XP`, '#ffe9a0'); });
   }
-  if (G.exit && dist(P, G.exit) < 34) { if (G.abyss) nextFloor(); else { sfx('stairs'); goTown(); } return; }
+  if (G.exit && dist(P, G.exit) < 34) { if (typeof bossExit === 'function') { if (bossExit()) return; } else { if (G.abyss) nextFloor(); else { sfx('stairs'); goTown(); } return; } }
   for (const c of G.chests) {
     if (c.open || dist(P, c) > 36) continue;
     c.open = true;

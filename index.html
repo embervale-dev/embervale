@@ -502,6 +502,69 @@ h1,h2,h3,.tab,.fitt{font-weight:600}
 ::-webkit-scrollbar-track{background:var(--bg2);border-left:2px solid var(--ink)}
 ::-webkit-scrollbar-thumb{background:#7a5c36;border:2px solid var(--ink);border-radius:0}
 ::-webkit-scrollbar-thumb:hover{background:#c19a55}
+
+/* ================= SMOOTH UI MODE (only when body has .smooth; Settings > Interface style) (final layer over the pixel UI: soft corners, clean thin borders, gentle depth) ================= */
+html #px.smooth{--r-lg:16px;--r-md:12px;--r-sm:9px;--r-xs:6px;--edge:1px solid rgba(193,154,85,.55);--edge2:1px solid #3b3144;--depth:0 6px 18px rgba(0,0,0,.38)}
+/* clean frames instead of pixel border-images */
+html #px.smooth :is(.hpan,#h-target,#lvcard,#tutbox,#hintbox,.dlgbox,#freeze .fz,#h-slots,.panel:not(.ttl):not(.dlg),#tip .tc,#tip .tc[class*=rt]){border-image:none!important;border:var(--edge)!important;border-radius:var(--r-md)!important;box-shadow:var(--depth)!important}
+html #px.smooth .panel:not(.ttl):not(.dlg){border-radius:var(--r-lg)!important;box-shadow:0 18px 60px rgba(0,0,0,.55)!important}
+html #px.smooth .dlgbox{border-radius:var(--r-lg)!important}
+html #px.smooth #tip .tc{border-radius:var(--r-md)!important}
+html #px.smooth #tip .tc[class*=rt]{border-color:var(--rc,#c19a55)!important;border-width:1.5px!important}
+html #px.smooth #tip .tc .rchip{border-radius:20px!important;border-width:1px!important}
+html #px.smooth #h-slots{border-radius:var(--r-lg)!important;padding:7px!important}
+/* buttons */
+html #px.smooth :is(.btn,.mb){border-image:none!important;border:1px solid #8a6a3a!important;border-radius:var(--r-sm)!important;box-shadow:0 2px 0 rgba(0,0,0,.35)!important}
+html #px.smooth :is(.btn,.mb):hover{border-color:var(--gold)!important}
+html #px.smooth .btn:active{box-shadow:inset 0 2px 3px rgba(0,0,0,.4)!important;padding:5px 13px 4px!important}
+html #px.smooth .btn.on{border-color:#ffd88a!important}
+html #px.smooth .btn.bigb{border-radius:var(--r-md)!important}
+html #px.smooth .pclose{border-radius:var(--r-sm)!important;border:1px solid rgba(255,255,255,.15)!important}
+/* slots & item cells */
+html #px.smooth .slot{border-image:none!important;border:1.5px solid #4a3c2c!important;border-radius:var(--r-md)!important}
+html #px.smooth .slot.ready,html #px.smooth .slot:hover{border-color:#c19a55!important}
+html #px.smooth .slot.surge{border-radius:50%!important}html #px.smooth .slot.surge.full{border-color:var(--gold)!important}
+html #px.smooth .slot .key,html #px.smooth .slot .mpc{border-radius:var(--r-xs)!important}
+html #px.smooth .cell{border-radius:var(--r-sm)!important;border-width:1.5px!important}
+html #px.smooth .cell:is(.r4,.r5,.r6),html #px.smooth .cell:is(.r7,.r8,.r9,.r10,.r11){box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--rc) 35%,transparent),0 0 0 1px color-mix(in srgb,var(--rc) 45%,transparent)!important}
+html #px.smooth :is(.hubt i,.mb i,.cell i){border-radius:20px!important;border-width:1px!important}
+/* tabs, cards, hub, panels inside menus */
+html #px.smooth .tab{border-radius:var(--r-sm) var(--r-sm) 0 0!important}
+html #px.smooth .tabs.sub .tab{border-radius:20px!important;border-width:1px!important}
+html #px.smooth .fitbar{border-radius:var(--r-md)!important;border:var(--edge2)!important}html #px.smooth .fitt{border-radius:var(--r-sm)!important;border-width:1px!important}
+html #px.smooth :is(.card,.hubt,.stats,.branch,.tier,.node,.gemb,.star,.unlhint,.mtip,.fitpg .pgn){border-radius:var(--r-md)!important;border-width:1px!important}
+html #px.smooth :is(.tier .req,.plus,.bk,.sock,.recb,.rchip,.sbadge){border-radius:var(--r-xs)!important;border-width:1px!important}
+html #px.smooth .sw{border-radius:50%!important}
+html #px.smooth .logl{border-radius:var(--r-xs)!important}
+html #px.smooth .smrow{border-bottom:1px solid #2b2336!important}
+html #px.smooth .panel h2,html #px.smooth .tabs,html #px.smooth #tip hr,html #px.smooth #tip .tn{border-width:1px!important}
+html #px.smooth .panel h3::after,html #px.smooth .hubsec::after{height:1px!important}
+/* bars */
+html #px.smooth :is(.pbar,.qbar,.cbar,#h-target .tbar){border-radius:20px!important;overflow:hidden;outline:none!important;border:1px solid #2b2336!important}
+html #px.smooth :is(.pbar div,.qbar div,.cbar div,#h-target .tbar div){border-radius:20px!important}
+html #px.smooth #h-boss .bbar{border-radius:20px!important;outline:none!important;border:1.5px solid #7a5c36!important;overflow:hidden}
+html #px.smooth #h-xp{border-radius:20px!important;outline:none!important;border:1.5px solid #7a5c36!important;overflow:hidden}
+html #px.smooth #h-xp .lvb{border-radius:20px 0 0 20px!important}html #px.smooth #h-xp .trk{border-radius:0 20px 20px 0;overflow:hidden}
+html #px.smooth #h-xp .fill{transition:width .3s ease-out!important}
+/* HUD pieces */
+html #px.smooth .buff{border-radius:var(--r-sm)!important}
+html #px.smooth .globe{outline:none!important;border:3px solid #7a5c36!important;box-shadow:0 0 0 2px var(--ink),var(--depth)!important}
+html #px.smooth .hpan.mini,html #px.smooth .mini{outline:none!important;border:3px solid #7a5c36!important;box-shadow:0 0 0 2px var(--ink),var(--depth)!important}
+html #px.smooth .fpips i{border-radius:20px!important;border-width:1px!important}
+html #px.smooth #lootfeed div,html #px.smooth #toast div{border-radius:var(--r-sm)!important;border-width:1px!important}
+html #px.smooth #lootfeed div{border-left-width:3px!important}
+html #px.smooth #toast div{border-left-width:4px!important;box-shadow:var(--depth)!important}
+html #px.smooth .dport{border-radius:50%!important}
+html #px.smooth #tutbox .tdots i{border-radius:20px!important}
+html #px.smooth #tutbox .ttip{border-radius:var(--r-xs)!important}
+/* inputs & scrollbars */
+html #px.smooth input[type=range]{border-radius:20px!important;border-width:1px!important}
+html #px.smooth input[type=range]::-webkit-slider-thumb{border-radius:50%!important;width:16px!important;height:16px!important;border-width:2px!important;box-shadow:none!important}
+html #px.smooth ::-webkit-scrollbar-thumb{border-radius:10px!important}
+html #px.smooth input,html #px.smooth select{border-radius:var(--r-sm)!important}
+/* cleaner spacing */
+html #px.smooth .panel h2{margin-bottom:10px!important}
+html #px.smooth .card{padding:9px 12px!important}
 </style></head>
 <body id="px">
 <canvas id="g3"></canvas>
@@ -6736,7 +6799,7 @@ function checkInteract() {
     G.memory.used = true; const reg = G.region; sfx('shrine'); burst(G.memory.x, G.memory.y, '#ffe9a0', 40, 200, 1, 3, 1);
     playStory('mem' + reg, RMEM[reg], () => { const x = Math.round(xpNeed(S.lvl) * .3); gainXP(x / (1 + ST.xp / 100)); toast(`✨ Ember Memory witnessed — +${fmt(x)} XP`, '#ffe9a0'); });
   }
-  if (G.exit && dist(P, G.exit) < 34) { if (G.abyss) nextFloor(); else { sfx('stairs'); goTown(); } return; }
+  if (G.exit && dist(P, G.exit) < 34) { if (typeof bossExit === 'function') { if (bossExit()) return; } else { if (G.abyss) nextFloor(); else { sfx('stairs'); goTown(); } return; } }
   for (const c of G.chests) {
     if (c.open || dist(P, c) > 36) continue;
     c.open = true;
@@ -11363,6 +11426,46 @@ musicTick = function () {
     MUS.step++; MUS.next += e8;
   }
 };
+// ================= AFTER A GUARDIAN: choose to push on to the next level or head home =================
+let EXIT_ARMED = true;
+function bossExit() { // returns true when it handled the portal this frame
+  if (!EXIT_ARMED) return false;
+  EXIT_ARMED = false; sfx('stairs'); openMenu('bosschoice'); return true;
+}
+{ const _uX = update; update = function (dt) { _uX(dt); if (!EXIT_ARMED && G.exit && P && dist(P, G.exit) > 70) EXIT_ARMED = true; if (!G.exit) EXIT_ARMED = true; }; }
+function bcNext() { closeMenu();
+  if (G.abyss) { nextFloor(); return; }
+  const r = G.region + 1; if (r < NREG) { enterFloor(r, 0); return; }
+  if (S.done[S.diff].every(Boolean)) enterFloor(ABYSS_R, 0, 1); else goTown(); }
+function bcHome() { closeMenu(); goTown(); }
+MENUS.bosschoice = () => {
+  const items = G.pick.filter(p => p.k === 'item').length, pots = `${S.pots}/${S.potMax}`, life = `${fmt(P.hp)} / ${fmt(ST.maxHp)}`;
+  let next = '', note = '';
+  if (G.gauntlet || G.trial) next = '';
+  else if (G.abyss) { next = `▼ Descend to Abyss Depth ${G.depth + 1}`; note = 'Foes grow stronger with every depth.'; }
+  else if (G.region + 1 < NREG) { const r = G.region + 1, rec = r * 6; next = `▶ Continue to ${REG[r].n} — Floor 1`; note = `Recommended level ${rec}+ • you are level ${S.lvl}${S.lvl < rec ? ' <span style="color:#ff9a6a">(it will be tough!)</span>' : ' <span class="up">(ready)</span>'}`; }
+  else if (S.done[S.diff].every(Boolean)) { next = '▼ Enter the Abyss — Depth 1'; note = 'The endless descent. How deep can you go?'; }
+  const title = G.abyss ? `Abyss Depth ${G.depth} Cleared` : `${REG[G.region].n} Conquered!`;
+  return `<div style="min-width:560px;max-width:640px;text-align:center"><h2>💀 ${title}</h2>
+    <div class="dim" style="margin-bottom:10px">Where to next, Kindled?</div>
+    <div class="bcstat">❤ ${life} &nbsp;•&nbsp; 🧪 ${pots} potions &nbsp;•&nbsp; 🎒 ${S.inv.length}/${S.invMax} bag${items ? ` &nbsp;•&nbsp; <span style="color:#ffb04a">⚠ ${items} item${items > 1 ? 's' : ''} still on the ground</span>` : ''}</div>
+    ${next ? `<div class="bcopt" onclick="bcNext()"><b>${next}</b><div class="dim">${note}<br>Keep your current life and potions — no trip home.</div></div>` : ''}
+    <div class="bcopt" onclick="bcHome()"><b>🏡 Return to Haven</b><div class="dim">Refill life and potions, sell and upgrade your loot, then travel again from the Waystone.</div></div>
+    <div class="dim" style="margin-top:8px;font-size:12px">Press Esc to stay here and keep exploring — step back into the portal to choose again.</div></div>`;
+};
+const bcStyle = document.createElement('style'); bcStyle.textContent = `.bcstat{font-size:13px;color:#e8dcc0;background:rgba(0,0,0,.25);border-radius:10px;padding:6px 10px;margin:0 0 12px}
+.bcopt{cursor:pointer;text-align:left;margin:8px 0;padding:12px 16px;border-radius:12px;border:1px solid rgba(193,154,85,.45);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.15));transition:border-color .12s,background .12s}
+.bcopt:hover{border-color:#f2c466;background:linear-gradient(180deg,rgba(242,196,102,.12),rgba(0,0,0,.1))}.bcopt b{font-size:17px;color:#f4d9a0}.bcopt .dim{font-size:12.5px;margin-top:3px}`; document.head.appendChild(bcStyle);
+WIKI_TXT.basics.push(['After a Guardian', 'Defeating a Guardian opens a portal. Step into it to choose: continue straight to the next region\'s first floor (keeping your current life and potions), or return to Haven to refill, sell and upgrade. In the Abyss you choose between descending deeper and going home. Press Esc to stay and finish exploring.']);
+// ================= INTERFACE STYLE: smooth rounded (default) or pixel =================
+// Global preference (not per save) so it also applies on the title screen.
+let UI_STYLE = 'smooth';
+try { if (localStorage.getItem('embervale_uistyle') === 'pixel') UI_STYLE = 'pixel'; } catch (e) { }
+function applyUIStyle() { document.body.classList.toggle('smooth', UI_STYLE === 'smooth'); }
+function setUIStyle(v) { UI_STYLE = v === 'smooth' ? 'smooth' : 'pixel'; try { localStorage.setItem('embervale_uistyle', UI_STYLE); } catch (e) { } applyUIStyle(); renderMenu(); }
+applyUIStyle();
+{ const _stU = MENUS.settings; MENUS.settings = () => _stU().replace('<div class="btn bigb" onclick="backMenu()">Back</div>',
+  `<div class="card">🎨 Interface style ${[['smooth', 'Smooth rounded'], ['pixel', 'Pixel']].map(([v, n]) => `<span class="btn ${UI_STYLE === v ? 'on' : ''}" onclick="setUIStyle('${v}')">${n}</span>`).join('')}<div class="dim">Smooth rounded: soft corners and thin borders. Pixel: hard-edged retro frames.</div></div><div class="btn bigb" onclick="backMenu()">Back</div>`); }
 // ================= MAIN LOOP =================
 let lastT = performance.now(), errShown = false;
 function frame(now) {
