@@ -1,7 +1,7 @@
 #!/bin/sh
 # Builds the single-file game (../index.html)
 cd "$(dirname "$0")"
-JS="1_data.js 1b_story.js 1c_codex.js 1d_long.js 1e_more.js 1f_features.js 1g_weapons.js 1h_gear.js 1i_rarity.js 2_engine.js 3_world.js 4_game.js 4b_long.js 5_models.js 5_render3d.js 5b_hud.js 5c_long_render.js 5d_anim.js 6_ui.js 6b_long_ui.js 6c_tutorial.js 6d_polish.js 6e_more.js 6f_a.js 6f_b.js 6f_c.js 6g_weapons.js 6h_tutorial2.js 6i_gear.js 6j_polish.js 6k_loot.js 6l_long2.js 6m_balance.js 6n_gui.js 6o_fit.js 6p_progress.js 6q_newbie.js 6r_resume.js 6s_music.js 6t_bosschoice.js 6u_uistyle.js 6v_audio.js 7_main.js"
+JS="1_data.js 1b_story.js 1c_codex.js 1d_long.js 1e_more.js 1f_features.js 1g_weapons.js 1h_gear.js 1i_rarity.js 2_engine.js 3_world.js 4_game.js 4b_long.js 5_models.js 5_render3d.js 5b_hud.js 5c_long_render.js 5d_anim.js 6_ui.js 6b_long_ui.js 6c_tutorial.js 6d_polish.js 6e_more.js 6f_a.js 6f_b.js 6f_c.js 6g_weapons.js 6h_tutorial2.js 6i_gear.js 6j_polish.js 6k_loot.js 6l_long2.js 6m_balance.js 6n_gui.js 6o_fit.js 6p_progress.js 6q_newbie.js 6r_resume.js 6s_scores.js 6s_music.js 6t_bosschoice.js 6u_uistyle.js 6v_audio.js 7_main.js"
 cat $JS > /tmp/embervale_all.js
 mk() { { cat head.html; printf '<script>\n'; cat vendor/three.bundle.js; printf '\n</script>\n<script>\n'; cat $JS $1; printf '\n</script>\n</body>\n</html>\n'; } > "$2"; }
 mk "" "../index.html"
