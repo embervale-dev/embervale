@@ -12413,14 +12413,19 @@ function chatBuild() {
 function chatAdd(html, cls) {
   chatBuild(); const d = document.createElement('div'); d.innerHTML = html; if (cls) d.className = cls;
   CHAT.log.appendChild(d); while (CHAT.log.children.length > 40) CHAT.log.firstChild.remove();
-  setTimeout(() => d.classList.add('old'), 10000); CHAT.log.scrollTop = CHAT.log.scrollHeight;
+  setTimeout(() => d.classList.add('fade'), 10000); setTimeout(() => { d.classList.add('old'); chatFit(); }, 10700); CHAT.log.scrollTop = CHAT.log.scrollHeight; chatFit();
 }
 function chatOpen() {
   chatBuild(); CHAT.open = true; CHAT.el.classList.add('open');
   for (const k in keys) keys[k] = false; pressed = {}; mouse.down = false;   // stop walking/attacking while typing
   CHAT.inp.value = ''; CHAT.inp.focus(); CHAT.log.scrollTop = CHAT.log.scrollHeight;
+  setTimeout(() => { if (CHAT.inp.value === '/') CHAT.inp.value = ''; }, 0);   // never keep the key that opened chat
 }
-function chatClose() { if (!CHAT.el) return; CHAT.open = false; CHAT.el.classList.remove('open'); CHAT.inp.blur(); }
+function chatClose() { if (!CHAT.el) return; CHAT.open = false; CHAT.el.classList.remove('open'); CHAT.inp.blur(); chatFit(); }
+// closed box: show only the newest lines that fit completely (no half-cut lines at the top)
+function chatFit() { if (!CHAT.log) return; const rows = [...CHAT.log.children]; rows.forEach(d => d.classList.remove('clip')); if (CHAT.open) return;
+  const room = parseFloat(getComputedStyle(CHAT.log).maxHeight) || 190; let used = 0;
+  for (let i = rows.length - 1; i >= 0; i--) { const d = rows[i]; if (d.classList.contains('old')) continue; used += d.offsetHeight + 3; if (used > room) d.classList.add('clip'); } }
 // every room message (chat, joins, leaves) also lands in the in-game log
 { const _npC = netPost; netPost = function (text) { _npC(text); chatAdd(text); }; }
 // show the box only while you're in a room and in the game
@@ -12441,7 +12446,9 @@ chatStyle.textContent = `
 #chatlog{display:flex;flex-direction:column;gap:3px;max-height:190px;overflow:hidden;padding:2px}
 #chatlog div{align-self:flex-start;max-width:100%;padding:3px 9px;border-radius:8px;background:rgba(10,8,16,.62);color:#ece0c8;text-shadow:0 1px 2px #000;overflow-wrap:anywhere;transition:opacity .6s}
 #chatlog div.hint{color:#a39884;font-style:italic}
-#chatbox:not(.open) #chatlog div.old{opacity:0}
+#chatbox:not(.open) #chatlog{justify-content:flex-end}
+#chatbox:not(.open) #chatlog div.fade{opacity:0}
+#chatbox:not(.open) #chatlog div.old,#chatbox:not(.open) #chatlog div.clip{display:none}
 #chatbox.open{pointer-events:auto}
 #chatbox.open #chatlog{overflow-y:auto;background:rgba(10,8,16,.55);border:1px solid rgba(214,168,82,.35);border-radius:10px;padding:6px}
 #chatbox.open #chatlog div{background:none;padding:1px 2px}
