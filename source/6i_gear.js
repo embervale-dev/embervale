@@ -25,7 +25,7 @@ hurtPlayer = function (amt, src) {
   if (ST.u.stoneskin && !(keys.w || keys.a || keys.s || keys.d || keys.arrowup || keys.arrowdown || keys.arrowleft || keys.arrowright)) amt *= .85;
   if ((P.swT || 0) > 0) amt *= .6;
   const r = _hpG(amt, src);
-  if (ST.u.secondwind && P.hp > 0 && P.hp < ST.maxHp * .3 && (P.swCd || 0) <= 0) { P.swT = 4; P.swCd = 30; toast('🌬 Second Wind!', '#a0e0ff'); ringFx(P.x, P.y, 70, '#a0e0ff', .5); sfx('shrine'); }
+  if (ST.u.secondwind && P.hp > 0 && P.hp < ST.maxHp * .3 && (P.swCd || 0) <= 0) { P.swT = 4; P.swCd = 30; toast(ico('wind') + ' Second Wind!', '#a0e0ff'); ringFx(P.x, P.y, 70, '#a0e0ff', .5); sfx('shrine'); }
   return r;
 };
 // ---------- offensive hooks ----------
@@ -57,35 +57,35 @@ function awakenCost() { return { ess: 3, ore: 20, g: Math.round(200 * Math.pow(1
 function doAwaken() {
   const it = S.eq.weapon, c = awakenCost(); if (!canAwaken(it)) return;
   if ((S.ess || 0) < c.ess || S.ore < c.ore || S.gold < c.g) { toast('Not enough materials', '#ff8a8a'); sfx('error'); return; }
-  S.ess = (S.ess || 0) - c.ess; S.ore -= c.ore; S.gold -= c.g; it.awk = 1; it.name = '✪ ' + it.name.replace(/^✪ /, ''); S.stats.awakened = (S.stats.awakened || 0) + 1; R3.wkey = null; calcStats();
+  S.ess = (S.ess || 0) - c.ess; S.ore -= c.ore; S.gold -= c.g; it.awk = 1; it.name = '✧ ' + it.name.replace(/^(\u272A|✧) /, ''); S.stats.awakened = (S.stats.awakened || 0) + 1; R3.wkey = null; calcStats();
   banner('Weapon Awakened!', `${it.name} — +15% damage and its Art is empowered`, '#ffd27a'); sfx('legend'); burst(P.x, P.y, '#ffd27a', 40, 240, .9, 4, 1); saveGame(); renderMenu();
 }
 function temperCost(it) { return { ore: 6 + it.r * 2, g: Math.round(40 * Math.pow(1.12, Math.min(maxPw(), 120))) }; }
 function doTemper(sl, k) {
   const it = S.eq[sl]; if (!it) return; const c = temperCost(it);
   if (S.ore < c.ore || S.gold < c.g) { toast('Not enough materials', '#ff8a8a'); sfx('error'); return; }
-  S.ore -= c.ore; S.gold -= c.g; it.tmp = k; S.stats.tempered = (S.stats.tempered || 0) + 1; calcStats(); sfx('lvl'); toast(`🔨 ${it.name} tempered: <b>${TEMPER[k].n}</b> (${TEMPER[k].d})`, '#e0c070'); saveGame(); renderMenu();
+  S.ore -= c.ore; S.gold -= c.g; it.tmp = k; S.stats.tempered = (S.stats.tempered || 0) + 1; calcStats(); sfx('lvl'); toast(`${ico('hammer')} ${it.name} tempered: <b>${TEMPER[k].n}</b> (${TEMPER[k].d})`, '#e0c070'); saveGame(); renderMenu();
 }
 let TMP_SL = 'armor';
 { const _smG = MENUS.smith; MENUS.smith = () => { const w = S.eq.weapon, ac = awakenCost(), it = S.eq[TMP_SL];
-  let h = _smG() + `<h3>✪ Awakening</h3><div class="dim">Legendary and Mythic weapons can be Awakened once you reach Mastery 10 with their type: +15% damage and their Art is empowered (+25%). Cost: ${ac.ess} 🜃 essence, ${ac.ore} ◆ ore, ${fmt(ac.g)} gold.</div>`;
-  h += w ? (w.awk ? `<div style="color:#ffd27a">✪ ${w.name} is already Awakened.</div>` : canAwaken(w) ? `<span class="btn" onclick="doAwaken()">✪ Awaken ${w.name}</span>` : `<div class="dim">${w.r < 4 ? 'Your main-hand weapon must be Legendary or Mythic.' : `Reach ${WT[w.t].n} Mastery 10 (now ${wmLvl(w.t)}).`}</div>`) : '';
-  h += `<h3>🔨 Tempering</h3><div class="dim">Add one hand-picked bonus to any equipped armor piece (stronger on higher rarities). Re-tempering replaces it.</div><div>${ARMOR_SLOTS.map(sl => `<span class="btn ${TMP_SL === sl ? 'on' : ''}" style="font-size:12px" onclick="TMP_SL='${sl}';renderMenu()">${AT[sl].ic} ${AT[sl].n}${S.eq[sl] && S.eq[sl].tmp ? ' ✔' : ''}</span>`).join('')}</div>`;
+  let h = _smG() + `<h3>${ico('awaken')} Awakening</h3><div class="dim">Legendary and Mythic weapons can be Awakened once you reach Mastery 10 with their type: +15% damage and their Art is empowered (+25%). Cost: ${ac.ess} ${ico('essence')} essence, ${ac.ore} ◆ ore, ${fmt(ac.g)} gold.</div>`;
+  h += w ? (w.awk ? `<div style="color:#ffd27a">${ico('awaken')} ${w.name} is already Awakened.</div>` : canAwaken(w) ? `<span class="btn" onclick="doAwaken()">${ico('awaken')} Awaken ${w.name}</span>` : `<div class="dim">${w.r < 4 ? 'Your main-hand weapon must be Legendary or Mythic.' : `Reach ${WT[w.t].n} Mastery 10 (now ${wmLvl(w.t)}).`}</div>`) : '';
+  h += `<h3>${ico('hammer')} Tempering</h3><div class="dim">Add one hand-picked bonus to any equipped armor piece (stronger on higher rarities). Re-tempering replaces it.</div><div>${ARMOR_SLOTS.map(sl => `<span class="btn ${TMP_SL === sl ? 'on' : ''}" style="font-size:12px" onclick="TMP_SL='${sl}';renderMenu()">${AT[sl].ic} ${AT[sl].n}${S.eq[sl] && S.eq[sl].tmp ? ' ' + ico('check') : ''}</span>`).join('')}</div>`;
   if (it) { const c = temperCost(it); h += `<div style="margin:4px 0"><span style="color:${RAR[it.r].c}">${it.name}</span>${it.tmp ? ` — tempered: <b>${TEMPER[it.tmp].n}</b>` : ''} <span class="dim">Cost: ${c.ore} ◆ ore, ${fmt(c.g)} gold</span></div><div>${Object.keys(TEMPER).map(k => `<span class="btn ${it.tmp === k ? 'on' : ''}" style="font-size:12px" title="${TEMPER[k].d}" onclick="doTemper('${TMP_SL}','${k}')">${TEMPER[k].n}<span class="dim"> ${TEMPER[k].d}</span></span>`).join('')}</div>`; }
   else h += '<div class="dim">Nothing equipped in that slot.</div>';
   return h; }; }
 // ---------- tooltips ----------
 { const _itG = itemTip; itemTip = function (it, cmp) { let h = _itG(it, cmp); const w = wgtOf(it);
   if (w) { const c = wgtCounts(); h += `<hr><div style="color:${WGT[w].col};font-size:12px">${WGT[w].ic} <b>${WGT[w].n} armor</b>: ${WGT[w].d}</div><div class="dim" style="font-size:11px">${WGT[w].disc[0]} — ${WGT[w].disc[1]} (${c[w]}/4 worn)</div>`; }
-  if (it.tmp && TEMPER[it.tmp]) h += `<div style="color:#e0c070;font-size:12px">🔨 Tempered — ${TEMPER[it.tmp].n}: ${TEMPER[it.tmp].d} (×${(1 + it.r * .1).toFixed(1)})</div>`;
-  if (it.awk) h += `<div style="color:#ffd27a;font-size:12px">✪ Awakened: +15% damage, Art empowered</div>`;
+  if (it.tmp && TEMPER[it.tmp]) h += `<div style="color:#e0c070;font-size:12px">${ico('hammer')} Tempered — ${TEMPER[it.tmp].n}: ${TEMPER[it.tmp].d} (×${(1 + it.r * .1).toFixed(1)})</div>`;
+  if (it.awk) h += `<div style="color:#ffd27a;font-size:12px">${ico('awaken')} Awakened: +15% damage, Art empowered</div>`;
   return h; }; }
 { const _shG = statsHTML; statsHTML = function () { const c = wgtCounts(); return _shG() + `<div style="display:block;margin-top:6px;font-size:12px">${Object.keys(WGT).map(k => `<span style="color:${c[k] >= 4 ? WGT[k].col : '#888'}">${WGT[k].ic} ${WGT[k].n} ${c[k]}/4</span>`).join(' • ')}${ST.disc ? `<div style="color:${WGT[ST.disc].col}">◆ ${WGT[ST.disc].disc[0]} active</div>` : ''}</div>`; }; }
 // ---------- buff bar ----------
 { const _uhG = updateHUD; updateHUD = function (dt) { _uhG(dt); if (!S || !P || G.mode === 'title') return; const el = H['h-buffs']; if (!el) return; let h = '';
-  if (P.swapT > 0) h += `<div class="buff wart" title="Swap Strike: +20% damage" style="border-color:#ffd27a">🔁<span>${Math.ceil(P.swapT)}</span></div>`;
-  if (P.swT > 0) h += `<div class="buff wart" title="Second Wind: 40% less damage taken" style="border-color:#a0e0ff">🌬<span>${Math.ceil(P.swT)}</span></div>`;
-  if (ST.disc === 'heavy' && !(P.bulT > 0)) h += `<div class="buff wart" title="Bulwark ready: the next hit deals 60% less damage" style="border-color:#a0b0d0">🛡️<span>✔</span></div>`;
+  if (P.swapT > 0) h += `<div class="buff wart" title="Swap Strike: +20% damage" style="border-color:#ffd27a">${ico('loop')}<span>${Math.ceil(P.swapT)}</span></div>`;
+  if (P.swT > 0) h += `<div class="buff wart" title="Second Wind: 40% less damage taken" style="border-color:#a0e0ff">${ico('wind')}<span>${Math.ceil(P.swT)}</span></div>`;
+  if (ST.disc === 'heavy' && !(P.bulT > 0)) h += `<div class="buff wart" title="Bulwark ready: the next hit deals 60% less damage" style="border-color:#a0b0d0">${ico('shield')}<span>${ico('check')}</span></div>`;
   if (h) el.insertAdjacentHTML('beforeend', h); }; }
 // ---------- armor shows on your character ----------
 function buildArmorLook(pl = R3.pl, eq = S.eq) {   // also used for other players' models (multiplayer)
@@ -110,9 +110,9 @@ ACH.push(
   { id: 'awk1', n: 'Awakener', d: 'Awaken a Legendary weapon', c: () => S.stats.awakened || 0, need: 1, sp: 2 },
 );
 WIKI_TXT.weapons.push(
-  ['Armor Weights', 'Every helm, chestplate, gloves and boots is Light 🪶, Medium 🧥 or Heavy 🛡️. Light: +4% move speed, +2% crit. Medium: +3% attack speed, +3% life. Heavy: +2.5% damage reduction, +5% life, -2% move speed. Wear all 4 pieces of one weight for a Discipline: Evasion (Light — 8% chance to evade, faster dodge), Battle Rhythm (Medium — hits heal 0.4% life up to 4×/s, +6% damage) or Bulwark (Heavy — the first hit every 6s deals 60% less, +6% damage reduction). Heavy and Medium chests show as shoulder armor on your character.'],
+  ['Armor Weights', 'Every helm, chestplate, gloves and boots is Light ' + WGT.light.ic + ', Medium ' + WGT.medium.ic + ' or Heavy ' + WGT.heavy.ic + '. Light: +4% move speed, +2% crit. Medium: +3% attack speed, +3% life. Heavy: +2.5% damage reduction, +5% life, -2% move speed. Wear all 4 pieces of one weight for a Discipline: Evasion (Light — 8% chance to evade, faster dodge), Battle Rhythm (Medium — hits heal 0.4% life up to 4×/s, +6% damage) or Bulwark (Heavy — the first hit every 6s deals 60% less, +6% damage reduction). Heavy and Medium chests show as shoulder armor on your character.'],
   ['Tempering', 'At Brann\'s forge you can temper any equipped armor piece (helm, chest, gloves, boots, ring or amulet) with one hand-picked bonus: Vitality, Guarding, Spiked, Fleet, Fury, Focus, Keen or Mending. Higher rarity pieces get a stronger temper. Re-tempering replaces it.'],
-  ['Awakening', 'Legendary and Mythic weapons can be Awakened at the forge once you reach Mastery 10 with that weapon type. An Awakened weapon (✪) deals +15% damage and its Art is empowered by 25% — stacking with the Mastery 15 bonus.'],
+  ['Awakening', 'Legendary and Mythic weapons can be Awakened at the forge once you reach Mastery 10 with that weapon type. An Awakened weapon (✧) deals +15% damage and its Art is empowered by 25% — stacking with the Mastery 15 bonus.'],
   ['Swap Strike', 'Keep a second weapon in your Off Hand. Swapping (Tab / X) in a fight grants +20% damage for 3 seconds (6s cooldown) — great for switching between a ranged opener and a melee finisher.'],
   ['Monster Scaling', 'Monsters get stronger the deeper you go. If you return to an easier region far above its level, foes there scale up a little with you (and so does their loot), so old areas stay worth playing.'],
 );

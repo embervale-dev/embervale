@@ -1,0 +1,15 @@
+{
+ "_note": "UI menus, tabs, tutorial, polish (6_ui, 6b_long_ui, 6c_tutorial, 6d_polish).",
+ "wolf": "lorc/wolf-head",
+ "books": "delapouite/bookshelf",
+ "play": "guard13007/play-button",
+ "leaf": "lorc/three-leaves",
+ "dagger": "lorc/plain-dagger",
+ "slot-weapon": "lorc/broadsword",
+ "slot-helm": "lorc/visored-helm",
+ "slot-armor": "lorc/breastplate",
+ "slot-gloves": "delapouite/gauntlet",
+ "slot-boots": "lorc/leather-boot",
+ "slot-ring": "delapouite/diamond-ring",
+ "slot-amulet": "lorc/gem-pendant"
+}

@@ -1,0 +1,18 @@
+{
+ "_note": "Feature-pack glyphs (6e-6l source files).",
+ "ember-heart": "lorc/heartburn",
+ "renown": "delapouite/ribbon-medal",
+ "ledger": "delapouite/bookshelf",
+ "wolf-head": "lorc/wolf-head",
+ "set-piece": "lorc/linked-rings",
+ "broom": "delapouite/broom",
+ "notebook": "delapouite/notebook",
+ "loadout": "delapouite/basketball-jersey",
+ "riposte": "lorc/sword-clash",
+ "quickdraw": "delapouite/bamboo",
+ "craft": "lorc/hammer-nails",
+ "restore": "delapouite/trowel",
+ "essence": "lorc/unstable-orb",
+ "awaken": "lorc/sunbeams",
+ "hunt": "lorc/high-shot"
+}

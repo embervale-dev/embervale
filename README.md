@@ -3,7 +3,7 @@
 A single-player 3D action-adventure RPG that runs entirely in your browser. No install, no internet needed.
 
 ## Play
-- **Download:** grab `index.html` and double-click it.
+- **Download:** grab `index.html` **and the `assets/` folder** (keep them side by side), then double-click `index.html`.
 - **Online:** if GitHub Pages is enabled for this repo, `index.html` is the game.
 
 See `How to play.txt` for controls. New players start with a guided tutorial.
@@ -17,10 +17,13 @@ See `How to play.txt` for controls. New players start with a guided tutorial.
 - Online multiplayer (peer-to-peer via WebRTC/PeerJS): room codes, see friends in Haven, chat, co-op dungeons and PvP duels
 
 ## Building from source
-The game is plain JavaScript in `source/`, concatenated into one HTML file:
+The game is plain JavaScript in `source/`, concatenated into one HTML file, with its icon art in `assets/icons/`:
 ```
 cd source && sh build.sh
 ```
-This writes `index.html` in the parent folder, which is both the playable single-file game and the page GitHub Pages serves.
+This first runs `art/build.js` (needs Node), which generates the icons from the recipes in `art/recipes/` and the glyph maps in `art/flat/`, then writes `index.html` in the parent folder (the page GitHub Pages serves). `node art/audit.js` checks that no emoji are left in the source.
+
+## Credits
+Icons are built from [game-icons.net](https://game-icons.net) silhouettes by Lorc, Delapouite & contributors, licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), then coloured and detailed for Embervale.
 
 Made by GrimL0ck & neonxsl.

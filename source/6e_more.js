@@ -57,10 +57,10 @@ populate = function (R) {
   if (G.trial) return;
   if (Math.random() < .18) { const p = spotM(); if (p) G.font = { ...p, used: false }; }
   if (Math.random() < .08) { const p = spotM(); if (p) G.altar = { ...p, used: false, near: false }; }
-  if ((S.tmaps || 0) > 0 && Math.random() < .7) { const p = spotM(); if (p) { G.dig = { ...p, used: false }; toast('🗺 Your treasure map marks a spot on this floor! (gold ✕ on the minimap)', '#e0c080'); } }
+  if ((S.tmaps || 0) > 0 && Math.random() < .7) { const p = spotM(); if (p) { G.dig = { ...p, used: false }; toast(ico('map') + ' Your treasure map marks a spot on this floor! (gold ✕ on the minimap)', '#e0c080'); } }
   if (G.mod === 'bounty') for (let i = 0; i < 4; i++) { const p = spotM(); if (p) G.chests.push({ ...p, open: false, mimic: Math.random() < .08, t: 0 }); }
-  if (!G.abyss && G.floor === 3) { const e = spawnChampion(pick2(CHAMP_NAMES[G.region])); if (e) G.later.push({ t: 1.5, fn: () => toast(`⚔ A champion stalks this floor: <b>${e.d.n}</b>`, '#ffb07a') }); }
-  if (!G.abyss) for (const q of S.quests) if (q.t === 'wanted' && q.have < q.need && q.reg === G.region && G.floor >= 1 && G.floor < BOSS_F) { const e = spawnChampion(q.name); if (e) { e.wanted = 1; G.later.push({ t: 2, fn: () => toast(`📜 Your wanted target is here: <b>${q.name}</b>!`, '#ffd27a') }); } }
+  if (!G.abyss && G.floor === 3) { const e = spawnChampion(pick2(CHAMP_NAMES[G.region])); if (e) G.later.push({ t: 1.5, fn: () => toast(`${ico('swords')} A champion stalks this floor: <b>${e.d.n}</b>`, '#ffb07a') }); }
+  if (!G.abyss) for (const q of S.quests) if (q.t === 'wanted' && q.have < q.need && q.reg === G.region && G.floor >= 1 && G.floor < BOSS_F) { const e = spawnChampion(q.name); if (e) { e.wanted = 1; G.later.push({ t: 2, fn: () => toast(`${ico('scroll')} Your wanted target is here: <b>${q.name}</b>!`, '#ffd27a') }); } }
 };
 const _mkM = mkEnemy;
 mkEnemy = function (type, x, y, o = {}) {
@@ -77,7 +77,7 @@ hurtEnemy = function (e, amt, o = {}) {
   if (!e.dead && !e.prop) {
     if (ST.u.executioner && e.hp < e.maxHp * .3) amt *= 1.5;
     S.stats.dmg = (S.stats.dmg || 0) + amt;
-    if (amt > (S.stats.maxHit || 0)) { const old = S.stats.maxHit || 0; S.stats.maxHit = amt; if (old > 0 && G.t - recT > 25 && amt > old * 1.1) { recT = G.t; feed(`💥 New record hit: <b>${fmt(amt)}</b>!`, '#ffd54a'); } }
+    if (amt > (S.stats.maxHit || 0)) { const old = S.stats.maxHit || 0; S.stats.maxHit = amt; if (old > 0 && G.t - recT > 25 && amt > old * 1.1) { recT = G.t; feed(`${ico('explosion')} New record hit: <b>${fmt(amt)}</b>!`, '#ffd54a'); } }
     if (buff('sanguine')) healP(Math.min(amt * .05, ST.maxHp * .03));
   }
   _heM(e, amt, o);
@@ -93,12 +93,12 @@ killEnemy = function (e) {
   if (e.dead) return; _kmM(e); if (e.prop || ['dummy', 'tsentry'].includes(e.type)) return;
   if (ST.u.soulleech) { P.mp = Math.min(ST.maxMp, P.mp + ST.maxMp * .05); healP(ST.maxHp * .01); }
   if (buff('plenty')) for (let i = 0; i < 2; i++) coin(e.x, e.y, e.gold * rnd(1, 2.4) * (1 + goldEff() / 100));
-  const pk = S.cos.pet; if (pk) { S.petXp = S.petXp || {}; const l0 = petLvl(pk); S.petXp[pk] = (S.petXp[pk] || 0) + (e.boss ? 40 : e.elite ? 4 : 1); if (petLvl(pk) > l0) { feed(`🐾 ${PETS[pk].n} reached level ${petLvl(pk)}! (+${petLvl(pk) * 10}% companion bonus)`, '#ffe9a0'); calcStats(); } }
+  const pk = S.cos.pet; if (pk) { S.petXp = S.petXp || {}; const l0 = petLvl(pk); S.petXp[pk] = (S.petXp[pk] || 0) + (e.boss ? 40 : e.elite ? 4 : 1); if (petLvl(pk) > l0) { feed(`${ico('paw')} ${PETS[pk].n} reached level ${petLvl(pk)}! (+${petLvl(pk) * 10}% companion bonus)`, '#ffe9a0'); calcStats(); } }
   G.kt.push(G.t); G.kt = G.kt.filter(t => G.t - t < 1.3); const n = G.kt.length, m = MK.find(x => x[0] === n);
   if (m) { dmgText(P.x, P.y - 50, m[1], m[2], true, 2.8); if (n >= 5) sfx('lvl'); if (n >= 12) S.stats.storms = (S.stats.storms || 0) + 1; }
-  if (e.golden) { S.stats.golden = (S.stats.golden || 0) + 1; const b = S.best[e.type]; if (b) b.g = (b.g || 0) + 1; for (let i = 0; i < 2; i++) dropItem(genItem(G.pw + 2, { minR: 2, bonus: .5 }), e.x, e.y); dropGem(e.x, e.y); toast('✨ You slew a Golden monster!', '#ffd54a'); sfx('legend'); }
+  if (e.golden) { S.stats.golden = (S.stats.golden || 0) + 1; const b = S.best[e.type]; if (b) b.g = (b.g || 0) + 1; for (let i = 0; i < 2; i++) dropItem(genItem(G.pw + 2, { minR: 2, bonus: .5 }), e.x, e.y); dropGem(e.x, e.y); toast(ico('sparkle') + ' You slew a Golden monster!', '#ffd54a'); sfx('legend'); }
   if (e.champ) { S.stats.champs = (S.stats.champs || 0) + 1; dropItem(genItem(G.pw + 2, { minR: 2, bonus: .3 }), e.x, e.y); dropGem(e.x, e.y); banner('Champion Slain!', e.d.n, '#ffb07a'); }
-  if (e.wanted) for (const q of S.quests) if (q.t === 'wanted' && q.name === e.d.n && q.have < q.need) { q.have = q.need; toast(`📜 Bounty complete: ${q.txt}`, '#ffd27a'); }
+  if (e.wanted) for (const q of S.quests) if (q.t === 'wanted' && q.name === e.d.n && q.have < q.need) { q.have = q.need; toast(`${ico('scroll')} Bounty complete: ${q.txt}`, '#ffd27a'); }
   if (e.elite && Math.random() < .025) G.pick.push({ k: 'tmap', v: 1, x: e.x, y: e.y, vx: rnd(-80, 80), vy: rnd(-80, 80), t: 0, z: .4, vz: 3 });
 };
 const _gxM = gainXP; gainXP = function (x) { _gxM(G.mod === 'haunted' ? x * 1.4 : x); };
@@ -106,7 +106,7 @@ const _udpM = updPick;
 updPick = function (dt) {
   for (const p of G.pick) {
     if (p.dead || p.t < .35 || dist(p, P) > P.r + 14) continue;
-    if (p.k === 'tmap') { p.dead = true; S.tmaps = (S.tmaps || 0) + 1; feed('🗺 <span style="color:#e0c080">Treasure Map found!</span> <span class="dim">It will reveal a dig spot on a later floor</span>', '#e0c080'); sfx('shrine'); }
+    if (p.k === 'tmap') { p.dead = true; S.tmaps = (S.tmaps || 0) + 1; feed(ico('map') + ' <span style="color:#e0c080">Treasure Map found!</span> <span class="dim">It will reveal a dig spot on a later floor</span>', '#e0c080'); sfx('shrine'); }
     if (p.k === 'ore' && G.mod === 'bounty' && !p.dbl) { p.dbl = 1; p.v *= 2; }
   }
   _udpM(dt);
@@ -137,7 +137,7 @@ update = function (dt) {
     if (e.elite === 'Arcane') { e.arcT = (e.arcT ?? rnd(1, 3)) - dt; if (e.arcT <= 0) { e.arcT = 3.5; ringShot(e, 8, rnd(0, 1), 190); } }
     if (e.elite === 'Blinking') { e.blT = (e.blT ?? rnd(2, 5)) - dt; if (e.blT <= 0 && dist(e, P) < 650) { e.blT = 5; burst(e.x, e.y, '#80ffe0', 14, 150, .5, 3); const p = randFloorNear(P.x, P.y, 120, 220, Math.min(e.r, 20)); e.x = p.x; e.y = p.y; burst(e.x, e.y, '#80ffe0', 14, 150, .5, 3); } }
   }
-  const f = G.font; if (f && !f.used && dist(P, f) < 36) { f.used = true; P.hp = ST.maxHp; P.mp = ST.maxMp; S.pots = Math.min(S.potMax, S.pots + 1); burst(f.x, f.y, '#7affff', 40, 220, 1, 3, .6); ringFx(f.x, f.y, 90, '#7affff', .6); sfx('potion'); toast('💧 Ember Font: life and mana restored, +1 potion', '#7affff'); }
+  const f = G.font; if (f && !f.used && dist(P, f) < 36) { f.used = true; P.hp = ST.maxHp; P.mp = ST.maxMp; S.pots = Math.min(S.potMax, S.pots + 1); burst(f.x, f.y, '#7affff', 40, 220, 1, 3, .6); ringFx(f.x, f.y, 90, '#7affff', .6); sfx('potion'); toast(ico('mana') + ' Ember Font: life and mana restored, +1 potion', '#7affff'); }
   const a = G.altar; if (a && !a.used) { const d = dist(P, a); if (d < 42 && !a.near) { a.near = true; openMenu('altar'); } else if (d > 80) a.near = false; }
   const g = G.dig; if (g && !g.used && dist(P, g) < 36) { g.used = true; S.tmaps = Math.max(0, (S.tmaps || 0) - 1); S.stats.digs = (S.stats.digs || 0) + 1; sfx('legend'); shake(8); banner('Buried Treasure!', 'X marks the spot', '#e0c080'); for (let i = 0; i < 16; i++) coin(g.x, g.y, Math.pow(1.12, G.pw) * rnd(3, 6) * (1 + goldEff() / 100)); for (let i = 0; i < 2; i++) dropItem(genItem(G.pw + 2, { minR: 3, bonus: .5 }), g.x, g.y); dropGem(g.x, g.y); dropGem(g.x, g.y); if (Math.random() < .12) drop('frag', 1, g.x, g.y); }
 };
@@ -191,7 +191,7 @@ drawOverlay = function () {
   _doM(); if (!R3 || !P || G.mode === 'title' || !M) return;
   if (G.hideHud) { X.setTransform(DPR, 0, 0, DPR, 0, 0); X.clearRect(0, 0, VW, VH); return; }
   const label = (o, z, t, col) => { if (!o || o.used || dist(o, P) > 380) return; const s = proj(o.x, o.y, z); if (!s.vis) return; X.font = 'bold 12px "Trebuchet MS",sans-serif'; X.textAlign = 'center'; X.lineWidth = 3; X.strokeStyle = 'rgba(0,0,0,.85)'; X.strokeText(t, s.x, s.y); X.fillStyle = col; X.fillText(t, s.x, s.y); };
-  label(G.font, 1.3, '💧 Ember Font — restores you', '#7affff'); label(G.altar, 1.3, '◆ Altar of Exchange', '#d090ff'); label(G.dig, .6, '✕ Dig here!', '#ffd27a');
+  label(G.font, 1.3, 'Ember Font — restores you', '#7affff'); label(G.altar, 1.3, '◆ Altar of Exchange', '#d090ff'); label(G.dig, .6, '✕ Dig here!', '#ffd27a');
 };
 const _uhM = updateHUD; updateHUD = function (dt) { _uhM(dt); const h = $('hud'); if (h && G.hideHud && G.mode === 'play') h.style.display = 'none'; };
 
@@ -203,10 +203,10 @@ function claimGift() {
   if (k === 'gold') S.gold += Math.round(300 * Math.pow(1.12, pw)); if (k === 'gems') for (let j = 0; j < 2; j++) addGem(pick2(Object.keys(GEMS)), gemTier());
   if (k === 'marks') S.marks += 15; if (k === 'ore') S.ore += 6; if (k === 'shards') S.shards += 25; if (k === 'frag') S.frag += 2;
   if (k === 'big') { S.marks += 40; const it = genItem(maxPw() + 1, { r: 4 }); if (S.inv.length < S.invMax) { it.isNew = true; S.inv.push(it); noteFound(it); } else S.stash.push(it); }
-  S.gift.n++; S.gift.day = dayId(); S.stats.gifts = (S.stats.gifts || 0) + 1; sfx('legend'); toast(`🎁 Daily gift: ${lbl}!`, '#ffd27a'); saveGame(); renderMenu();
+  S.gift.n++; S.gift.day = dayId(); S.stats.gifts = (S.stats.gifts || 0) + 1; sfx('legend'); toast(`${ico('gift')} Daily gift: ${lbl}!`, '#ffd27a'); saveGame(); renderMenu();
 }
 MENUS.gift = () => { const n = (S.gift ? S.gift.n : 0) % 7, av = giftAvail();
-  return `<div class="title" style="min-width:640px"><h2>🎁 Daily Ember Gift</h2><div class="dim">Every day you play, claim a gift. The seventh gift in each cycle is a big one! (Missing days never resets your progress.)</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:12px 0">${GIFTS.map((g, i) => `<div class="card ${i < n ? 'done' : ''}" style="text-align:center;padding:8px;${i === n && av ? 'border-color:#ffd27a;box-shadow:0 0 12px #ffb04a' : ''}"><div class="dim">Day ${i + 1}</div><div style="font-size:13px;margin-top:4px">${(g[1] === 'gold' ? `● ${fmt(Math.round(300 * Math.pow(1.12, Math.min(maxPw(), 120))))} Gold` : g[0])}</div>${i < n ? '<div class="up">✔</div>' : ''}</div>`).join('')}</div>
+  return `<div class="title" style="min-width:640px"><h2>${ico('gift')} Daily Ember Gift</h2><div class="dim">Every day you play, claim a gift. The seventh gift in each cycle is a big one! (Missing days never resets your progress.)</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:12px 0">${GIFTS.map((g, i) => `<div class="card ${i < n ? 'done' : ''}" style="text-align:center;padding:8px;${i === n && av ? 'border-color:#ffd27a;box-shadow:0 0 12px #ffb04a' : ''}"><div class="dim">Day ${i + 1}</div><div style="font-size:13px;margin-top:4px">${(g[1] === 'gold' ? `● ${fmt(Math.round(300 * Math.pow(1.12, Math.min(maxPw(), 120))))} Gold` : g[0])}</div>${i < n ? `<div class="up">${ico('check')}</div>` : ''}</div>`).join('')}</div>
   ${av ? `<div class="btn bigb" onclick="claimGift()">Claim today's gift</div>` : `<div class="dim">Come back tomorrow for the next gift (in ${untilStr(nextDay())}).</div>`}<span class="btn" onclick="backHub()">Back</span></div>`; };
 function backHub() { if (G.mode === 'play') openMenu('pause'); else closeMenu(); }
 MENUS.altar = () => { const a = G.altar; if (!a) return '';
@@ -218,27 +218,27 @@ function offerAltar(id) {
   burst(a.x, a.y, '#c070ff', 30, 200, .8, 3, 1); closeMenu();
 }
 MENUS.stats = () => { const st = S.stats, fr = st.foundR || [];
-  const rows = [['⏱ Playtime', fmtTime(st.time)], ['⚔ Foes slain', fmt(st.kills)], ['👑 Elites / Champions', `${fmt(st.elites)} / ${fmt(st.champs || 0)}`], ['💀 Guardians slain', st.bosses], ['✨ Golden monsters', st.golden || 0], ['💥 Total damage dealt', fmt(st.dmg || 0)], ['🎯 Highest single hit', fmt(st.maxHit || 0)], ['🔥 Best combo', st.maxCombo], ['💨 Dodges / Perfect', `${fmt(st.dodges || 0)} / ${fmt(st.pd)}`], ['✨ Skills cast', fmt(st.casts || 0)], ['🧪 Potions drunk', fmt(st.potions || 0)], ['👣 Distance walked', fmt(st.dist || 0) + ' tiles'], ['● Gold earned in the wilds', fmt(st.goldEarned || 0)], ['🗺 Floors descended', fmt(st.floors)], ['⚡ Trials / Cursed Chests', `${st.trials} / ${st.cursed}`], ['⛏ Treasures dug / Altars', `${st.digs || 0} / ${st.altars || 0}`], ['☠ Deaths', st.deaths]];
-  return tabs('stats') + `<h2>📊 Statistics</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;min-width:640px">${rows.map(r => `<div class="smrow"><div class="nm">${r[0]}</div><b style="color:#ffe2a8">${r[1]}</b></div>`).join('')}</div>
+  const rows = [[ico('timer') + ' Playtime', fmtTime(st.time)], [ico('swords') + ' Foes slain', fmt(st.kills)], [ico('crown') + ' Elites / Champions', `${fmt(st.elites)} / ${fmt(st.champs || 0)}`], [ico('boss') + ' Guardians slain', st.bosses], [ico('sparkle') + ' Golden monsters', st.golden || 0], [ico('explosion') + ' Total damage dealt', fmt(st.dmg || 0)], [ico('target') + ' Highest single hit', fmt(st.maxHit || 0)], [ico('fire') + ' Best combo', st.maxCombo], [ico('dash') + ' Dodges / Perfect', `${fmt(st.dodges || 0)} / ${fmt(st.pd)}`], [ico('spellbook') + ' Skills cast', fmt(st.casts || 0)], [ico('potion') + ' Potions drunk', fmt(st.potions || 0)], [ico('steps') + ' Distance walked', fmt(st.dist || 0) + ' tiles'], [ico('gold') + ' Gold earned in the wilds', fmt(st.goldEarned || 0)], [ico('map') + ' Floors descended', fmt(st.floors)], [ico('bolt') + ' Trials / Cursed Chests', `${st.trials} / ${st.cursed}`], [ico('pickaxe') + ' Treasures dug / Altars', `${st.digs || 0} / ${st.altars || 0}`], [ico('skull') + ' Deaths', st.deaths]];
+  return tabs('stats') + `<h2>${ico('chart')} Statistics</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;min-width:640px">${rows.map(r => `<div class="smrow"><div class="nm">${r[0]}</div><b style="color:#ffe2a8">${r[1]}</b></div>`).join('')}</div>
   <h3>Items found by rarity</h3><div class="row">${RAR.map((r, i) => `<div class="card" style="text-align:center;min-width:80px"><b style="color:${r.c}">${fmt(fr[i] || 0)}</b><div class="dim">${r.n}</div></div>`).join('')}</div>`; };
 function havenCost(l) { return Math.round(HAVEN_COST[l] * Math.pow(1.07, Math.min(maxPw(), 110))); }
-function buildHaven(k) { const l = havenL(k); if (l >= 3) return; const c = havenCost(l); if (S.gold < c) { toast('Not enough gold'); sfx('error'); return; } S.gold -= c; S.haven = S.haven || {}; S.haven[k] = l + 1; calcStats(); sfx('legend'); toast(`🏗 ${HAVEN_B[k].n} restored to level ${l + 1}!`, '#ffd27a'); saveGame(); if (G.inTown) buildLevel(); renderMenu(); }
-MENUS.haven = () => { let h = `<h2>🏗 Restore Haven</h2><div class="dim">Pour your gold back into the last village. Every restored building gives a permanent bonus — and you'll see Haven come back to life with new banners around the fountain.</div>`;
+function buildHaven(k) { const l = havenL(k); if (l >= 3) return; const c = havenCost(l); if (S.gold < c) { toast('Not enough gold'); sfx('error'); return; } S.gold -= c; S.haven = S.haven || {}; S.haven[k] = l + 1; calcStats(); sfx('legend'); toast(`${ico('restore')} ${HAVEN_B[k].n} restored to level ${l + 1}!`, '#ffd27a'); saveGame(); if (G.inTown) buildLevel(); renderMenu(); }
+MENUS.haven = () => { let h = `<h2>${ico('restore')} Restore Haven</h2><div class="dim">Pour your gold back into the last village. Every restored building gives a permanent bonus — and you'll see Haven come back to life with new banners around the fountain.</div>`;
   for (const k in HAVEN_B) { const B = HAVEN_B[k], l = havenL(k); h += `<div class="smrow" style="padding:6px 0"><div style="font-size:28px;width:40px">${B.ic}</div><div class="nm"><b>${B.n}</b> <span class="dim">Level ${l}/3</span><br>${l ? `<span class="up">${B.d(l)}</span>` : '<span class="dim">Ruined</span>'}${l < 3 ? ` <span class="dim">→ next: ${B.d(l + 1)}</span>` : ''}</div>${l < 3 ? `<span class="btn ${S.gold < havenCost(l) ? 'dis' : ''}" onclick="buildHaven('${k}')">Restore: ${fmt(havenCost(l))}g</span>` : '<span class="up">★ Fully restored</span>'}</div>`; }
   return h + `<br><span class="btn" onclick="backHub()">Back</span>`; };
 // hub, tabs, sage & wardrobe/bestiary additions
-TAB_GROUPS[1][1].push('stats'); TAB_NAMES.stats = ['📊 Stats', ''];
-HUB.push(['stats', '📊', 'Statistics', 'Your records', ''], ['haven', '🏗', 'Restore Haven', 'Permanent town bonuses', ''], ['gift', '🎁', 'Daily Gift', 'A present every day', '']);
+TAB_GROUPS[1][1].push('stats'); TAB_NAMES.stats = [ico('chart') + ' Stats', ''];
+HUB.push(['stats', ico('chart'), 'Statistics', 'Your records', ''], ['haven', ico('restore'), 'Restore Haven', 'Permanent town bonuses', ''], ['gift', ico('gift'), 'Daily Gift', 'A present every day', '']);
 { const _hubM = MENUS.pause; MENUS.pause = () => _hubM().replace('<b>Daily Gift</b>', `<b>Daily Gift</b>${giftAvail() ? '<i>!</i>' : ''}`); }
-{ const _sgM = MENUS.sage; MENUS.sage = () => _sgM().replace('<div class="btn" onclick="talkNPC(\'sage\')">', `<div class="btn" onclick="openMenu('haven')">🏗 Restore Haven</div><div class="btn" onclick="talkNPC('sage')">`); }
+{ const _sgM = MENUS.sage; MENUS.sage = () => _sgM().replace('<div class="btn" onclick="talkNPC(\'sage\')">', `<div class="btn" onclick="openMenu('haven')">${ico('restore')} Restore Haven</div><div class="btn" onclick="talkNPC('sage')">`); }
 { const _wdM = MENUS.wardrobe; MENUS.wardrobe = () => _wdM().replace(/<div style="font-size:12px" class="up">([^<]*)<\/div>/g, (m, b) => { const k = Object.keys(PETS).find(x => PETS[x].b === b); return k ? `<div style="font-size:12px" class="up">${b} <span class="dim">• Lv ${petLvl(k)}/10</span></div>` : m; }); }
-{ const _bcM = beastCard; beastCard = function (t, isBoss) { const h = _bcM(t, isBoss); const g = S.best[t] && S.best[t].g; return g ? h.replace('Slain: <b>', `<span style="color:#ffd54a">✨ ${g} golden</span> • Slain: <b>`) : h; }; }
+{ const _bcM = beastCard; beastCard = function (t, isBoss) { const h = _bcM(t, isBoss); const g = S.best[t] && S.best[t].g; return g ? h.replace('Slain: <b>', `<span style="color:#ffd54a">${ico('sparkle')} ${g} golden</span> • Slain: <b>`) : h; }; }
 // settings
 { const _stM = MENUS.settings; MENUS.settings = () => { const o = S ? S.opts : {}; return _stM().replace('<div class="btn bigb" onclick="backMenu()">Back</div>', `<div class="card">Interface size ${[[.9, 'Small'], [1, 'Normal'], [1.15, 'Large']].map(([v, n]) => `<span class="btn ${(o.ui || 1) === v ? 'on' : ''}" onclick="setOpt('ui',${v})">${n}</span>`).join('')}</div>
   <div class="card">High-contrast attack warnings <span class="btn ${o.hc ? 'on' : ''}" onclick="setOpt('hc',${!o.hc})">${o.hc ? 'On' : 'Off'}</span> &nbsp; Weather <span class="btn ${o.weather !== false ? 'on' : ''}" onclick="setOpt('weather',${o.weather === false})">${o.weather !== false ? 'On' : 'Off'}</span></div><div class="btn bigb" onclick="backMenu()">Back</div>`); }; }
 function applyUI() { document.documentElement.style.setProperty('--ui', S && S.opts.ui ? S.opts.ui : 1); }
 const _soM = setOpt; setOpt = function (k, v) { _soM(k, v); applyUI(); };
-const _cgM = continueGame; continueGame = function () { _cgM(); applyUI(); if (S && giftAvail()) setTimeout(() => toast('🎁 Your Daily Ember Gift is ready — open the ☰ Menu!', '#ffd27a'), 4000); };
+const _cgM = continueGame; continueGame = function () { _cgM(); applyUI(); if (S && giftAvail()) setTimeout(() => toast(ico('gift') + ' Your Daily Ember Gift is ready — open the ☰ Menu!', '#ffd27a'), 4000); };
 // wiki & achievements
 WIKI_TXT.world.push(
   ['Champions', 'Floor 4 of every region hides a named champion — a powerful elite worth great loot. Wanted posters on the Bounty Board send you after specific champions for extra rewards and Ember Marks.'],
@@ -267,7 +267,7 @@ ACH.push(
 );
 // ---------- credit ----------
 const CREDIT = document.createElement('div');
-CREDIT.textContent = 'Made by GrimL0ck & neonxsl';
+CREDIT.innerHTML = 'Made by GrimL0ck &amp; neonxsl<br><span style="font-size:9px">Icons based on game-icons.net (Lorc, Delapouite &amp; contributors, CC BY 3.0)</span>'; CREDIT.style.textAlign = 'right';
 CREDIT.style.cssText = 'position:fixed;right:12px;bottom:8px;z-index:11;font:italic 11px Trebuchet MS,Segoe UI,sans-serif;color:rgba(232,220,192,.45);font-variant-numeric:lining-nums;text-shadow:0 1px 2px #000;pointer-events:none;letter-spacing:.5px;transition:opacity .4s';
 document.body.appendChild(CREDIT);
 setInterval(() => { CREDIT.style.opacity = (G.mode === 'title' || (G.inTown && G.mode === 'play' && !G.hideHud)) ? 1 : 0; }, 250);

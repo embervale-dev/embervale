@@ -16,8 +16,8 @@ function initHUD() {
     <div class="globe hp"><div class="liq"></div><div class="shine"></div><div class="gt"></div></div>
     <div class="hcenter">
       <div id="h-slots">${slots}
-        <div class="slot surge" id="slv"><div class="ic">🔥</div><div class="cd"></div><div class="cdt"></div><div class="key">V</div></div>
-        <div class="slot" id="slp"><div class="ic">🧪</div><div class="cdt"></div><div class="key">1</div></div>
+        <div class="slot surge" id="slv"><div class="ic">${ico('fire')}</div><div class="cd"></div><div class="cdt"></div><div class="key">V</div></div>
+        <div class="slot" id="slp"><div class="ic">${ico('potion')}</div><div class="cdt"></div><div class="key">1</div></div>
         <div class="slot wep" id="slw"><div class="ic"></div><div class="ic2"></div><div class="key">Tab</div></div>
       </div>
       <div id="h-xp"><div class="lvb"></div><div class="trk"><div class="fill"></div><div class="ticks"></div><span class="xpt"></span></div></div>
@@ -26,7 +26,7 @@ function initHUD() {
   </div>
   <div id="lootfeed"></div>
   <div id="h-banner"><div class="a"></div><div class="b"></div></div>
-  <div id="h-menu">${[['inv', '🎒', 'Inventory', 'I'], ['skills', '✨', 'Skills & Constellation', 'K'], ['map', '🗺️', 'Map', 'M'], ['season', '🏅', 'Season Journey', 'Y'], ['pause', '☰', 'Menu — everything else', 'Esc']].map(b => `<div class="mb" onclick="hudBtn('${b[0]}')" title="${b[2]} [${b[3]}]">${b[1]}<span>${b[3]}</span>${b[0] === 'skills' ? '<i id="mb-sp"></i><i id="mb-para" class="l"></i>' : b[0] === 'pause' ? '<i id="mb-q"></i>' : b[0] === 'season' ? '<i id="mb-sj"></i>' : ''}</div>`).join('')}</div>
+  <div id="h-menu">${[['inv', ico('bag'), 'Inventory', 'I'], ['skills', ico('sparkle'), 'Skills & Constellation', 'K'], ['map', ico('map'), 'Map', 'M'], ['season', ico('medal'), 'Season Journey', 'Y'], ['pause', '☰', 'Menu — everything else', 'Esc']].map(b => `<div class="mb" onclick="hudBtn('${b[0]}')" title="${b[2]} [${b[3]}]">${b[1]}<span>${b[3]}</span>${b[0] === 'skills' ? '<i id="mb-sp"></i><i id="mb-para" class="l"></i>' : b[0] === 'pause' ? '<i id="mb-q"></i>' : b[0] === 'season' ? '<i id="mb-sj"></i>' : ''}</div>`).join('')}</div>
   <div id="h-target"><div class="tn"></div><div class="tbar"><div></div></div><div class="ti"></div></div>
   <div id="hintbox"></div><div id="h-vig"></div><div id="h-hurt"></div>`;
   for (const id of ['h-target', 'mb-sp', 'mb-q', 'h-reg', 'h-sub', 'h-obj', 'h-mod', 'h-res', 'h-buffs', 'h-q', 'h-boss', 'h-combo', 'h-xp', 'h-banner', 'h-vig', 'h-hurt', 'mini', 'slv', 'slp', 'slw']) H[id] = $(id);
@@ -61,7 +61,7 @@ function updateHUD(dt) {
   setS(H.slv.children[1], 'svc', 'background', `conic-gradient(rgba(255,140,40,.55) ${sp}%, rgba(5,5,12,.7) ${sp}%)`);
   setH(H.slv.children[2], 'svt', sp >= 100 ? '' : sp + '%'); H.slv.classList.toggle('full', sp >= 100);
   setH(H.slp.children[1], 'pt', `${S.pots}/${S.potMax}`); H.slp.classList.toggle('nomp', S.pots <= 0);
-  setH(H.slw.children[0], 'w1', S.eq.weapon ? icon(S.eq.weapon) : '🥊'); setH(H.slw.children[1], 'w2', S.eq.weapon2 ? icon(S.eq.weapon2) : '');
+  setH(H.slw.children[0], 'w1', S.eq.weapon ? icon(S.eq.weapon) : ico('fist')); setH(H.slw.children[1], 'w2', S.eq.weapon2 ? icon(S.eq.weapon2) : '');
   // xp
   const xk = S.lvl >= MAXLVL ? 1 : S.xp / xpNeed(S.lvl);
   const XB = H['h-xp']; setS(XB.querySelector('.fill'), 'xp', 'width', (xk * 100).toFixed(2) + '%');
@@ -99,7 +99,7 @@ function updateHUD(dt) {
       tg.style.display = 'block'; const b = S.best[t.type] || { k: 0 }, hb = hunterBonus(t.type);
       setH(tg.children[0], 'tn', `${t.elite ? `<span style="color:${ELITES[t.elite]}">${eliteName(t)}</span> ` : ''}${t.d.n}`);
       setS(tg.children[1].children[0], 'tb', 'width', (clamp(t.hp / t.maxHp, 0, 1) * 100).toFixed(1) + '%');
-      const st = [t.burn > 0 ? '🔥' : '', t.psn > 0 ? '☠️' : '', t.frz > 0 ? '❄️' : '', t.shk > 0 ? '⚡' : '', t.stun > 0 ? '💫' : ''].join('');
+      const st = [t.burn > 0 ? ico('fire') : '', t.psn > 0 ? ico('poison') : '', t.frz > 0 ? ico('snow') : '', t.shk > 0 ? ico('bolt') : '', t.stun > 0 ? ico('stun') : ''].join('');
       setH(tg.children[2], 'ti', `${fmt(t.hp)} / ${fmt(t.maxHp)} ${st} <span class="dim">• slain ${b.k}${hb ? ` • +${hb * 100}% dmg` : ''}</span>`);
     } else tg.style.display = 'none';
   } else tg.style.display = 'none';
@@ -114,23 +114,23 @@ function updateHUD(dt) {
     setH(H['h-reg'], 'reg', G.inTown ? 'Haven' : R.n);
     setH(H['h-sub'], 'sub', (G.inTown ? 'The last free village' : G.abyss ? `Abyss Depth ${G.depth}` : `Floor ${G.floor + 1} / ${FLOORS}${G.floor === BOSS_F ? ' — Guardian' : ''}`) + ` <span style="color:${DIFFC[S.diff]}">• ${DIFF[S.diff]}</span>`);
     let obj = '';
-    if (G.inTown) obj = '<span class="dim">Visit the 🌀 Waystone to travel</span>';
-    else if (G.boss) obj = '<span style="color:#ff7a6a">⚔ Defeat the guardian</span>';
-    else if (G.exit) obj = '<span style="color:#7ab8ff">🌀 The portal is open</span>';
-    else if (G.stairs) { const need = Math.ceil(G.total * .7); obj = G.stairsOpen ? `<span style="color:#7aff7a">▼ Stairs open</span> <span class="dim">${G.killed}/${G.total} slain</span>` : `<span style="color:#ffb07a">🔒 Slay ${need - G.killed} more to unseal</span><div class="pbar"><div style="width:${G.killed / need * 100}%"></div></div>`; }
+    if (G.inTown) obj = `<span class="dim">Visit the ${ico('portal')} Waystone to travel</span>`;
+    else if (G.boss) obj = `<span style="color:#ff7a6a">${ico('swords')} Defeat the guardian</span>`;
+    else if (G.exit) obj = `<span style="color:#7ab8ff">${ico('portal')} The portal is open</span>`;
+    else if (G.stairs) { const need = Math.ceil(G.total * .7); obj = G.stairsOpen ? `<span style="color:#7aff7a">↓ Stairs open</span> <span class="dim">${G.killed}/${G.total} slain</span>` : `<span style="color:#ffb07a">${ico('lock')} Slay ${need - G.killed} more to unseal</span><div class="pbar"><div style="width:${G.killed / need * 100}%"></div></div>`; }
     setH(H['h-obj'], 'obj', obj);
     setH(H['h-mod'], 'mod', G.mod ? `<span style="color:${modDef().col}">✦ ${modDef().n}</span> <span class="dim">${modDef().d}</span>` : '');
     let dsum = 0; const D = G.dps || []; for (let i = 0; i < D.length; i += 2) if (D[i] > G.t - 5) dsum += D[i + 1];
     setH(H['mb-sp'], 'mbsp', S.sp > 0 ? S.sp : ''); const qd = S.quests.filter(q => q.have >= q.need).length; setH(H['mb-q'], 'mbq', qd ? qd : '');
-    setH(H['h-res'], 'res', (dsum > 0 && !G.inTown ? `<span class="dpsm">⚔ ${fmt(dsum / 5)} DPS</span> ` : '') + `<b>Lv ${S.lvl}</b>${S.para.lvl ? ` <span style="color:#ffd27a">✦${S.para.lvl}</span>` : ''} <span style="color:#ff9a6a">🔶 ${S.marks}</span> <span class="gold">● ${fmt(S.gold)}</span> <span class="ore">◆ ${S.ore}</span> <span class="shard">✦ ${S.shards}</span>${S.sp > 0 ? ` <span class="spn">+${S.sp} skill pt${S.sp > 1 ? 's' : ''} [K]</span>` : ''}`);
-    const BI = { fury: ['🔥', '#ff4a3a'], haste: ['💨', '#4aff8a'], fortune: ['🍀', '#ffd84a'], wisdom: ['📘', '#4ab8ff'], aegis: ['🛡️', '#d0d0ff'], berserk: ['😡', '#ff3a3a'], regen: ['💚', '#7aff9a'], windrun: ['🌪️', '#9affd0'], surge: ['☀️', '#ff9a2a'], echo: ['🔁', '#a0c0ff'], sanguine: ['🩸', '#ff3a5a'], tempest: ['🌩️', '#e0f0ff'], plenty: ['💰', '#ffe080'], warcry: ['📯', '#ffb04a'] };
+    setH(H['h-res'], 'res', (dsum > 0 && !G.inTown ? `<span class="dpsm">${ico('swords')} ${fmt(dsum / 5)} DPS</span> ` : '') + `<b>Lv ${S.lvl}</b>${S.para.lvl ? ` <span style="color:#ffd27a">✦${S.para.lvl}</span>` : ''} <span style="color:#ff9a6a">${ico('marks')} ${S.marks}</span> <span class="gold">● ${fmt(S.gold)}</span> <span class="ore">◆ ${S.ore}</span> <span class="shard">✦ ${S.shards}</span>${S.sp > 0 ? ` <span class="spn">+${S.sp} skill pt${S.sp > 1 ? 's' : ''} [K]</span>` : ''}`);
+    const BI = { fury: [ico('fire'), '#ff4a3a'], haste: [ico('wind'), '#4aff8a'], fortune: [ico('clover'), '#ffd84a'], wisdom: [ico('book'), '#4ab8ff'], aegis: [ico('shield'), '#d0d0ff'], berserk: [ico('sk-berserk'), '#ff3a3a'], regen: [ico('heart'), '#7aff9a'], windrun: [ico('tornado'), '#9affd0'], surge: [ico('sun'), '#ff9a2a'], echo: [ico('loop'), '#a0c0ff'], sanguine: [ico('blood'), '#ff3a5a'], tempest: [ico('storm'), '#e0f0ff'], plenty: [ico('gold'), '#ffe080'], warcry: [ico('sk-warcry'), '#ffb04a'] };
     let bh = ''; for (const k in P.buffs) if (P.buffs[k] > 0 && BI[k]) bh += `<div class="buff" title="${BUFF_D[k] || k}" style="border-color:${BI[k][1]}">${BI[k][0]}<span>${Math.ceil(P.buffs[k])}</span></div>`;
-    if (G.warp > 0) bh += `<div class="buff" title="Time Warp: foes are slowed" style="border-color:#c0a0ff">⌛<span>${Math.ceil(G.warp)}</span></div>`;
-    if (P.nextCrit) bh += `<div class="buff" title="Your next hit is a guaranteed critical" style="border-color:#ffd54a">💥<span>crit</span></div>`;
+    if (G.warp > 0) bh += `<div class="buff" title="Time Warp: foes are slowed" style="border-color:#c0a0ff">${ico('hourglass')}<span>${Math.ceil(G.warp)}</span></div>`;
+    if (P.nextCrit) bh += `<div class="buff" title="Your next hit is a guaranteed critical" style="border-color:#ffd54a">${ico('explosion')}<span>crit</span></div>`;
     setH(H['h-buffs'], 'buffs', bh);
     const qr = S.quests.filter(q => q.have >= q.need).length;
     H['h-q'].style.display = G.tutorial ? 'none' : '';
-    setH(H['h-q'], 'q', `<div class="qh" onclick="S.opts.qtrack=!S.opts.qtrack" style="cursor:pointer;pointer-events:auto">📜 Bounties ${qr ? `<span style="color:#7aff7a">${qr} ready!</span>` : `<span class="dim">${S.quests.length} active</span>`} <span class="dim">${S.opts.qtrack ? '▾' : '▸'}</span></div>` + (S.opts.qtrack ? S.quests.map(q => `<div class="qi ${q.have >= q.need ? 'qd' : ''}">${q.have >= q.need ? '✔' : '•'} ${q.txt} <span>${fmt(q.have)}/${fmt(q.need)}</span></div>`).join('') : ''));
+    setH(H['h-q'], 'q', `<div class="qh" onclick="S.opts.qtrack=!S.opts.qtrack" style="cursor:pointer;pointer-events:auto">${ico('scroll')} Bounties ${qr ? `<span style="color:#7aff7a">${qr} ready!</span>` : `<span class="dim">${S.quests.length} active</span>`} <span class="dim">${S.opts.qtrack ? '↓' : '→'}</span></div>` + (S.opts.qtrack ? S.quests.map(q => `<div class="qi ${q.have >= q.need ? 'qd' : ''}">${q.have >= q.need ? ico('check') : '•'} ${q.txt} <span>${fmt(q.have)}/${fmt(q.need)}</span></div>`).join('') : ''));
   }
   miniT -= dt; if (miniT <= 0) { miniT = .1; drawMini(); }
 }

@@ -3,7 +3,7 @@ let lastT = performance.now(), errShown = false;
 function frame(now) {
   const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
   try { update(dt); render3D(dt); drawOverlay(); updateHUD(dt); }
-  catch (err) { console.error(err); if (!errShown) { errShown = true; toast('⚠ ' + err.message, '#ff6a6a'); } }
+  catch (err) { console.error(err); if (!errShown) { errShown = true; toast(ico('warn') + ' ' + err.message, '#ff6a6a'); } }
   requestAnimationFrame(frame);
 }
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.mode === 'play' && !G.menu && S) openMenu('pause'); });

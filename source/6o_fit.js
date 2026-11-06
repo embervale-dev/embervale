@@ -17,7 +17,7 @@ function fitSections(key) {
   let si = FIT.sec[key] ?? (FIT_DEF[G.menu] === 'last' ? secs.length - 1 : 0); if (si >= secs.length) si = 0;
   secs.forEach((s, i) => s.nodes.forEach(n => { if (n.nodeType === 1) n.style.display = i === si ? '' : 'none'; else if (i !== si) n.textContent = ''; }));
   const bar = document.createElement('div'); bar.className = 'fitbar';
-  bar.innerHTML = secs.map((s, i) => { const t = (s.h.childNodes[0] && s.h.childNodes[0].textContent || s.h.textContent).trim().slice(0, 28); return `<span class="fitt ${i === si ? 'on' : ''}" onclick="FIT.sec['${key}']=${i};FIT.page={};renderMenu()">${t}</span>`; }).join('');
+  bar.innerHTML = secs.map((s, i) => { const c0 = s.h.childNodes[0], ic = c0 && c0.nodeType === 1 && c0.classList.contains('gi') ? c0.outerHTML + ' ' : '', tn = ic ? s.h.childNodes[1] : c0; const t = ic + (tn && tn.textContent || s.h.textContent).trim().slice(0, 28); return `<span class="fitt ${i === si ? 'on' : ''}" onclick="FIT.sec['${key}']=${i};FIT.page={};renderMenu()">${t}</span>`; }).join('');
   best.insertBefore(bar, heads[0]);
   return true;
 }
@@ -34,11 +34,11 @@ function fitPaginate(key) {
   const show = (a, b) => items.forEach((c, i) => c.style.display = i >= a && i < b ? '' : 'none');
   // largest page size that fits
   let lo = 1, hi = items.length; show(0, items.length); if (!fitOver()) { pg.remove(); return false; }
-  pg.innerHTML = '<span class="btn">◀</span><span class="pgn">Page 1 / 9</span><span class="btn">▶</span>';
+  pg.innerHTML = '<span class="btn">←</span><span class="pgn">Page 1 / 9</span><span class="btn">→</span>';
   while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); show(0, mid); if (fitOver()) hi = mid - 1; else lo = mid; }
   const per = Math.max(1, lo), pages = Math.ceil(items.length / per); let p = FIT.page[key] || 0; if (p >= pages) p = pages - 1;
   show(p * per, p * per + per); if (pages <= 1) { pg.remove(); return true; }
-  pg.innerHTML = `<span class="btn ${p ? '' : 'dis'}" onclick="FIT.page['${key}']=${p - 1};renderMenu()">◀ Prev</span><span class="pgn">Page <b>${p + 1}</b> / ${pages} <span class="dim">(${items.length} entries)</span></span><span class="btn ${p < pages - 1 ? '' : 'dis'}" onclick="FIT.page['${key}']=${p + 1};renderMenu()">Next ▶</span>`;
+  pg.innerHTML = `<span class="btn ${p ? '' : 'dis'}" onclick="FIT.page['${key}']=${p - 1};renderMenu()">← Prev</span><span class="pgn">Page <b>${p + 1}</b> / ${pages} <span class="dim">(${items.length} entries)</span></span><span class="btn ${p < pages - 1 ? '' : 'dis'}" onclick="FIT.page['${key}']=${p + 1};renderMenu()">Next →</span>`;
   return true;
 }
 function fitMenu() {
@@ -55,5 +55,5 @@ function fitMenu() {
 { const _rmF = renderMenu; renderMenu = function () { _rmF(); try { fitMenu(); } catch (e) { console.warn('fit', e); } }; }
 { const _wrF = wikiRender; wikiRender = function () { _wrF(); try { if (G.menu === 'wiki' && !FIT.inWiki) { FIT.inWiki = 1; fitPaginate('wiki:' + (WIKI_Q ? 'q' : WIKI_TAB)); FIT.inWiki = 0; } } catch (e) { FIT.inWiki = 0; } }; }
 { const _omF = openMenu; openMenu = function (n) { if (n !== G.menu) FIT.page = {}; _omF(n); }; }
-{ const _smF = MENUS.smith; MENUS.smith = () => { const h = _smF(); const i = h.indexOf('<div class="smrow"'); return i < 0 ? h : h.slice(0, i) + '<h3>⚒ Upgrade & Reforge</h3>' + h.slice(i); }; }
+{ const _smF = MENUS.smith; MENUS.smith = () => { const h = _smF(); const i = h.indexOf('<div class="smrow"'); return i < 0 ? h : h.slice(0, i) + '<h3>' + ico('anvil') + ' Upgrade & Reforge</h3>' + h.slice(i); }; }
 { const _stF = MENUS.settings; MENUS.settings = () => { const h = _stF(); const a = h.indexOf('<div class="card"'), backTag = '<div class="btn bigb" onclick="backMenu()">Back</div>', b = h.lastIndexOf(backTag); if (a < 0 || b < a) return h; return h.slice(0, a) + '<div class="setgrid">' + h.slice(a, b) + '</div>' + h.slice(b); }; }

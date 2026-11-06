@@ -25,10 +25,10 @@ rollRarity = function (minR = 0, bonus = 0) {
 { const _ueK = updEnemy; updEnemy = function (e, edt, dt) { if (e.elite === 'Enraged' && !e.rage && e.hp < e.maxHp * .5 && !e.dead) { e.rage = 1; e.spd *= 1.45; e.dmg *= 1.4; dmgText(e.x, e.y - e.r - 10, 'ENRAGED!', '#ff2a2a', true, 3); ringFx(e.x, e.y, 70, '#ff2a2a', .4); sfx('boss'); } _ueK(e, edt, dt); }; }
 { const _kK = killEnemy; killEnemy = function (e) { if (e.dead) return; const split = e.elite === 'Splitting' && !e.splitChild; _kK(e);
   if (split) for (let i = 0; i < 2; i++) { const a = i * Math.PI + rnd(-.5, .5); const c = mkEnemy(e.type, e.x + Math.cos(a) * 20, e.y + Math.sin(a) * 20, { minion: true, awake: true }); if (c) { c.hp = c.maxHp = e.maxHp * .3; c.splitChild = 1; c.r *= .85; c.awake = true; } }
-  if (e.champ && Math.random() < .04) { S.hearts = (S.hearts || 0) + 1; toast('❤️‍🔥 An Ember Heart!', '#ff6a4a'); } }; }
+  if (e.champ && Math.random() < .04) { S.hearts = (S.hearts || 0) + 1; toast(ico('ember-heart') + ' An Ember Heart!', '#ff6a4a'); } }; }
 // ---------- Ember Hearts from guardians ----------
 { const _bdK = bossDefeated; bossDefeated = function (e) { _bdK(e); const first = !S.heartOnce || !S.heartOnce[G.region + '_' + S.diff];
-  if (!G.trial && (first || Math.random() < .2)) { S.heartOnce = S.heartOnce || {}; S.heartOnce[G.region + '_' + S.diff] = 1; S.hearts = (S.hearts || 0) + 1; G.later.push({ t: 1.8, fn: () => toast('❤️‍🔥 The guardian left an <b>Ember Heart</b> — used to Ascend items at the forge', '#ff6a4a') }); } }; }
+  if (!G.trial && (first || Math.random() < .2)) { S.heartOnce = S.heartOnce || {}; S.heartOnce[G.region + '_' + S.diff] = 1; S.hearts = (S.hearts || 0) + 1; G.later.push({ t: 1.8, fn: () => toast(ico('ember-heart') + ' The guardian left an <b>Ember Heart</b> — used to Ascend items at the forge', '#ff6a4a') }); } }; }
 // ---------- Ascension at the forge ----------
 function ascCost(it) { const c = ASCEND[it.r]; return c ? { ore: c.ore, ess: c.ess, heart: c.heart, g: Math.round(c.g * 80 * Math.pow(1.12, Math.min(maxPw(), 120))) } : null; }
 function doAscend(id) {
@@ -40,8 +40,8 @@ function doAscend(id) {
   banner('Item Ascended!', `${it.name} is now ${RAR[it.r].n}`, RAR[it.r].c); sfx('legend'); burst(P.x, P.y, RAR[it.r].c, 40, 240, .9, 4, 1); saveGame(); renderMenu();
 }
 { const _smK = MENUS.smith; MENUS.smith = () => { const items = SLOTS.map(sl => S.eq[sl]).filter(it => it && !it.art && it.r >= 1 && it.r <= 3);
-  let h = _smK() + `<h3>⬆ Ascension <span class="dim">❤️‍🔥 ${S.hearts || 0} Ember Hearts • 🜃 ${S.ess || 0} essence • ◆ ${S.ore} ore</span></h3><div class="dim">Raise an equipped item one rarity (Uncommon → Rare → Epic → Legendary). It keeps its bonuses and gains a new one; reaching Legendary grants a random legendary power. Ascending to Legendary needs an <b>Ember Heart</b> — guardians drop one the first time you beat them on each difficulty, and sometimes after that. Rarities beyond Legendary can only be found.</div>`;
-  h += items.length ? items.map(it => { const c = ascCost(it); return `<div class="smrow"><div style="flex:1"><span style="color:${RAR[it.r].c}">${it.name}</span> <span class="dim">→</span> <span style="color:${RAR[it.r + 1].c}">${RAR[it.r + 1].n}</span></div><span class="btn" onclick="doAscend(${it.id})">Ascend: ${c.ore}◆${c.ess ? ` + ${c.ess}🜃` : ''}${c.heart ? ` + ${c.heart}❤️‍🔥` : ''} + ${fmt(c.g)}g</span></div>`; }).join('') : '<div class="dim">Equip an Uncommon, Rare or Epic item to ascend it.</div>';
+  let h = _smK() + `<h3>${ico('up')} Ascension <span class="dim">${ico('ember-heart')} ${S.hearts || 0} Ember Hearts • ${ico('essence')} ${S.ess || 0} essence • ◆ ${S.ore} ore</span></h3><div class="dim">Raise an equipped item one rarity (Uncommon → Rare → Epic → Legendary). It keeps its bonuses and gains a new one; reaching Legendary grants a random legendary power. Ascending to Legendary needs an <b>Ember Heart</b> — guardians drop one the first time you beat them on each difficulty, and sometimes after that. Rarities beyond Legendary can only be found.</div>`;
+  h += items.length ? items.map(it => { const c = ascCost(it); return `<div class="smrow"><div style="flex:1"><span style="color:${RAR[it.r].c}">${it.name}</span> <span class="dim">→</span> <span style="color:${RAR[it.r + 1].c}">${RAR[it.r + 1].n}</span></div><span class="btn" onclick="doAscend(${it.id})">Ascend: ${c.ore}◆${c.ess ? ` + ${c.ess}${ico('essence')}` : ''}${c.heart ? ` + ${c.heart}${ico('ember-heart')}` : ''} + ${fmt(c.g)}g</span></div>`; }).join('') : '<div class="dim">Equip an Uncommon, Rare or Epic item to ascend it.</div>';
   return h; }; }
 // ---------- feats & wiki ----------
 ACH.push(

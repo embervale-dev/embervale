@@ -41,9 +41,9 @@ const WART = {
 };
 // elemental infusions (Brann's forge) — tint the weapon and add an elemental proc to its attacks
 const INFUSE = {
-  fire:  { n: 'Emberforged', ic: '🔥', col: '#ff7a2a', d: '20% chance on hit to set foes ablaze' },
-  frost: { n: 'Rimeforged', ic: '❄️', col: '#8ae0ff', d: '20% chance on hit to chill foes (frozen briefly)' },
-  storm: { n: 'Stormforged', ic: '⚡', col: '#e8e070', d: '20% chance on hit to shock foes (+20% damage taken)' },
-  venom: { n: 'Venomforged', ic: '☠️', col: '#8aff5a', d: '20% chance on hit to poison foes' },
-  holy:  { n: 'Dawnforged', ic: '✨', col: '#fff0b0', d: '20% chance on hit to heal 0.5% of your life' },
+  fire:  { n: 'Emberforged', ic: ico('fire'), col: '#ff7a2a', d: '20% chance on hit to set foes ablaze' },
+  frost: { n: 'Rimeforged', ic: ico('snow'), col: '#8ae0ff', d: '20% chance on hit to chill foes (frozen briefly)' },
+  storm: { n: 'Stormforged', ic: ico('bolt'), col: '#e8e070', d: '20% chance on hit to shock foes (+20% damage taken)' },
+  venom: { n: 'Venomforged', ic: ico('poison'), col: '#8aff5a', d: '20% chance on hit to poison foes' },
+  holy:  { n: 'Dawnforged', ic: ico('sparkle'), col: '#fff0b0', d: '20% chance on hit to heal 0.5% of your life' },
 };

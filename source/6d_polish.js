@@ -55,7 +55,7 @@ const FADE = document.createElement('div'); FADE.style.cssText = 'position:fixed
 function fadeIn() { FADE.style.transition = 'none'; FADE.style.opacity = 1; void FADE.offsetWidth; FADE.style.transition = 'opacity .8s ease-out'; FADE.style.opacity = 0; }
 
 // ---------- expedition report & death recap ----------
-const DEATH_TIPS = ['Red circles and lines show where attacks will land — step out or dodge through them.', 'Roll through an attack at the last moment for a Perfect Dodge: time slows and your next hit crits.', 'Upgrade your gear at Brann the Blacksmith with Ember Ore.', 'Use ⚡ Auto-equip in your Inventory to wear your strongest gear.', 'Kill summoners and archers first — they make fights much harder.', 'Spend skill points (K) and Constellation stars (P) for big power boosts.', 'Potion Belt and Potion Potency upgrades at Orla make you far sturdier.', 'Turn on 🌿 Relaxed mode in Settings for a calmer adventure.', 'Replay earlier floors to level up before tough guardians.', 'Socket gems into Rare+ gear at Jeweler Sefa for extra stats.'];
+const DEATH_TIPS = ['Red circles and lines show where attacks will land — step out or dodge through them.', 'Roll through an attack at the last moment for a Perfect Dodge: time slows and your next hit crits.', 'Upgrade your gear at Brann the Blacksmith with Ember Ore.', 'Use ' + ico('bolt') + ' Auto-equip in your Inventory to wear your strongest gear.', 'Kill summoners and archers first — they make fights much harder.', 'Spend skill points (K) and Constellation stars (P) for big power boosts.', 'Potion Belt and Potion Potency upgrades at Orla make you far sturdier.', 'Turn on ' + ico('leaf') + ' Relaxed mode in Settings for a calmer adventure.', 'Replay earlier floors to level up before tough guardians.', 'Socket gems into Rare+ gear at Jeweler Sefa for extra stats.'];
 const _enterFloorP = enterFloor;
 enterFloor = function (reg, fl, depth) {
   const fromTown = G.inTown || !G.expd || G.tutorial;
@@ -73,16 +73,16 @@ const _nfP = noteFound; noteFound = function (it) { if (G.expd && !G.inTown && (
 MENUS.report = () => {
   const r = G.report; if (!r) return '';
   const row = (ic, n, v) => `<div class="card" style="text-align:center;padding:8px"><div style="font-size:24px">${ic}</div><b style="font-size:18px;color:#ffe2a8">${v}</b><div class="dim">${n}</div></div>`;
-  return `<div class="title" style="min-width:560px"><h2>${r.died ? '💀 Expedition Ended' : '🏕 Expedition Report'}</h2>
+  return `<div class="title" style="min-width:560px"><h2>${r.died ? ico('skull') + ' Expedition Ended' : ico('tent') + ' Expedition Report'}</h2>
   ${r.died ? `<div class="dim" style="margin-bottom:6px">You were slain${r.killer ? ` by <b style="color:#ff8a6a">${r.killer}</b>` : ''}. Your gear and progress are safe.</div>` : '<div class="dim" style="margin-bottom:6px">Welcome back to Haven. Your life and potions have been restored.</div>'}
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${row('⏱', 'time', fmtTime(r.time).replace('0h ', ''))}${row('🗺', 'floors', r.floors)}${row('⚔', 'foes slain', fmt(r.k))}${row('●', 'gold', (r.g >= 0 ? '+' : '') + fmt(r.g))}${row('✨', 'experience', fmt(r.xp))}${row('⬆', 'levels gained', r.lv)}${row('👑', 'guardians', r.b)}${row('🎒', 'bag space', `${S.inv.length}/${S.invMax}`)}</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${row(ico('timer'), 'time', fmtTime(r.time).replace('0h ', ''))}${row(ico('map'), 'floors', r.floors)}${row(ico('swords'), 'foes slain', fmt(r.k))}${row('●', 'gold', (r.g >= 0 ? '+' : '') + fmt(r.g))}${row(ico('sparkle'), 'experience', fmt(r.xp))}${row(ico('up'), 'levels gained', r.lv)}${row(ico('crown'), 'guardians', r.b)}${row(ico('bag'), 'bag space', `${S.inv.length}/${S.invMax}`)}</div>
   ${r.best ? `<div class="card">Best find: <span style="color:${RAR[r.best.r].c};font-weight:bold">${icon(r.best)} ${r.best.name}</span> <span class="dim">(${RAR[r.best.r].n}, item level ${r.best.il})</span></div>` : ''}
-  ${r.died ? `<div class="card" style="font-size:13px">💡 ${pick(DEATH_TIPS)}</div>` : ''}
+  ${r.died ? `<div class="card" style="font-size:13px">${ico('idea')} ${pick(DEATH_TIPS)}</div>` : ''}
   ${S.inv.length >= S.invMax - 3 ? '<div class="dim" style="color:#ffb07a">Your bag is nearly full — sell or salvage at Orla or in your Inventory.</div>' : ''}
   <div class="btn bigb" onclick="closeMenu()">Continue</div></div>`;
 };
 const _deadMenu = MENUS.dead;
-MENUS.dead = () => _deadMenu().replace('</p>', `</p>${G.lastHitBy ? `<div class="dim">Slain by <b style="color:#ff8a6a">${G.lastHitBy}</b></div>` : ''}<div class="card" style="max-width:520px;margin:8px auto;font-size:13px">💡 ${pick(DEATH_TIPS)}</div>`);
+MENUS.dead = () => _deadMenu().replace('</p>', `</p>${G.lastHitBy ? `<div class="dim">Slain by <b style="color:#ff8a6a">${G.lastHitBy}</b></div>` : ''}<div class="card" style="max-width:520px;margin:8px auto;font-size:13px">${ico('idea')} ${pick(DEATH_TIPS)}</div>`);
 const _ebP = ebullet; ebullet = function (e, a, spd, o) { _ebP(e, a, spd, o); const b = G.eb[G.eb.length - 1]; if (b) b.src = e.d.n; };
 const _hpP = hurtPlayer; hurtPlayer = function (a, src) { if (src && src.d) G.lastHitBy = src.d.n; return _hpP(a, src); };
 
@@ -104,7 +104,7 @@ update = function (dt) {
   if (G.mode === 'play' && !G.menu && S) {
     if (G.inTown && pressed.t) { openMenu('portal'); pressed = {}; return; }
     if (G.hitstop > 0) { G.hitstop -= dt; return; }
-    if (!G.inTown) { fpsAcc += dt; fpsN++; if (!fpsWarned && fpsN > 240) { const fps = fpsN / fpsAcc; if (fps < 32 && quality() !== 'low') { fpsWarned = true; toast(`Running at ~${Math.round(fps)} FPS. For smoother play try ⚙ Settings → Graphics: ${quality() === 'high' ? 'Medium' : 'Low'}.`, '#ffd27a'); } if (fpsN > 600) { fpsAcc = 0; fpsN = 0; } } }
+    if (!G.inTown) { fpsAcc += dt; fpsN++; if (!fpsWarned && fpsN > 240) { const fps = fpsN / fpsAcc; if (fps < 32 && quality() !== 'low') { fpsWarned = true; toast(`Running at ~${Math.round(fps)} FPS. For smoother play try ${ico('gears')} Settings → Graphics: ${quality() === 'high' ? 'Medium' : 'Low'}.`, '#ffd27a'); } if (fpsN > 600) { fpsAcc = 0; fpsN = 0; } } }
   }
   _updP(dt);
   fpsShow += dt; if (S && S.opts.fps) { FPSEL.style.display = 'block'; if (fpsShow > .5) { fpsShow = 0; FPSEL.textContent = Math.round(1 / Math.max(.001, dt)) + ' FPS'; } } else FPSEL.style.display = 'none';
@@ -117,11 +117,11 @@ initHUD = function () {
   _initHUDP();
   const hov = (el, fn) => { if (!el) return; el.style.pointerEvents = 'auto'; el.onmouseenter = ev => { if (S && P) fn(ev); }; el.onmousemove = moveTip; el.onmouseleave = hideTip; };
   H.slots.forEach((el, i) => hov(el, ev => S.bind[i] ? tipSkill(S.bind[i], ev) : tipHTML(`<b>Empty skill slot [${'QERF'[i]}]</b><div class="dim">Learn skills in the Skill Tree (K) and bind them to Q / E / R / F.</div>`, ev)));
-  hov(H.slv, ev => tipHTML(`<div class="tn" style="color:#ffb04a">🔥 Ember Surge [V]</div><div>${Math.floor(P.surge)}% charged</div><div class="dim">Fills as you fight (hits, kills, perfect dodges). At 100%, unleash a huge blast for 800% weapon damage, heal 30% and gain +50% damage & +30% attack speed for 8s.</div>`, ev));
-  hov(H.slp, ev => tipHTML(`<div class="tn" style="color:#ff6a7a">🧪 Health Potion [1]</div><div>${S.pots} / ${S.potMax} left • heals ${40 + 5 * S.potLvl}% life</div><div class="dim">Refills in Haven. Buy more capacity and potency from Merchant Orla.</div>`, ev));
+  hov(H.slv, ev => tipHTML(`<div class="tn" style="color:#ffb04a">${ico('fire')} Ember Surge [V]</div><div>${Math.floor(P.surge)}% charged</div><div class="dim">Fills as you fight (hits, kills, perfect dodges). At 100%, unleash a huge blast for 800% weapon damage, heal 30% and gain +50% damage & +30% attack speed for 8s.</div>`, ev));
+  hov(H.slp, ev => tipHTML(`<div class="tn" style="color:#ff6a7a">${ico('potion')} Health Potion [1]</div><div>${S.pots} / ${S.potMax} left • heals ${40 + 5 * S.potLvl}% life</div><div class="dim">Refills in Haven. Buy more capacity and potency from Merchant Orla.</div>`, ev));
   hov(H.slw, ev => S.eq.weapon ? tipItem(S.eq.weapon.id, ev) : tipHTML('<b>Bare fists</b><div class="dim">Equip a weapon in your Inventory (I). Tab swaps main and off hand.</div>', ev));
-  hov(document.querySelector('.globe.hp'), ev => tipHTML(`<div class="tn" style="color:#ff6a6a">❤ Life</div><div>${fmt(P.hp)} / ${fmt(ST.maxHp)}</div><div class="dim">Regen ${fmt(ST.hpReg)}/s • Damage reduction ${ST.dr.toFixed(1)}% • Life steal ${ST.ls.toFixed(1)}%</div>`, ev));
-  hov(document.querySelector('.globe.mp'), ev => tipHTML(`<div class="tn" style="color:#7ab0ff">💧 Mana</div><div>${fmt(P.mp)} / ${fmt(ST.maxMp)}</div><div class="dim">Skills cost mana. Regenerates over time; blue orbs from foes restore 25%.</div>`, ev));
+  hov(document.querySelector('.globe.hp'), ev => tipHTML(`<div class="tn" style="color:#ff6a6a">${ico('heart')} Life</div><div>${fmt(P.hp)} / ${fmt(ST.maxHp)}</div><div class="dim">Regen ${fmt(ST.hpReg)}/s • Damage reduction ${ST.dr.toFixed(1)}% • Life steal ${ST.ls.toFixed(1)}%</div>`, ev));
+  hov(document.querySelector('.globe.mp'), ev => tipHTML(`<div class="tn" style="color:#7ab0ff">${ico('mana')} Mana</div><div>${fmt(P.mp)} / ${fmt(ST.maxMp)}</div><div class="dim">Skills cost mana. Regenerates over time; blue orbs from foes restore 25%.</div>`, ev));
   // (XP bar tooltip lives in 6j_polish.js)
 };
 
@@ -129,8 +129,8 @@ initHUD = function () {
 const _setP = MENUS.settings;
 MENUS.settings = () => {
   const o = S ? S.opts : {};
-  return _setP().replace('<div class="card">Volume', `<div class="card">🎵 Music <input type="range" min="0" max="1" step="0.05" value="${musicVol()}" oninput="setMusicVol(+this.value)"></div><div class="card">🔊 Sound effects`)
-    .replace('<div class="btn bigb" onclick="backMenu()">Back</div>', `<div class="card"><span class="dim">Mouse wheel zooms the camera in-game.</span><br>🎥 Camera follows your aim <span class="btn ${o.look !== false ? 'on' : ''}" onclick="setOpt('look',${o.look === false})">${o.look !== false ? 'On' : 'Off'}</span> &nbsp; Show FPS <span class="btn ${o.fps ? 'on' : ''}" onclick="setOpt('fps',${!o.fps})">${o.fps ? 'On' : 'Off'}</span></div><div class="btn bigb" onclick="backMenu()">Back</div>`);
+  return _setP().replace('<div class="card">Volume', `<div class="card">${ico('music')} Music <input type="range" min="0" max="1" step="0.05" value="${musicVol()}" oninput="setMusicVol(+this.value)"></div><div class="card">${ico('sound')} Sound effects`)
+    .replace('<div class="btn bigb" onclick="backMenu()">Back</div>', `<div class="card"><span class="dim">Mouse wheel zooms the camera in-game.</span><br>${ico('camera')} Camera follows your aim <span class="btn ${o.look !== false ? 'on' : ''}" onclick="setOpt('look',${o.look === false})">${o.look !== false ? 'On' : 'Off'}</span> &nbsp; Show FPS <span class="btn ${o.fps ? 'on' : ''}" onclick="setOpt('fps',${!o.fps})">${o.fps ? 'On' : 'Off'}</span></div><div class="btn bigb" onclick="backMenu()">Back</div>`);
 };
 WIKI_TXT.controls = [
   ['Shortcuts', 'In Haven, press T to open the Waystone instantly. Hover your skill slots, potion, weapon, life and mana globes for details.'],

@@ -24,7 +24,7 @@ function extraStats(s) {
   SEASON_BUFF[seasonId() % 12][1](s);
   if (trule('blood')) s.ls += 5;
 }
-function addMarks(n, why) { S.marks += n; feed(`🔶 +${n} Ember Marks${why ? ' — ' + why : ''}`, '#ff9a6a'); }
+function addMarks(n, why) { S.marks += n; feed(`${ico('marks')} +${n} Ember Marks${why ? ' — ' + why : ''}`, '#ff9a6a'); }
 
 // ---------- experience: rested bonus & the Ember Constellation ----------
 const _gainXP = gainXP;
@@ -49,7 +49,7 @@ function resetStars() { let t = 0; for (const k in S.para.n) t += S.para.n[k]; S
 function grantRested() {
   const h = (Date.now() - (S.lastPlay || Date.now())) / 3.6e6; if (h < 1) return;
   const unit = xpNeed(Math.min(S.lvl, MAXLVL)), add = Math.min(unit * (3 + innL()) - S.rested, h / 24 * unit * .8 * (1 + .25 * innL()));
-  if (add > 1) { S.rested += add; setTimeout(() => toast(`🛌 Well rested! +${fmt(add)} bonus experience — kills grant double XP until it runs out.`, '#9ad0ff'), 2500); }
+  if (add > 1) { S.rested += add; setTimeout(() => toast(`${ico('rest')} Well rested! +${fmt(add)} bonus experience — kills grant double XP until it runs out.`, '#9ad0ff'), 2500); }
 }
 
 // ---------- kills: mastery, gems, pets, marks ----------
@@ -60,7 +60,7 @@ killEnemy = function (e) {
   _killEnemy(e);
   if (e.prop) return;
   const t = ST.wt, l0 = wmLvl(t); S.wm[t] = (S.wm[t] || 0) + 1; const l1 = wmLvl(t);
-  if (l1 > l0) { feed(`🗡 ${WT[t].n} Mastery ${l1} — +${(l1 * .5).toFixed(1)}% damage with ${WT[t].n}s`, '#ffd27a'); calcStats(); }
+  if (l1 > l0) { feed(`${WT[t].ic} ${WT[t].n} Mastery ${l1} — +${(l1 * .5).toFixed(1)}% damage with ${WT[t].n}s`, '#ffd27a'); calcStats(); }
   if (Math.random() < (e.boss ? 1 : e.elite ? .08 : e.minion ? 0 : .006)) dropGem(e.x, e.y);
   if (e.boss) {
     dropGem(e.x, e.y);
@@ -89,7 +89,7 @@ updPick = function (dt) {
 function unlockPet(k) {
   if (S.cos.pets.includes(k)) return; S.cos.pets.push(k); sfx('legend');
   banner('New Companion!', `${PETS[k].n} — ${PETS[k].b}`, '#ffe9a0'); if (!S.cos.pet) { S.cos.pet = k; calcStats(); }
-  toast(`🐾 ${PETS[k].n} joins you! Change companions in the 👑 Wardrobe.`, '#ffe9a0');
+  toast(`${ico('paw')} ${PETS[k].n} joins you! Change companions in the ${ico('crown')} Wardrobe.`, '#ffe9a0');
 }
 
 // ---------- level setup: trials & floor events ----------
@@ -162,7 +162,7 @@ function trialWin(tr) {
 function spawnWave() {
   const c = G.cursed, R = curReg(); c.wave++; const n = 4 + c.wave * 2; c.left = 0;
   for (let i = 0; i < n; i++) { const p = randFloorNear(c.x, c.y, 90, 230, 16); const e = mkEnemy(pick(R.en), p.x, p.y, { awake: true, elite: Math.random() < .2 + c.wave * .12 }); e.cursed = true; c.left++; burst(p.x, p.y, '#c060ff', 14, 160, .6, 3); }
-  toast(`☠ Wave ${c.wave} / 3`, '#c060ff'); sfx('boss');
+  toast(`${ico('skull')} Wave ${c.wave} / 3`, '#c060ff'); sfx('boss');
 }
 function updCursed(dt) {
   const c = G.cursed; if (!c) return;
@@ -202,7 +202,7 @@ const _drink = drinkPotion; drinkPotion = function () { if (trule('nopot')) { to
 function snapStats() { const b = {}; for (const t of SJ_T) if (!t.max) b[t.k] = S.stats[t.k] || 0; return b; }
 function seasonState() {
   const id = seasonId();
-  if (!S.season || S.season.id !== id) { const old = S.season; S.season = { id, base: snapStats(), claimed: [], chap: [], combo: 0 }; if (old) setTimeout(() => toast(`🏅 A new season has begun: <b>${seasonInfo().n}</b>! New Season Journey available (Y).`, seasonInfo().col), 3000); }
+  if (!S.season || S.season.id !== id) { const old = S.season; S.season = { id, base: snapStats(), claimed: [], chap: [], combo: 0 }; if (old) setTimeout(() => toast(`${ico('medal')} A new season has begun: <b>${seasonInfo().n}</b>! New Season Journey available (Y).`, seasonInfo().col), 3000); }
   return S.season;
 }
 function seasonObjs() {

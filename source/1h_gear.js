@@ -5,11 +5,11 @@ for (const k of ['sword', 'katana', 'dagger', 'axe', 'hammer', 'spear', 'scythe'
 let MON_HP = 1.18, MON_DMG = 1.1, BOSS_HP = 1.55, BOSS_DMG = 1.1;
 // ---- armor weights (helm, chest, gloves, boots) ----
 const WGT = {
-  light:  { n: 'Light', ic: '🪶', col: '#9ae0a0', d: '+4% move speed, +2% crit chance', f: s => { s.moveSpd += 4; s.critC += 2; },
+  light:  { n: 'Light', ic: ico('feather'), col: '#9ae0a0', d: '+4% move speed, +2% crit chance', f: s => { s.moveSpd += 4; s.critC += 2; },
             disc: ['Evasion', '4 Light pieces: 8% chance to evade attacks entirely and dodge recharges 25% faster'] },
-  medium: { n: 'Medium', ic: '🧥', col: '#e0c070', d: '+3% attack speed, +3% max life', f: s => { s.atkSpd += 3; s.hpPct += 3; },
+  medium: { n: 'Medium', ic: ico('wgt-medium'), col: '#e0c070', d: '+3% attack speed, +3% max life', f: s => { s.atkSpd += 3; s.hpPct += 3; },
             disc: ['Battle Rhythm', '4 Medium pieces: hits restore 0.4% life (up to 4 times a second) and +6% damage'] },
-  heavy:  { n: 'Heavy', ic: '🛡️', col: '#a0b0d0', d: '+2.5% damage reduction, +5% max life, -2% move speed', f: s => { s.dr += 2.5; s.hpPct += 5; s.moveSpd -= 2; },
+  heavy:  { n: 'Heavy', ic: ico('wgt-heavy'), col: '#a0b0d0', d: '+2.5% damage reduction, +5% max life, -2% move speed', f: s => { s.dr += 2.5; s.hpPct += 5; s.moveSpd -= 2; },
             disc: ['Bulwark', '4 Heavy pieces: the first hit every 6s deals 60% less damage, and +6% damage reduction'] },
 };
 const WGT_SLOTS = ['helm', 'armor', 'gloves', 'boots'];

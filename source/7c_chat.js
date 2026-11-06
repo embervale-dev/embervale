@@ -43,7 +43,7 @@ addEventListener('keydown', e => {
   const t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
   if (!S || G.mode === 'title' || G.menu) return;
   e.preventDefault(); e.stopImmediatePropagation();
-  if (chatOnline()) chatOpen(); else toast('💬 Chat works in a multiplayer room — open ☰ Menu → 🌐 Multiplayer', '#9ad0ff');
+  if (chatOnline()) chatOpen(); else toast(ico('chat') + ' Chat works in a multiplayer room — open ☰ Menu → ' + ico('globe') + ' Multiplayer', '#9ad0ff');
 }, true);
 const chatStyle = document.createElement('style');
 chatStyle.textContent = `

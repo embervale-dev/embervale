@@ -10,9 +10,9 @@ const SETS = {
 };
 // ---- Skill runes: one modifier per active skill (unlocked at rank 3) ----
 const RUNES = {
-  emp:   { n: 'Empowered', ic: '🔺', d: '+35% damage, +25% mana cost', dmg: 1.35, mp: 1.25, cd: 1 },
-  swift: { n: 'Swift', ic: '⏩', d: '-30% cooldown', dmg: 1, mp: 1, cd: .7 },
-  eff:   { n: 'Efficient', ic: '💧', d: '-45% mana cost', dmg: 1, mp: .55, cd: 1 },
+  emp:   { n: 'Empowered', ic: ico('rune-empowered'), d: '+35% damage, +25% mana cost', dmg: 1.35, mp: 1.25, cd: 1 },
+  swift: { n: 'Swift', ic: ico('fast'), d: '-30% cooldown', dmg: 1, mp: 1, cd: .7 },
+  eff:   { n: 'Efficient', ic: ico('mana'), d: '-45% mana cost', dmg: 1, mp: .55, cd: 1 },
 };
 // ---- Regional floor hazards ----
 const HAZ = [

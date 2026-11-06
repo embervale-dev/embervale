@@ -1,0 +1,12 @@
+{
+ "_note": "Glyphs for late UI files (6n-7e): Haven stall NPCs, unlock roadmap, elixirs, inventory filters.",
+ "alchemist": "lorc/fizzing-flask",
+ "enchanter": "lorc/crystal-ball",
+ "oracle": "lorc/third-eye",
+ "chest": "lorc/locked-chest",
+ "bounty-board": "delapouite/scroll-quill",
+ "quartermaster": "delapouite/wooden-crate",
+ "restore": "delapouite/trowel",
+ "might": "delapouite/biceps",
+ "jewelry": "delapouite/diamond-ring"
+}

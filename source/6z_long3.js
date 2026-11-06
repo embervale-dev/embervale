@@ -15,9 +15,9 @@ function trophyCount() { return Object.keys(S.troph || {}).length; }
   const ch = e.boss ? .12 : e.champ ? .05 : e.elite ? .006 : .0015; if (Math.random() < ch * (1 + Math.min(300, luckEff()) / 300)) { S.troph[e.type] = 1; const n = (e.boss ? BOSS[e.type] : EN[e.type]).n, c = trophyCount();
     banner('Monster Trophy!', `${n} trophy — ${c} collected${c % 5 === 0 ? ' • +1% damage!' : ''}`, '#e0c27a'); sfx('legend'); calcStats(); saveGame(); } }; }
 { const _xsZ = extraStats; extraStats = function (s) { _xsZ(s); if (S) s.dmg += Math.floor(trophyCount() / 5); }; }
-LEDGER.push({ k: 'tr', n: 'Monster trophies', ic: '🏆', c: () => trophyCount(), t: [3, 10, 25, 50], b: '+1% life', f: s => s.hpPct += 1 });
+LEDGER.push({ k: 'tr', n: 'Monster trophies', ic: ico('trophy'), c: () => trophyCount(), t: [3, 10, 25, 50], b: '+1% life', f: s => s.hpPct += 1 });
 { const _bsZ = MENUS.bestiary; MENUS.bestiary = () => { const h = _bsZ(); const n = trophyCount(), tot = Object.keys(EN).filter(k => EN[k].ai !== 'prop' && !['dummy', 'tsentry', 'cage'].includes(k)).length + Object.keys(BOSS).length;
-  return h.replace('</h2>', `</h2><div class="card" style="padding:6px 12px">🏆 <b>Monster Trophies: ${n} / ${tot}</b> <span class="dim">— rare drops (guardians 12%, champions 5%, others very rare). Every 5 trophies: +1% damage forever (now +${Math.floor(n / 5)}%).</span>${n ? `<div style="font-size:12px;color:#e0c27a">${Object.keys(S.troph).map(k => (EN[k] || BOSS[k] || {}).n).filter(Boolean).join(' • ')}</div>` : ''}</div>`); }; }
+  return h.replace('</h2>', `</h2><div class="card" style="padding:6px 12px">${ico('trophy')} <b>Monster Trophies: ${n} / ${tot}</b> <span class="dim">— rare drops (guardians 12%, champions 5%, others very rare). Every 5 trophies: +1% damage forever (now +${Math.floor(n / 5)}%).</span>${n ? `<div style="font-size:12px;color:#e0c27a">${Object.keys(S.troph).map(k => (EN[k] || BOSS[k] || {}).n).filter(Boolean).join(' • ')}</div>` : ''}</div>`); }; }
 ACH.push(
   { id: 'skm10', n: 'Practiced Caster', d: 'Reach Skill Mastery 10 with any skill', c: () => Math.max(0, ...Object.keys(S.skm || {}).map(skmLvl)), need: 10, sp: 1 },
   { id: 'skm20', n: 'Grand Master', d: 'Master a skill (Mastery 20)', c: () => Math.max(0, ...Object.keys(S.skm || {}).map(skmLvl)), need: 20, sp: 2 },

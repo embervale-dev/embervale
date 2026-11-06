@@ -255,7 +255,7 @@ function itemName(it) {
   if (it.r >= 4) return (it.r === 5 ? 'Mythic ' : it.r >= 7 ? RAR[it.r].n + ' ' : '') + UNQ[it.u].n + ' ' + b;
   return pick(PRE[it.r]) + ' ' + b + (it.aff.length ? ' ' + SUF[it.aff[0].k] : '');
 }
-function icon(it) { return it.slot === 'weapon' ? WT[it.t].ic : AT[it.t].ic; }
+function icon(it) { return itemIcon(it); }
 function itemVal(it) { return Math.round(6 * Math.pow(1.12, it.il) * Math.pow(it.r + 1, 1.6) * (1 + it.plus * .3)); }
 function wDps(it) { if (!it) return 0; const w = WT[it.t]; return itemStats(it).wdmg / w.cd * (w.cnt ? 1.6 : 1); }
 
@@ -291,5 +291,5 @@ function noteFound(it) {
   const f = S.found; if (it.slot === 'weapon') f.w[it.t] = Math.max(f.w[it.t] || 0, 0) + 1; else f.a[it.t] = (f.a[it.t] || 0) + 1;
   f.r[it.t] = Math.max(f.r[it.t] ?? -1, it.r);
   if (it.u) f.u[it.u] = (f.u[it.u] || 0) + 1; if (it.u2) f.u[it.u2] = (f.u[it.u2] || 0) + 1;
-  if (it.art && !f.art[it.art]) { f.art[it.art] = 1; toast(`📚 New Arsenal entry: <span style="color:#7ffcff">${it.name}</span>`); }
+  if (it.art && !f.art[it.art]) { f.art[it.art] = 1; toast(`${ico('library')} New Arsenal entry: <span style="color:#7ffcff">${it.name}</span>`); }
 }

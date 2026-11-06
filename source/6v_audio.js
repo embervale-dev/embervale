@@ -221,5 +221,5 @@ setInterval(() => { try { ambTick(); } catch (e) { } }, 60);
 {
   const _stA = MENUS.settings;
   MENUS.settings = () => _stA().replace('<div class="btn bigb" onclick="backMenu()">Back</div>',
-    `<div class="card">🌲 Ambience <input type="range" min="0" max="1" step="0.05" value="${avol()}" oninput="setAmbVol(+this.value)"> <span class="dim">Wind, creatures and the sounds of each region.</span></div><div class="btn bigb" onclick="backMenu()">Back</div>`);
+    `<div class="card">${ico('tree')} Ambience <input type="range" min="0" max="1" step="0.05" value="${avol()}" oninput="setAmbVol(+this.value)"> <span class="dim">Wind, creatures and the sounds of each region.</span></div><div class="btn bigb" onclick="backMenu()">Back</div>`);
 }
