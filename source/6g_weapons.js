@@ -120,7 +120,7 @@ const _wdW = wDps; wDps = function (it) { if (!it) return 0; const w = WT[it.t];
   return h.replace('<h3>Weapons</h3>', `<h3>◆ Weapon Arts <span class="dim">every weapon type has a signature Art — empowered by 25% at Mastery ${ART_EMP}</span></h3><div class="regcards">${rows}</div><h3>Weapons</h3>`); }; }
 // ---------- richer weapon models: rarity accents, infusion glow, mastery shine ----------
 function makeWeaponFull(it) {
-  const g = makeWeapon(it.t), r = it.r, inf = it.inf && INFUSE[it.inf], mastered = wmLvl(it.t) >= W_GLOW;
+  const g = makeWeapon(it.t), r = it.r, inf = it.inf && INFUSE[it.inf], mastered = it.mast !== undefined ? !!it.mast : wmLvl(it.t) >= W_GLOW;
   const tip = { sword: .8, katana: .9, dagger: .38, axe: .82, hammer: .9, spear: 1.4, scythe: 1.05, flail: .72, fists: .08, bow: .1, xbow: .5, cannon: .58, staff: 0, wand: .44, tome: .13, chakram: .18, rapier: .9, glaive: 1, shuriken: .1, scepter: .6 }[it.t] ?? .5;
   const rc = RAR[r].c;
   if (r >= 2) { mk(GEO.oct, mat(rc, { em: 1.6 + r * .3, flat: true }), .035, .045, .035, -.02, 0, 0, g, false); }

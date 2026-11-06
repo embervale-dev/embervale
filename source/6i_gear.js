@@ -88,9 +88,9 @@ let TMP_SL = 'armor';
   if (ST.disc === 'heavy' && !(P.bulT > 0)) h += `<div class="buff wart" title="Bulwark ready: the next hit deals 60% less damage" style="border-color:#a0b0d0">🛡️<span>✔</span></div>`;
   if (h) el.insertAdjacentHTML('beforeend', h); }; }
 // ---------- armor shows on your character ----------
-function buildArmorLook() {
-  const pl = R3.pl; if (!pl) return; if (pl.armorG) { pl.armorG.forEach(o => o.parent && o.parent.remove(o)); } pl.armorG = [];
-  const ch = S.eq.armor, w = wgtOf(ch), hm = S.eq.helm, gl = S.eq.gloves, bt = S.eq.boots;
+function buildArmorLook(pl = R3.pl, eq = S.eq) {   // also used for other players' models (multiplayer)
+  if (!pl) return; if (pl.armorG) { pl.armorG.forEach(o => o.parent && o.parent.remove(o)); } pl.armorG = [];
+  const ch = eq.armor, w = wgtOf(ch), hm = eq.helm, gl = eq.gloves, bt = eq.boots;
   const tint = it => it ? (it.r >= 3 ? mat(shade3(RAR[it.r].c, .8), { metal: .7, rough: .3, em: .15 + .05 * (it.r - 3) }) : null) : null;
   if (w === 'heavy' || w === 'medium') for (const arm of [pl.armL, pl.armR]) {
     const m = tint(ch) || (w === 'heavy' ? mat('#8a8a98', { metal: .8, rough: .3 }) : mat('#6a4a2a', { rough: .7 }));
