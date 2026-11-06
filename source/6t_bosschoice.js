@@ -7,7 +7,7 @@ function bossExit() { // returns true when it handled the portal this frame
 { const _uX = update; update = function (dt) { _uX(dt); if (!EXIT_ARMED && G.exit && P && dist(P, G.exit) > 70) EXIT_ARMED = true; if (!G.exit) EXIT_ARMED = true; }; }
 function bcNext() { closeMenu();
   if (G.abyss) { nextFloor(); return; }
-  const r = G.region + 1; if (r < NREG) { enterFloor(r, 0); return; }
+  const r = G.region + 1; if (r < NREG) { if (S.lvl < reqLvl(r, S.diff)) { toast(`You need level ${reqLvl(r, S.diff)} for ${REG[r].n}`, '#ff8a8a'); goTown(); return; } enterFloor(r, 0); return; }
   if (S.done[S.diff].every(Boolean)) enterFloor(ABYSS_R, 0, 1); else goTown(); }
 function bcHome() { closeMenu(); goTown(); }
 MENUS.bosschoice = () => {
@@ -15,7 +15,7 @@ MENUS.bosschoice = () => {
   let next = '', note = '';
   if (G.gauntlet || G.trial) next = '';
   else if (G.abyss) { next = `▼ Descend to Abyss Depth ${G.depth + 1}`; note = 'Foes grow stronger with every depth.'; }
-  else if (G.region + 1 < NREG) { const r = G.region + 1, rec = r * 6; next = `▶ Continue to ${REG[r].n} — Floor 1`; note = `Recommended level ${rec}+ • you are level ${S.lvl}${S.lvl < rec ? ' <span style="color:#ff9a6a">(it will be tough!)</span>' : ' <span class="up">(ready)</span>'}`; }
+  else if (G.region + 1 < NREG) { const r = G.region + 1, rec = reqLvl(r, S.diff); next = `▶ Continue to ${REG[r].n} — Floor 1`; note = `Recommended level ${rec}+ • you are level ${S.lvl}${S.lvl < rec ? ' <span style="color:#ff9a6a">(it will be tough!)</span>' : ' <span class="up">(ready)</span>'}`; }
   else if (S.done[S.diff].every(Boolean)) { next = '▼ Enter the Abyss — Depth 1'; note = 'The endless descent. How deep can you go?'; }
   const title = G.abyss ? `Abyss Depth ${G.depth} Cleared` : `${REG[G.region].n} Conquered!`;
   return `<div style="min-width:560px;max-width:640px;text-align:center"><h2>💀 ${title}</h2>

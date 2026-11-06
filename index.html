@@ -7815,7 +7815,7 @@ function buildTown() {
       mk(GEO.box, mat('#8a6a40'), 1.7, 1, .08, 0, 1.2, 0, g); mk(GEO.box, mat('#5a3a20'), 1.9, .15, .3, 0, 1.78, 0, g);
       for (let i = 0; i < 5; i++) mk(GEO.box, mat('#f0e4c0'), .28, .36, .02, -.6 + i * .3, 1.2 + (i % 2) * .08, .05, g, false);
     } else {
-      const roof = { shop: '#c84a3a', smith: '#5a5a6a', sage: '#4a5ab0', jewel: '#2a8a8a', curio: '#8a3a8a' }[n.kind];
+      const roof = { shop: '#c84a3a', smith: '#5a5a6a', sage: '#4a5ab0', jewel: '#2a8a8a', curio: '#8a3a8a' }[n.kind] || n.roof || '#6a5a3a';
       for (const [x, z] of [[-.9, -.6], [.9, -.6], [-.9, .6], [.9, .6]]) mk(GEO.box, mat('#5a3a22'), .1, 1.9, .1, x, .95, z, g);
       const awn = mk(GEO.box, mat(roof), 2.1, .08, 1.5, 0, 1.95, 0, g); awn.rotation.x = .12;
       mk(GEO.box, mat('#7a5030'), 1.8, .7, .5, 0, .35, .5, g);
@@ -10664,10 +10664,11 @@ gainXP = function (x) {
   if (S.lvl <= l0) return;
   const rw = [];
   for (let L = l0 + 1; L <= S.lvl; L++) {
+    if (L <= (S.lvlHi || 0)) continue;
     if (L % 5 === 0) { S.marks += 10; addGem(pick2(Object.keys(GEMS)), gemTier()); rw.push('🔶 10 Marks + 💎 a gem'); }
     if (L % 10 === 0) { S.sp += 1; const it = genItem(maxPw() + 1, { minR: 3 }); it.isNew = true; (S.inv.length < S.invMax ? S.inv : S.stash).push(it); noteFound(it); rw.push(`+1 bonus skill point and <span style="color:${RAR[it.r].c}">${it.name}</span>`); }
   }
-  const n = S.lvl - l0;
+  S.lvlHi = Math.max(S.lvlHi || 0, S.lvl); const n = S.lvl - l0;
   LV_CARD.innerHTML = `<div class="lt">LEVEL ${S.lvl}</div><div class="ls">❤ +${fmt(ST.maxHp - hp0)} life • 💧 +${fmt(ST.maxMp - mp0)} mana • ✨ +${n} skill point${n > 1 ? 's' : ''} <span class="dim">[K]</span></div>${rw.length ? `<div class="lm">🏅 Milestone: ${rw.join(' • ')}</div>` : `<div class="dim" style="font-size:11px">Next milestone at level ${Math.ceil((S.lvl + 1) / 5) * 5}</div>`}`;
   LV_CARD.classList.remove('on'); void LV_CARD.offsetWidth; LV_CARD.classList.add('on'); lvCardT = 3.6;
 };
@@ -11106,7 +11107,7 @@ function fitMenu() {
   panel.style.removeProperty('--fitz'); const inner = panel; inner.classList.remove('fitz');
   const key = G.menu + (G.menu === 'wiki' ? ':' + (WIKI_Q ? 'q' : WIKI_TAB) : '');
   if (!fitOver()) return;
-  fitSections(key);
+  if (!['stash', 'shop', 'jewel', 'wander', 'craft'].includes(G.menu)) fitSections(key);
   if (!FIT_NOPAGE.includes(G.menu)) for (let pass = 0; pass < 2 && fitOver(); pass++) if (!fitPaginate(key + ':' + pass)) break;
   if (fitOver()) { // gentle final fit: shrink a little (never below 82%)
     const minZ = innerHeight < 760 ? .66 : innerHeight < 900 ? .74 : .82; const r = Math.max(minZ, Math.min(panel.clientHeight / panel.scrollHeight, panel.clientWidth / panel.scrollWidth) - .01); panel.classList.add('fitz'); let z = r; panel.style.setProperty('--fitz', z.toFixed(3)); for (let i = 0; i < 6 && fitOver() && z > minZ - .08; i++) { z -= .025; panel.style.setProperty('--fitz', z.toFixed(3)); } }
@@ -11246,7 +11247,8 @@ HOOK('buyMarks', 'curio', { pre: () => S.marks, post: (m) => S.marks < m });
 { const _cqQ = claimQuest; claimQuest = function (i) { const q = S.quests[i]; _cqQ(i); if (q && S.quests[i] !== q) stallDone('board'); }; }
 // ---------- Haven Guide tracker (town only, until done) ----------
 function guideHTML() { const st = stState(); const ks = Object.keys(STALLS).filter(k => unl(k) && (G.npcs || []).some(n => n.kind === k)); if (!ks.length || ks.every(k => st.task[k])) return '';
-  return `<div class="gh">🏡 Haven Guide <span class="dim">${ks.filter(k => st.task[k]).length}/${ks.length}</span></div>` + ks.map(k => { const n = G.npcs.find(x => x.kind === k); return `<div class="gi ${st.task[k] ? 'ok' : ''}">${st.task[k] ? '✔' : '○'} <b>${n ? n.ic : ''} ${STALLS[k].task}</b></div>`; }).join(''); }
+  const todo = ks.filter(k => !st.task[k]), shown = todo.slice(0, 4);
+  return `<div class="gh">🏡 Haven Guide <span class="dim">${ks.length - todo.length}/${ks.length} done</span></div>` + shown.map(k => { const n = G.npcs.find(x => x.kind === k); return `<div class="gi">○ <b>${n ? n.ic : ''} ${STALLS[k].task}</b></div>`; }).join('') + (todo.length > 4 ? `<div class="gi dim">+ ${todo.length - 4} more…</div>` : ''); }
 // ---------- next-step hint (always tells you what to do) ----------
 function nextStep() {
   if (!S || !P || G.tutorial || G.tut) return '';
@@ -11319,7 +11321,7 @@ function captureResume(withShot) {
   const m = {}; for (const k in M) { const v = M[k]; if (k === 'flow') continue; m[k] = v instanceof Uint8Array ? { u8: b64(v) } : v; }
   const ens = G.ens.filter(e => !e.dead && !e.prop && e.type !== 'dummy').map(e => ({ type: e.type, x: e.x, y: e.y, hp: e.hp, maxHp: e.maxHp, elite: e.elite || null, champ: !!e.champ, name: e.d && e.d.n, boss: !!e.boss, counted: !!e.counted, golden: !!e.golden, nemesis: !!e.nemesis, invader: !!e.invader, minion: !!e.minion, awake: !!e.awake, dmg: e.dmg, r: e.r, xp: e.xp, gold: e.gold }));
   const props = G.ens.filter(e => !e.dead && e.prop).map(e => ({ type: e.type, x: e.x, y: e.y }));
-  const g = {}; for (const k of RES_KEYS) if (G[k] !== undefined) g[k] = G[k];
+  const g = {}; for (const k of RES_KEYS) if (G[k] !== undefined) g[k] = JSON.parse(JSON.stringify(G[k], (kk, v) => kk && kk[0] === '_' ? undefined : v) ?? 'null');
   const prev = S.resume;
   S.resume = { v: 1, t: Date.now(), region: G.region, floor: G.floor, depth: G.depth, abyss: !!G.abyss, pw: G.pw, diff: S.diff, M: m, ens, props, g, P: { x: P.x, y: P.y, hp: P.hp, mp: P.mp, surge: P.surge, face: P.face }, shot: withShot ? snapShot() : (prev && prev.shot) || null };
   try { const str = JSON.stringify(S.resume); if (str.length > 1.6e6) S.resume.shot = null; } catch (e) { S.resume = null; }
@@ -11691,7 +11693,7 @@ function bossExit() { // returns true when it handled the portal this frame
 { const _uX = update; update = function (dt) { _uX(dt); if (!EXIT_ARMED && G.exit && P && dist(P, G.exit) > 70) EXIT_ARMED = true; if (!G.exit) EXIT_ARMED = true; }; }
 function bcNext() { closeMenu();
   if (G.abyss) { nextFloor(); return; }
-  const r = G.region + 1; if (r < NREG) { enterFloor(r, 0); return; }
+  const r = G.region + 1; if (r < NREG) { if (S.lvl < reqLvl(r, S.diff)) { toast(`You need level ${reqLvl(r, S.diff)} for ${REG[r].n}`, '#ff8a8a'); goTown(); return; } enterFloor(r, 0); return; }
   if (S.done[S.diff].every(Boolean)) enterFloor(ABYSS_R, 0, 1); else goTown(); }
 function bcHome() { closeMenu(); goTown(); }
 MENUS.bosschoice = () => {
@@ -11699,7 +11701,7 @@ MENUS.bosschoice = () => {
   let next = '', note = '';
   if (G.gauntlet || G.trial) next = '';
   else if (G.abyss) { next = `▼ Descend to Abyss Depth ${G.depth + 1}`; note = 'Foes grow stronger with every depth.'; }
-  else if (G.region + 1 < NREG) { const r = G.region + 1, rec = r * 6; next = `▶ Continue to ${REG[r].n} — Floor 1`; note = `Recommended level ${rec}+ • you are level ${S.lvl}${S.lvl < rec ? ' <span style="color:#ff9a6a">(it will be tough!)</span>' : ' <span class="up">(ready)</span>'}`; }
+  else if (G.region + 1 < NREG) { const r = G.region + 1, rec = reqLvl(r, S.diff); next = `▶ Continue to ${REG[r].n} — Floor 1`; note = `Recommended level ${rec}+ • you are level ${S.lvl}${S.lvl < rec ? ' <span style="color:#ff9a6a">(it will be tough!)</span>' : ' <span class="up">(ready)</span>'}`; }
   else if (S.done[S.diff].every(Boolean)) { next = '▼ Enter the Abyss — Depth 1'; note = 'The endless descent. How deep can you go?'; }
   const title = G.abyss ? `Abyss Depth ${G.depth} Cleared` : `${REG[G.region].n} Conquered!`;
   return `<div style="min-width:560px;max-width:640px;text-align:center"><h2>💀 ${title}</h2>
@@ -11985,6 +11987,402 @@ if (typeof killStreak === 'function') { const _ksF = killStreak; killStreak = fu
 { const _pdF = perfectDodge; perfectDodge = function () { const x = P.x, y = P.y; _pdF(); ringFx(x, y, 70, '#7affff', .45); spark(x, y, '#9affff', 14, { smin: 40, smax: 120, life: .5, size: 3 }); screenFlash('rgba(120,240,255,.7)', .2, true); }; }
 // ---------- settings toggle ----------
 { const _stF = MENUS.settings; MENUS.settings = () => { const h = _stF(); if (!S) return h; const on = S.opts.fxflash !== false; return h.replace('<div class="btn bigb" onclick="backMenu()">Back</div>', `<div class="card">✨ Screen flashes <span class="btn ${on ? 'on' : ''}" onclick="setOpt('fxflash',${!on})">${on ? 'On' : 'Off'}</span> <span class="dim">Colored flashes for rare drops, level-ups, Surge and streaks</span></div><div class="btn bigb" onclick="backMenu()">Back</div>`); }; }
+// ================= UI UPGRADE 2: aligned item badges, paper-doll inventory, bag filters & sorting, upgrade markers =================
+let INV_F = 'all', INV_SORT = 'rar';
+const INV_FILTERS = [['all', 'All'], ['weapon', '⚔ Weapons'], ['armor', '🛡 Armor'], ['jewel', '💍 Jewelry'], ['new', '✨ New'], ['up', '▲ Upgrades']];
+function invMatch(it) { if (INV_F === 'all') return true; if (INV_F === 'weapon') return it.slot === 'weapon'; if (INV_F === 'armor') return WGT_SLOTS.includes(it.slot); if (INV_F === 'jewel') return it.slot === 'ring' || it.slot === 'amulet'; if (INV_F === 'new') return !!it.isNew; if (INV_F === 'up') return isUpgrade(it); return true; }
+const UPC = new Map(); let upcT = 0;
+function isUpgrade(it) { if (G.t - upcT > 1) { UPC.clear(); upcT = G.t; } if (!UPC.has(it.id)) { let g = 0; try { g = gainPct(it); } catch (e) { } UPC.set(it.id, g); } return UPC.get(it.id) > .5; }
+function invSorted(list) { const a = list.slice(); if (INV_SORT === 'rar') a.sort((x, y) => (y.r - x.r) || (y.il - x.il)); else if (INV_SORT === 'lvl') a.sort((x, y) => (y.il - x.il) || (y.r - x.r)); else if (INV_SORT === 'type') a.sort((x, y) => (x.slot + x.t).localeCompare(y.slot + y.t) || (y.r - x.r)); return a; }
+function setInvF(f) { INV_F = f; sfx('click'); renderMenu(); } function setInvSort(s) { INV_SORT = s; sfx('click'); renderMenu(); }
+function balancedEnd(h, start) { const re = /<div\b|<\/div>/g; re.lastIndex = start; let d = 0, m; while ((m = re.exec(h))) { d += m[0] === '</div>' ? -1 : 1; if (d === 0) return re.lastIndex; } return h.length; }
+// cells get an upgrade marker
+{ const _cellX = cell; cell = function (it, act) { let h = _cellX(it, act); if (act === 'uiInv' && S && S.inv.includes(it) && isUpgrade(it)) h = h.replace(/<\/div>$/, '<s class="upm" title="Upgrade for you">▲</s></div>'); return h; }; }
+{ const _ivX = MENUS.inv; MENUS.inv = () => { let h = _ivX(); if (!S) return h;
+  // header: bag capacity bar + currency chips
+  const pct = Math.min(100, S.inv.length / S.invMax * 100), full = S.inv.length >= S.invMax;
+  h = h.replace(/<h2>Inventory[\s\S]*?<\/h2>/, `<h2 class="invh">🎒 Inventory <span class="bagcap ${full ? 'full' : ''}"><span class="bagbar"><i style="width:${pct}%"></i></span>${S.inv.length} / ${S.invMax}${full ? ' — full!' : ''}</span><span class="chips"><span class="chip gold">● ${fmt(S.gold)}</span><span class="chip ore">◆ ${S.ore} ore</span><span class="chip shard">✦ ${S.shards} shards</span>${S.ess ? `<span class="chip ess">🜃 ${S.ess}</span>` : ''}</span></h2>`);
+  // paper doll
+  h = h.replace('<div class="eq">', '<div class="eq doll"><div class="dollfig">🧍</div>');
+  // filtered, sorted bag
+  const a = h.indexOf('<div class="grid">'); if (a >= 0) { const b = balancedEnd(h, a); const list = invSorted(S.inv.filter(invMatch)), empties = INV_F === 'all' ? Math.max(0, S.invMax - S.inv.length) : 0;
+    const bar = `<div class="invtools"><div class="invf">${INV_FILTERS.map(([k, n]) => `<span class="fchip ${INV_F === k ? 'on' : ''}" onclick="setInvF('${k}')">${n}${k === 'new' ? ` <b>${S.inv.filter(i => i.isNew).length}</b>` : k === 'up' ? ` <b>${S.inv.filter(isUpgrade).length}</b>` : ''}</span>`).join('')}</div><div class="invs">Sort: ${[['rar', 'Rarity'], ['lvl', 'Level'], ['type', 'Type']].map(([k, n]) => `<span class="fchip ${INV_SORT === k ? 'on' : ''}" onclick="setInvSort('${k}')">${n}</span>`).join('')}</div></div>`;
+    const grid = `<div class="bagcol">${bar}<div class="grid">${list.map(it => cell(it, 'uiInv')).join('')}${Array.from({ length: empties }, () => '<div class="cell empty"></div>').join('')}${!list.length ? '<div class="dim" style="grid-column:1/-1;padding:16px;text-align:center">Nothing here.</div>' : ''}</div></div>`;
+    h = h.slice(0, a) + grid + h.slice(b); }
+  h = h.replace('<div class="hint">', '<div class="hint invhint">');
+  return h; }; }
+// stats: headline summary cards
+{ const _shX = statsHTML; statsHTML = function () { const h = _shX(); const w = WT[ST.wt], aps = (1 / w.cd) * atkRate(), dps = pdmg() * aps * (1 + ST.critC / 100 * ST.critD / 100);
+  const sum = `<div class="stsum"><div><b>${fmt(dps)}</b><span>DPS</span></div><div><b>${fmt(ST.maxHp)}</b><span>Life</span></div><div><b>${ST.dr.toFixed(0)}%</b><span>Armor</span></div><div><b>${ST.critC.toFixed(0)}%</b><span>Crit</span></div></div>`;
+  return h.replace(/(<h3>Lv [^<]*<\/h3>)/, '$1' + sum); }; }
+const uiStyle2 = document.createElement('style'); uiStyle2.textContent = `
+/* --- item badges always pinned to their corners (fixes NEW / +level / lock misalignment) --- */
+html body#px .cell>i,html body#px .cell>b,html body#px .cell>u,html body#px .cell>s{position:absolute!important;z-index:4!important;line-height:1!important;pointer-events:none;text-decoration:none}
+html body#px .cell>i{left:2px!important;top:2px!important;right:auto!important;font:bold 8px 'Trebuchet MS',sans-serif!important;letter-spacing:.5px;padding:2px 3px!important;border-radius:4px!important;background:#3ac03a!important;color:#06200a!important;border:none!important;text-shadow:none!important;box-shadow:0 0 6px rgba(58,192,58,.7)!important}
+html body#px .cell>b{right:3px!important;bottom:2px!important;left:auto!important;top:auto!important;font:bold 11px 'Trebuchet MS',sans-serif!important;color:#fff3c8!important}
+html body#px .cell>u{right:2px!important;top:2px!important;font-size:10px!important}
+html body#px .cell>s{left:2px!important;bottom:2px!important;font:bold 10px sans-serif!important;color:#7aff7a!important;text-shadow:0 0 4px #000,0 0 6px #3ac03a!important}
+/* --- inventory layout --- */
+.invh{display:flex!important;align-items:center;gap:14px;flex-wrap:wrap}
+.bagcap{display:inline-flex;align-items:center;gap:8px;font:13px 'Trebuchet MS',sans-serif;color:#d8c8a8}.bagcap.full{color:#ff8a6a}
+.bagbar{display:inline-block;width:110px;height:8px;border-radius:8px;background:rgba(0,0,0,.45);overflow:hidden;border:1px solid #3b3144}.bagbar i{display:block;height:100%;background:linear-gradient(90deg,#c78a2a,#ffd27a)}.bagcap.full .bagbar i{background:linear-gradient(90deg,#c0402a,#ff7a5a)}
+.chips{display:inline-flex;gap:6px;margin-left:auto}.chip{font:bold 12.5px 'Trebuchet MS',sans-serif;padding:3px 10px;border-radius:14px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08)}
+.chip.gold{color:#ffd54a}.chip.ore{color:#8ab8ff}.chip.shard{color:#ff8af0}.chip.ess{color:#ffb05a}
+.invwrap{gap:16px!important;align-items:stretch!important}
+.eq.doll{position:relative;min-width:208px!important;display:grid!important;grid-template-columns:repeat(3,64px)!important;grid-template-rows:repeat(4,auto);gap:6px 8px!important;justify-content:center;align-content:start;padding:10px 8px;border-radius:14px;background:radial-gradient(ellipse at 50% 45%,rgba(255,210,122,.07),transparent 70%),rgba(0,0,0,.18);border:1px solid #3b3144}
+.dollfig{grid-area:2/2/4/3;display:flex;align-items:center;justify-content:center;font-size:64px;opacity:.12;pointer-events:none}
+.eq.doll .eqrow:nth-child(2){grid-area:2/1}.eq.doll .eqrow:nth-child(3){grid-area:2/3}.eq.doll .eqrow:nth-child(4){grid-area:1/2}.eq.doll .eqrow:nth-child(5){grid-area:2/2;z-index:1}
+.eq.doll .eqrow:nth-child(6){grid-area:3/1}.eq.doll .eqrow:nth-child(7){grid-area:4/2}.eq.doll .eqrow:nth-child(8){grid-area:3/3}.eq.doll .eqrow:nth-child(9){grid-area:1/3}
+.eq.doll .eqrow{font-size:10.5px!important;gap:2px;text-align:center}.eq.doll .eqrow .cell{margin:0!important}
+.bagcol{display:flex;flex-direction:column;gap:6px}
+.invtools{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.invf,.invs{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:12px;color:#a39884}
+.fchip{cursor:pointer;padding:3px 9px;border-radius:12px;font:12px 'Trebuchet MS',sans-serif;color:#c8b898;background:rgba(0,0,0,.28);border:1px solid #3b3144;transition:.1s}.fchip:hover{color:#ffe2a8;border-color:#7a5c36}.fchip.on{color:#1a1008;background:#f2c466;border-color:#f2c466;font-weight:bold}.fchip b{font-size:10px;opacity:.8}
+.grid{grid-template-columns:repeat(8,52px)!important;gap:2px!important;padding:6px;border-radius:12px;background:rgba(0,0,0,.18);border:1px solid #3b3144}
+.invhint{font-size:11.5px!important;opacity:.8}
+.stsum{display:grid!important;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 6px;grid-column:1/-1}.stsum>div{display:block!important;text-align:center;padding:6px 2px;border-radius:10px;background:rgba(255,210,122,.07);border:1px solid rgba(193,154,85,.3)}.stsum b{display:block;font:bold 16px Georgia,serif;color:#ffd27a}.stsum span{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#a39884}
+`; document.head.appendChild(uiStyle2);
+// ================= MORE STALLS (unlocked by level) + their long-term systems =================
+Object.assign(SPK, { vael: { n: 'Alchemist Vael', ic: '⚗️', col: '#7aff9a' }, oren: { n: 'Enchanter Oren', ic: '🔮', col: '#c08aff' }, kael: { n: 'Beastmaster Kael', ic: '🐾', col: '#e0a060' }, wren: { n: 'Cartographer Wren', ic: '🗺️', col: '#8ad0ff' }, tyr: { n: 'Arena Master Tyr', ic: '🏟️', col: '#ff8a6a' }, gold: { n: 'Banker Goldwyn', ic: '🏦', col: '#ffd54a' }, ysolde: { n: 'Oracle Ysolde', ic: '🔯', col: '#b0a0ff' } });
+const NEW_STALLS = {
+  alch:   { n: 'Alchemist Vael', ic: '⚗️', col: '#3a9a5a', menu: 'alch', lvl: 6, pos: [12, 4], who: 'vael', role: 'Brew elixirs', task: 'Brew an elixir', tip: 'Pick an elixir and press Brew',
+    intro: ['Bubbles and fumes — mind the green one. I brew elixirs that strengthen you for your next stretch of adventuring.', 'One of each kind can be active at a time. They last a while, but only tick down while you are out in the wilds.'] },
+  ench:   { n: 'Enchanter Oren', ic: '🔮', col: '#7a4ab0', menu: 'ench', lvl: 14, pos: [26, 4], who: 'oren', role: 'Reroll one chosen bonus', task: 'Enchant a bonus on your gear', tip: 'Pick an item, then a bonus to reroll',
+    intro: ['Brann rerolls everything at once. I am more… precise. Choose a single bonus on one of your items and I will reweave only that one.', 'Each item grows harder to enchant the more you work on it. Choose wisely.'] },
+  tamer:  { n: 'Beastmaster Kael', ic: '🐾', col: '#a06a30', menu: 'tamer', lvl: 16, pos: [12, 11], who: 'kael', role: 'Train your companion', task: 'Train your companion', tip: 'Pick a training session for your pet',
+    intro: ['That critter of yours has potential. Bring it here and I will train it — faster levels, stronger bonuses.', 'Companions also learn on their own as you fight together.'] },
+  carto:  { n: 'Cartographer Wren', ic: '🗺️', col: '#3a7ab0', menu: 'carto', lvl: 18, pos: [27, 11], who: 'wren', role: 'Region stars & map scrolls', task: 'Earn a region star or buy a Map Scroll', tip: 'Check your Atlas or buy a scroll',
+    intro: ['I chart every region you conquer. Earn up to three stars in each one, on every difficulty, and I will reward your thoroughness.', 'My Map Scrolls reveal a whole floor the moment you arrive.'] },
+  arena:  { n: 'Arena Master Tyr', ic: '🏟️', col: '#b04a3a', menu: 'arena', lvl: 20, pos: [33, 4], who: 'tyr', role: 'Endless Arena & multiplayer', task: 'Fight in the Endless Arena', tip: 'Start an Arena run',
+    intro: ['The crowd wants blood! Step into the Endless Arena: wave after wave until you fall. Every five waves earns a prize.', 'And if you have friends, the arena is where heroes meet — duel each other or form a party.'] },
+  bank:   { n: 'Banker Goldwyn', ic: '🏦', col: '#a08a20', menu: 'bank', lvl: 25, pos: [23, 20], who: 'gold', role: 'Vault that earns interest', task: 'Deposit gold in the vault', tip: 'Deposit some gold',
+    intro: ['Gold in your pocket buys nothing tomorrow. Gold in my vault earns 2% interest every day you are away — up to thirty days.', 'I can also expand your stash, for a fee.'] },
+  oracle: { n: 'Oracle Ysolde', ic: '🔯', col: '#5a4ab0', menu: 'oracle', lvl: 30, pos: [4, 4], who: 'ysolde', role: 'Weekly prophecy & Rebirth', task: 'Accept a prophecy', tip: 'Choose one of this week\'s prophecies',
+    intro: ['I see the week ahead. Each week, three prophecies — choose one and it will hold true for you until the week turns.', 'And when you have grown very strong, I can return you to the beginning… stronger than before. We call it Rebirth.'] },
+};
+for (const k in NEW_STALLS) { const s = NEW_STALLS[k]; STALLS[k] = { pos: s.pos, role: s.role, who: s.who, intro: s.intro, task: s.task, tip: s.tip }; UNLOCK[k] = { n: s.n, ic: s.ic, kind: 'npc', how: `Reach level ${s.lvl}`, ok: () => S.lvl >= s.lvl }; }
+{ const _btY = buildTown; buildTown = function () {
+  if (G.npcs) for (const k in NEW_STALLS) if (!G.npcs.some(n => n.kind === k)) { const s = NEW_STALLS[k]; G.npcs.push({ n: s.n, x: 0, y: 0, col: s.col, menu: s.menu, ic: s.ic, kind: k, roof: s.col, near: false }); }
+  _btY(); const L = R3.lvl;
+  for (const n of G.npcs) { const s = NEW_STALLS[n.kind]; if (!s) continue; const g = new T3.Group(); g.position.set(n.x * U, 0, n.y * U); L.add(g);
+    const h = makeHumanoid({ body: s.col, hatType: 'hair', hair: '#3a2a1a' }); h.g.position.set(0, 0, -.1); h.g.scale.setScalar(.9); h.g.rotation.y = -Math.atan2(13.5 - n.y * U, 19.5 - n.x * U); g.add(h.g);
+    const prop = { alch: () => { for (let i = 0; i < 3; i++) mk(GEO.sph, mat(['#7aff9a', '#ff7a9a', '#7ab0ff'][i], { em: 1.6, op: .85 }), .1, .14, .1, -.5 + i * .35, .85, .5, g, false); },
+      ench: () => { const o = mk(GEO.oct, mat('#c08aff', { em: 2.2, flat: true }), .16, .22, .16, 0, 1.05, .5, g, false); R3.anim.push(() => { o.rotation.y = G.t * 1.6; o.position.y = 1.05 + Math.sin(G.t * 2) * .06; }); },
+      tamer: () => { const p = makeEnemyModel({ sh: 'beast', col: '#c8a070' }); p.g.scale.setScalar(.18); p.g.position.set(.6, .72, .5); g.add(p.g); },
+      carto: () => { mk(GEO.box, mat('#e8d8b0'), .9, .02, .5, 0, .72, .5, g); mk(GEO.cylL, mat('#c8b080'), .05, .5, .05, -.5, .78, .5, g).rotation.z = Math.PI / 2; },
+      arena: () => { for (const x of [-.4, .4]) { const sw = mk(GEO.box, mat('#c8c8d8', { metal: .8 }), .05, .7, .05, x, 1.05, .45, g); sw.rotation.z = x > 0 ? -.5 : .5; } mk(GEO.cyl, mat('#b04a3a'), .3, .05, .3, 0, 1.25, .5, g).rotation.x = Math.PI / 2; },
+      bank: () => { for (let i = 0; i < 4; i++) mk(GEO.cyl, mat('#ffd54a', { metal: .9, rough: .25, em: .3 }), .12, .04 + i * .03, .12, -.4 + i * .27, .72 + i * .015, .5, g); },
+      oracle: () => { const b = mk(GEO.sph, mat('#b0a0ff', { em: 2, op: .8 }), .2, .2, .2, 0, .95, .5, g, false); R3.anim.push(() => { b.material.emissiveIntensity = 1.6 + Math.sin(G.t * 2) * .6; }); } }[n.kind]; if (prop) prop(); }
+}; }
+// ---------- ALCHEMIST: elixirs (tick only while adventuring) ----------
+const ELIXIRS = {
+  might:  { n: 'Elixir of Might', ic: '💪', d: '+15% damage', f: s => s.dmg += 15 },
+  iron:   { n: 'Ironhide Tonic', ic: '🛡️', d: '+12% max life, +5% damage reduction', f: s => { s.hpPct += 12; s.dr += 5; } },
+  wisdom: { n: 'Draught of Wisdom', ic: '📘', d: '+30% experience', f: s => s.xp += 30 },
+  fortune:{ n: 'Lucky Brew', ic: '🍀', d: '+40% gold find, +25% magic find', f: s => { s.gold += 40; s.luck += 25; } },
+  swift:  { n: 'Quicksilver', ic: '💨', d: '+10% attack & move speed', f: s => { s.atkSpd += 10; s.moveSpd += 10; } },
+};
+const ELIX_DUR = 600;
+function elixCost() { return Math.round(120 * Math.pow(1.12, Math.min(maxPw(), 110))); }
+function brew(k) { const c = elixCost(); if (S.gold < c) { toast('Not enough gold', '#ff8a8a'); sfx('error'); return; } S.gold -= c; S.elix = S.elix || {}; S.elix[k] = ELIX_DUR; calcStats(); sfx('legend'); toast(`${ELIXIRS[k].ic} ${ELIXIRS[k].n}: ${ELIXIRS[k].d} for 10 minutes of adventuring`, '#7aff9a'); stallDone('alch'); S.stats.elix = (S.stats.elix || 0) + 1; saveGame(); renderMenu(); }
+MENUS.alch = () => { const c = elixCost(); return `<h2>⚗️ Alchemist Vael</h2><div class="dim">Each elixir lasts 10 minutes of adventuring (it only ticks down outside Haven). Brewing again refreshes it. Cost: <span class="gold">${fmt(c)} gold</span> each.</div><div class="regcards">${Object.keys(ELIXIRS).map(k => { const E = ELIXIRS[k], t = (S.elix || {})[k] || 0; return `<div class="card ${t > 0 ? 'done' : ''}"><b>${E.ic} ${E.n}</b> <span class="up">${E.d}</span><br>${t > 0 ? `<span class="dim">Active — ${Math.ceil(t / 60)} min left</span> ` : ''}<span class="btn ${S.gold < c ? 'dis' : ''}" onclick="brew('${k}')">${t > 0 ? 'Refresh' : 'Brew'}</span></div>`; }).join('')}</div><span class="btn" onclick="closeMenu()">Leave</span>`; };
+// ---------- ENCHANTER: reroll one chosen affix ----------
+let ENC_SL = 'weapon';
+function encCost(it) { const n = it.enc || 0; return { sh: 25 + n * 20, g: Math.round((60 + n * 60) * Math.pow(1.1, Math.min(maxPw(), 110))) }; }
+function enchant(sl, ai) { const it = S.eq[sl]; if (!it || !it.aff[ai]) return; const c = encCost(it); if (S.shards < c.sh || S.gold < c.g) { toast('Not enough shards or gold', '#ff8a8a'); sfx('error'); return; }
+  S.shards -= c.sh; S.gold -= c.g; const used = it.aff.map(a => a.k); const pool = [...new Set(it.slot === 'weapon' ? AFF_W : AFF_A)].filter(k => !used.includes(k) || k === it.aff[ai].k); const k = pick(pool), A = AFF[k];
+  let v = rnd(A.min, A.max) * (1 + .12 * it.r); if (A.sc) v *= Math.pow(A.sc, it.il); it.aff[ai] = { k, v: v >= 100 ? Math.round(v) : Math.round(v * 10) / 10 }; it.enc = (it.enc || 0) + 1; it.name = (it.awk ? '✪ ' : '') + itemName(it).replace(/^✪ /, '');
+  calcStats(); sfx('lvl'); toast(`🔮 New bonus: <b>${statLine(k, it.aff[ai].v)}</b>`, '#c08aff'); stallDone('ench'); S.stats.enchants = (S.stats.enchants || 0) + 1; saveGame(); renderMenu(); }
+MENUS.ench = () => { const it = S.eq[ENC_SL];
+  let h = `<h2>🔮 Enchanter Oren</h2><div class="dim">Pick one bonus on an equipped item to reroll — only that one changes. Each enchant on the same item costs more.</div><div>${SLOTS.map(sl => `<span class="btn ${ENC_SL === sl ? 'on' : ''}" style="font-size:12px" onclick="ENC_SL='${sl}';renderMenu()">${SLOTN[sl]}</span>`).join('')}</div>`;
+  if (!it) h += '<div class="dim" style="margin:10px 0">Nothing equipped there.</div>';
+  else { const c = encCost(it); h += `<div class="card"><b style="color:${RAR[it.r].c}">${it.name}</b> <span class="dim">— enchanted ${it.enc || 0}× • next costs ${c.sh} ✦ + ${fmt(c.g)} gold</span>${it.aff.length ? it.aff.map((a, i) => `<div class="smrow"><div style="flex:1">${statLine(a.k, a.v)}</div><span class="btn" onclick="enchant('${ENC_SL}',${i})">🔮 Reroll this</span></div>`).join('') : '<div class="dim">This item has no bonuses to enchant.</div>'}</div>`; }
+  return h + `<span class="btn" onclick="closeMenu()">Leave</span>`; };
+// ---------- BEASTMASTER: pet training ----------
+function trainCost(m) { return Math.round(m * 90 * Math.pow(1.1, Math.min(maxPw(), 110))); }
+function trainPet(m) { const k = S.cos.pet; if (!k) { toast('Summon a companion in the Wardrobe first', '#ff8a8a'); return; } if (petLvl(k) >= 10) { toast('Your companion is already fully trained (level 10)', '#e0a060'); return; } const c = trainCost(m); if (S.gold < c) { toast('Not enough gold'); sfx('error'); return; } S.gold -= c; S.petXp = S.petXp || {}; const l0 = petLvl(k); S.petXp[k] = (S.petXp[k] || 0) + m * 40; const l1 = petLvl(k); calcStats(); sfx(l1 > l0 ? 'legend' : 'click'); toast(`🐾 ${PETS[k].n} trained${l1 > l0 ? ` — now level ${l1}!` : ''}`, '#e0a060'); stallDone('tamer'); saveGame(); renderMenu(); }
+MENUS.tamer = () => { const k = S.cos.pet; return `<h2>🐾 Beastmaster Kael</h2>${k ? `<div class="card"><b>${PETS[k].n}</b> — level ${petLvl(k)} / 10 <span class="dim">(${fmt((S.petXp || {})[k] || 0)} XP)</span><div class="dim">${PETS[k].b}</div></div><div>${[[1, 'Short session'], [3, 'Day of training'], [8, 'Week-long camp']].map(([m, n]) => `<span class="btn ${S.gold < trainCost(m) ? 'dis' : ''}" onclick="trainPet(${m})">${n}: +${m * 40} XP — ${fmt(trainCost(m))}g</span>`).join('')}</div>` : '<div class="dim">You have no companion following you. Choose one in the Wardrobe (G) first.</div>'}<span class="btn" onclick="closeMenu()">Leave</span>`; };
+// ---------- CARTOGRAPHER: region stars + map scrolls ----------
+function regStars(r, d) { let n = 0; if (S.done[d][r]) n++; if ((S.prog[d][r] || 0) >= BOSS_F && S.done[d][r]) n++; if (((S.regClr || {})[d + '_' + r] || 0) >= 3) n++; return n; }
+function totalStars() { let n = 0; for (let d = 0; d < 4; d++) for (let r = 0; r < NREG; r++) n += regStars(r, d); return n; }
+{ const _uY = update; update = function (dt) { const c0 = G.cleared; _uY(dt); if (!c0 && G.cleared && !G.abyss && !G.trial) { S.regClr = S.regClr || {}; const k = S.diff + '_' + G.region; S.regClr[k] = (S.regClr[k] || 0) + 1; } }; }
+function claimStars() { const t = totalStars(), got = S.starClaim || 0, tier = Math.floor(t / 5); if (tier <= got) return; for (let i = got; i < tier; i++) { S.marks += 15; addGem(pick2(Object.keys(GEMS)), gemTier()); } S.starClaim = tier; calcStats(); sfx('legend'); toast(`⭐ Atlas reward: +${(tier - got) * 15} Marks and ${tier - got} gem${tier - got > 1 ? 's' : ''}`, '#8ad0ff'); stallDone('carto'); saveGame(); renderMenu(); }
+function scrollCost() { return Math.round(70 * Math.pow(1.12, Math.min(maxPw(), 110))); }
+function buyScroll() { const c = scrollCost(); if (S.gold < c) { toast('Not enough gold'); return; } S.gold -= c; S.scrolls = (S.scrolls || 0) + 1; sfx('click'); toast('🗺 Map Scroll bought — it reveals your next dungeon floor', '#8ad0ff'); stallDone('carto'); saveGame(); renderMenu(); }
+{ const _efY = enterFloor; enterFloor = function (r, f, d) { _efY(r, f, d); if ((S.scrolls || 0) > 0 && !G.tutorial && !G.trial && !G.arena && !G.boss && G.floor !== BOSS_F && M) { S.scrolls--; M.seen.fill(1); G.explored = true; toast(`🗺 Map Scroll used — floor revealed (${S.scrolls} left)`, '#8ad0ff'); } }; }
+{ const _xsY = extraStats; extraStats = function (s) { _xsY(s); if (!S) return; const t = totalStars(); s.dmg += Math.floor(t / 10); for (const k in S.elix || {}) if (S.elix[k] > 0 && ELIXIRS[k]) ELIXIRS[k].f(s); if (S.prophecy && S.prophecy.w === weekId() && PROPH[S.prophecy.k]) PROPH[S.prophecy.k].f(s); const rb = S.rebirth || 0; s.dmg += rb * 4; s.hpPct += rb * 4; s.xp += rb * 5; }; }
+MENUS.carto = () => { const t = totalStars(), tier = Math.floor(t / 5), can = tier > (S.starClaim || 0);
+  let h = `<h2>🗺️ Cartographer Wren</h2><div class="dim">Earn up to 3 ⭐ per region on each difficulty: ★ defeat the Guardian • ★ clear all 7 floors • ★ fully clear 3 floors there. Every 5 stars: 15 Marks + a gem. Every 10 stars: +1% damage forever.</div>
+  <div class="card"><b>⭐ ${t} / ${NREG * 3 * 4} stars</b> <span class="dim">(+${Math.floor(t / 10)}% damage)</span> ${can ? `<span class="btn" onclick="claimStars()">Claim ${tier - (S.starClaim || 0)} reward${tier - (S.starClaim || 0) > 1 ? 's' : ''}</span>` : `<span class="dim">next reward at ${(tier + 1) * 5} stars</span>`}</div>
+  <div class="atlas">${REG.map((R, r) => `<div class="atl"><b style="color:${R.torch}">${r + 1}. ${R.n}</b>${[0, 1, 2, 3].map(d => `<span title="${DIFF[d]}" style="color:${DIFFC[d]}">${'★'.repeat(regStars(r, d))}<span class="dim">${'☆'.repeat(3 - regStars(r, d))}</span></span>`).join(' ')}</div>`).join('')}</div>
+  <div class="card">📜 <b>Map Scroll</b> — reveals the whole map of your next floor. You have ${S.scrolls || 0}. <span class="btn ${S.gold < scrollCost() ? 'dis' : ''}" onclick="buyScroll()">Buy: ${fmt(scrollCost())}g</span></div><span class="btn" onclick="closeMenu()">Leave</span>`; return h; };
+// ---------- BANKER: vault with daily interest, stash expansion ----------
+function bankTick() { if (!S.vault) return; const now = Date.now(), days = Math.min(30, Math.floor((now - (S.vault.t || now)) / 864e5)); if (days > 0) { const earned = Math.floor(S.vault.g * (Math.pow(1.02, days) - 1)); S.vault.g += earned; S.vault.t = days >= 30 ? now : S.vault.t + days * 864e5; if (earned > 0) G.later.push({ t: 1.5, fn: () => toast(`🏦 Your vault earned ${fmt(earned)} gold in interest`, '#ffd54a') }); } }
+{ const _gtY = goTown; goTown = function () { _gtY(); bankTick(); }; }
+function bankDep(f) { const a = Math.floor(S.gold * f); if (a <= 0) return; S.gold -= a; S.vault = S.vault || { g: 0, t: Date.now() }; S.vault.g += a; if (!S.vault.t) S.vault.t = Date.now(); sfx('gold'); stallDone('bank'); saveGame(); renderMenu(); }
+function bankWd() { if (!S.vault || !S.vault.g) return; S.gold += S.vault.g; toast(`🏦 Withdrew ${fmt(S.vault.g)} gold`, '#ffd54a'); S.vault.g = 0; sfx('gold'); saveGame(); renderMenu(); }
+function stashCost() { return Math.round(5000 * Math.pow(1.6, ((S.stashMax || 40) - 40) / 10)); }
+function buyStash() { const c = stashCost(); if (S.gold < c) { toast('Not enough gold'); return; } S.gold -= c; S.stashMax = (S.stashMax || 40) + 10; sfx('legend'); toast(`🧰 Stash expanded to ${S.stashMax} slots`, '#ffd54a'); saveGame(); renderMenu(); }
+MENUS.bank = () => { const v = S.vault || { g: 0 }; return `<h2>🏦 Banker Goldwyn</h2><div class="dim">Gold in the vault earns <b>2% interest per real day</b> (up to 30 days at a time). It is safe there — you never lose vault gold when you fall.</div>
+  <div class="card"><b>Vault: <span class="gold">${fmt(v.g)} gold</span></b><br>${[[.25, '25%'], [.5, '50%'], [1, 'All']].map(([f, n]) => `<span class="btn" onclick="bankDep(${f})">Deposit ${n}</span>`).join('')}<span class="btn ${v.g ? '' : 'dis'}" onclick="bankWd()">Withdraw all</span></div>
+  <div class="card">🧰 Stash: ${S.stashMax || 40} slots <span class="btn ${S.gold < stashCost() ? 'dis' : ''}" onclick="buyStash()">+10 slots: ${fmt(stashCost())}g</span></div><span class="btn" onclick="closeMenu()">Leave</span>`; };
+// ---------- ORACLE: weekly prophecy + Rebirth ----------
+const PROPH = {
+  slayer: { n: 'Prophecy of the Slayer', d: '+20% damage to elites and guardians', f: s => s.elite += 20 },
+  hoard:  { n: 'Prophecy of the Hoard', d: '+35% gold find', f: s => s.gold += 35 },
+  sage:   { n: 'Prophecy of the Sage', d: '+20% experience', f: s => s.xp += 20 },
+  bastion:{ n: 'Prophecy of the Bastion', d: '+8% damage reduction', f: s => s.dr += 8 },
+  storm:  { n: 'Prophecy of the Storm', d: '+20% skill damage, +6% cooldown reduction', f: s => { s.skill += 20; s.cdr += 6; } },
+  seeker: { n: 'Prophecy of the Seeker', d: '+30% magic find', f: s => s.luck += 30 },
+};
+function prophChoices() { const w = weekId(), ks = Object.keys(PROPH), out = []; let x = w; while (out.length < 3) { x = (x * 1103515245 + 12345) % 2147483648; const k = ks[(x >>> 16) % ks.length]; if (!out.includes(k)) out.push(k); } return out; }
+function takeProph(k) { S.prophecy = { k, w: weekId() }; calcStats(); sfx('legend'); toast(`🔯 ${PROPH[k].n}: ${PROPH[k].d} until the week turns`, '#b0a0ff'); stallDone('oracle'); saveGame(); renderMenu(); }
+const REBIRTH_LVL = 60;
+function doRebirth() { if (S.lvl < REBIRTH_LVL) return; S.lvlHi = Math.max(S.lvlHi || 0, S.lvl); let spent = 0; for (const k in S.sk) spent += S.sk[k]; const levelSP = (S.lvl - 1) + Math.floor(S.lvl / 10); S.rebirth = (S.rebirth || 0) + 1; S.sp = Math.max(0, S.sp + spent - levelSP) + 2; S.lvl = 1; S.xp = 0; S.sk = {}; S.bind = [null, null, null, null]; S.stats.rebirths = S.rebirth; calcStats(); P.hp = ST.maxHp; closeMenu();
+  banner(`Rebirth ${S.rebirth}`, `+${S.rebirth * 4}% damage & life, +${S.rebirth * 5}% XP — forever`, '#b0a0ff'); sfx('legend'); screenFlash && screenFlash('rgba(176,160,255,.8)', .5); saveGame(); }
+MENUS.oracle = () => { const cur = S.prophecy && S.prophecy.w === weekId() ? S.prophecy.k : null;
+  return `<h2>🔯 Oracle Ysolde</h2><h3>This week's prophecies <span class="dim">— choose one, it lasts until ${untilStr(nextWeek())} from now</span></h3><div class="regcards">${prophChoices().map(k => `<div class="card ${cur === k ? 'done' : ''}"><b>${PROPH[k].n}</b><div class="up">${PROPH[k].d}</div>${cur === k ? '<span class="up">✔ Active</span>' : `<span class="btn" onclick="takeProph('${k}')">${cur ? 'Switch to this' : 'Accept'}</span>`}</div>`).join('')}</div>
+  <h3>🔄 Rebirth</h3><div class="dim">At level ${REBIRTH_LVL}+ you may be reborn: you return to level 1 and your skills reset, but you keep all your gear, gold and progress — and gain a permanent <b>+4% damage, +4% life and +5% experience</b> per Rebirth (plus 2 bonus skill points each time). Rebirths so far: <b>${S.rebirth || 0}</b>.</div>
+  ${S.lvl >= REBIRTH_LVL ? `<span class="btn" onclick="if(confirm('Rebirth? You will return to level 1 (gear and progress are kept).'))doRebirth()">🔄 Be Reborn</span>` : `<span class="dim">Reach level ${REBIRTH_LVL} to be reborn (you are level ${S.lvl}).</span>`}<br><span class="btn" onclick="closeMenu()">Leave</span>`; };
+// ---------- ARENA MASTER: Endless Arena (PvE waves) ----------
+let ARENA = null;
+function startArena() { closeMenu(); enterFloor(0, BOSS_F); G.later = []; G.banner = null; G.ens = []; G.boss = null; G.pw = Math.max(G.pw, Math.round(S.lvl * 1.08) + S.diff * 28); G.arena = ARENA = { wave: 0, next: 2, alive: 0 }; banner('The Endless Arena', 'Survive as many waves as you can', '#ff8a6a'); stallDone('arena'); }
+{ const _rlY = resetLevel; resetLevel = function () { _rlY(); G.arena = null; }; }
+{ const _uA2 = update; update = function (dt) { _uA2(dt); const A = G.arena; if (!A || G.mode !== 'play' || G.menu) return;
+  A.alive = G.ens.filter(e => !e.dead && !e.prop).length;
+  if (A.alive === 0) { A.next -= dt; if (A.next <= 0) { A.wave++; const pool = REG[Math.min(NREG - 1, Math.floor(A.wave / 3))].en, n = 4 + A.wave; for (let i = 0; i < n; i++) { const a = rnd(0, 6.283), d = rnd(180, 300); const e = mkEnemy(pick(pool), P.x + Math.cos(a) * d, P.y + Math.sin(a) * d, { awake: true, elite: Math.random() < .1 + A.wave * .02 }); if (e) { const k = 1 + A.wave * .12; e.hp *= k; e.maxHp = e.hp; } }
+      if (A.wave % 5 === 0) { const M_ = mkBoss(pick(Object.keys(BOSS)), P.x, P.y - 220); M_.hp *= .35 + A.wave * .03; M_.maxHp = M_.hp; G.boss = M_; }
+      banner(`Wave ${A.wave}`, A.wave % 5 === 0 ? 'A Guardian joins the fight!' : `${n} foes`, '#ff8a6a'); A.next = 3;
+      const best = S.arenaBest || 0; if (A.wave - 1 > best) S.arenaBest = A.wave - 1;
+      if ((A.wave - 1) % 5 === 0 && A.wave > 1 && !(S.arenaRw || {})[A.wave - 1]) { S.arenaRw = S.arenaRw || {}; S.arenaRw[A.wave - 1] = 1; S.marks += 10 + A.wave; dropItem(genItem(G.pw + Math.floor(A.wave / 3), { minR: 2, bonus: .2 + A.wave * .02 }), P.x, P.y); toast(`🏟 Arena milestone: wave ${A.wave - 1}! +${10 + A.wave} Marks and a prize`, '#ff8a6a'); } } } }; }
+{ const _dieY = die; die = function () { if (G.arena) { const w = G.arena.wave; S.arenaBest = Math.max(S.arenaBest || 0, w - 1); toast(`🏟 You fell on wave ${w}. Best: ${S.arenaBest} — no gold lost in the arena`, '#ff8a6a'); } const ar = !!G.arena; _dieY(); if (ar && G.lostGold) { S.gold += G.lostGold; G.lostGold = 0; saveGame(); } }; }
+{ const _uhY = updateHUD; updateHUD = function (dt) { _uhY(dt); const el = typeof hudLine === 'function' && hudLine('h-arena'); if (!el) return; setH(el, 'arena', G.arena ? `<span style="color:#ff8a6a">🏟 Arena wave ${G.arena.wave} • ${G.arena.alive} foes • best ${S.arenaBest || 0}</span>` : ''); }; }
+MENUS.arena = () => `<h2>🏟️ Arena Master Tyr</h2><h3>⚔ Endless Arena</h3><div class="dim">Waves of foes from across the valley, stronger each wave — a Guardian joins every 5th wave. Every 5 waves you survive (first time) earns Marks and a prize. Your best: <b>wave ${S.arenaBest || 0}</b>.</div><span class="btn bigb" onclick="startArena()">Enter the Arena</span>
+  <h3>🌐 Play with friends</h3><div class="dim">Duel a friend or adventure together online.</div><span class="btn" onclick="openMenu('mp')">Open Multiplayer</span><br><span class="btn" onclick="closeMenu()">Leave</span>`;
+// ---------- elixirs tick while adventuring ----------
+let elixT = 0;
+{ const _uE = update; update = function (dt) { _uE(dt); if (!S || G.mode !== 'play' || G.menu || G.inTown || !S.elix) return; elixT += dt; if (elixT < 1) return; let ch = false; for (const k in S.elix) if (S.elix[k] > 0) { S.elix[k] -= elixT; if (S.elix[k] <= 0) { S.elix[k] = 0; ch = true; toast(`${ELIXIRS[k].ic} ${ELIXIRS[k].n} has worn off`, '#a8b8a0'); } } elixT = 0; if (ch) calcStats(); }; }
+{ const _uhE = updateHUD; updateHUD = function (dt) { _uhE(dt); const el = H && H['h-buffs']; if (!el || !S || G.mode === 'title') return; let h = ''; for (const k in S.elix || {}) if (S.elix[k] > 0) h += `<div class="buff wart" title="${ELIXIRS[k].n}: ${ELIXIRS[k].d}" style="border-color:#7aff9a">${ELIXIRS[k].ic}<span>${Math.ceil(S.elix[k] / 60)}m</span></div>`; if (S.prophecy && S.prophecy.w === weekId()) h += `<div class="buff wart" title="${PROPH[S.prophecy.k].n}: ${PROPH[S.prophecy.k].d}" style="border-color:#b0a0ff">🔯<span>wk</span></div>`; if (h) el.insertAdjacentHTML('beforeend', h); }; }
+// ---------- tips, feats, wiki ----------
+Object.assign(MENU_TIP, { alch: 'Elixirs give a strong bonus for 10 minutes of adventuring. One of each kind can be active.', ench: 'Choose a slot, then reroll just one bonus. Costs rise with each enchant on the same item.', carto: 'Stars come from beating, completing and clearing regions on every difficulty.', bank: 'Vault gold grows 2% per real day and is never lost when you fall.', oracle: 'Pick one prophecy per week. Rebirth unlocks at level 60.', arena: 'The Endless Arena is a survival challenge — how many waves can you last?' });
+ACH.push(
+  { id: 'elix10', n: 'Apprentice Alchemist', d: 'Brew 10 elixirs', c: () => S.stats.elix || 0, need: 10, sp: 0 },
+  { id: 'ench10', n: 'Weaver of Fate', d: 'Enchant 10 bonuses', c: () => S.stats.enchants || 0, need: 10, sp: 1 },
+  { id: 'star25', n: 'Seasoned Explorer', d: 'Earn 25 region stars', c: () => totalStars(), need: 25, sp: 1 },
+  { id: 'star100', n: 'Master Cartographer', d: 'Earn 100 region stars', c: () => totalStars(), need: 100, sp: 3 },
+  { id: 'arena10', n: 'Crowd Favourite', d: 'Survive 10 Arena waves', c: () => S.arenaBest || 0, need: 10, sp: 1 },
+  { id: 'arena30', n: 'Champion of the Pit', d: 'Survive 30 Arena waves', c: () => S.arenaBest || 0, need: 30, sp: 2 },
+  { id: 'reb1', n: 'Born Again', d: 'Be reborn once', c: () => S.rebirth || 0, need: 1, sp: 2 },
+  { id: 'reb5', n: 'Eternal Flame', d: 'Be reborn 5 times', c: () => S.rebirth || 0, need: 5, sp: 4 },
+  { id: 'vault', n: 'Compound Interest', d: 'Hold 1,000,000 gold in the vault', c: () => (S.vault && S.vault.g) || 0, need: 1e6, sp: 1 },
+);
+WIKI_TXT.world.push(
+  ['Haven Stalls (later)', Object.values(NEW_STALLS).map(s => `${s.ic} ${s.n} (level ${s.lvl}) — ${s.role}`).join(' • ') + '.'],
+  ['Elixirs', 'Alchemist Vael brews 5 elixirs (Might, Ironhide, Wisdom, Lucky Brew, Quicksilver). Each lasts 10 minutes of adventuring — the timer only runs outside Haven.'],
+  ['Enchanting', 'Enchanter Oren rerolls ONE chosen bonus on an equipped item. Every enchant on the same item costs more shards and gold.'],
+  ['Region Stars', 'Each region has 3 stars per difficulty (48 regions×difficulties, 144 stars): defeat its Guardian, clear all 7 floors, and fully clear 3 floors there. Cartographer Wren pays 15 Marks + a gem every 5 stars, and every 10 stars gives +1% damage permanently. Map Scrolls reveal a whole floor.'],
+  ['Vault & Interest', 'Banker Goldwyn holds gold that earns 2% per real day (up to 30 days at a time) and is never lost on death. He also sells stash expansions.'],
+  ['Prophecies & Rebirth', 'Oracle Ysolde offers 3 prophecies each week; choose one for a week-long bonus. From level 60 you can be Reborn: back to level 1 with skills reset, keeping all gear and progress, for +4% damage, +4% life and +5% XP per Rebirth, forever.'],
+  ['Endless Arena', 'Arena Master Tyr runs a survival arena: endless, ever-stronger waves with a Guardian every 5th wave. Each 5-wave milestone pays Marks and an item the first time. Your best wave is recorded.'],
+);
+const stY = document.createElement('style'); stY.textContent = `.atlas{display:grid;grid-template-columns:repeat(2,1fr);gap:3px 14px;margin:6px 0}.atl{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.18)}.atl span{letter-spacing:1px}`; document.head.appendChild(stY);
+// ================= LONG-TERM PACK 3: skill mastery, monster trophies =================
+// ---------- Skill Mastery ----------
+const SKM_MAX = 20;
+function skmLvl(id) { const x = ((S.skm || {})[id]) || 0; return Math.min(SKM_MAX, Math.floor(Math.sqrt(x / 6))); }
+function skmNext(id) { const l = skmLvl(id); return l >= SKM_MAX ? null : (l + 1) * (l + 1) * 6; }
+let SKM_MUL = 1;
+{ const _pdZ = pdmg; pdmg = function () { return _pdZ() * SKM_MUL; }; }
+{ const _csZ = castSkill; castSkill = function (id) { const c0 = id && (P.cds[id] || 0); SKM_MUL = id ? 1 + skmLvl(id) * .02 : 1; try { _csZ(id); } finally { SKM_MUL = 1; }
+  if (id && (P.cds[id] || 0) > c0 && !G.inTown && !G.tutorial) { S.skm = S.skm || {}; const l0 = skmLvl(id); S.skm[id] = (S.skm[id] || 0) + 1; const l1 = skmLvl(id); if (l1 > l0) { toast(`${SKI[id].ic} <b>${SKI[id].n}</b> Mastery ${l1}${l1 >= SKM_MAX ? ' — mastered!' : ''} (+${l1 * 2}% damage)`, '#9ae0ff'); sfx('shrine'); } } }; }
+{ const _tsZ = tipSkill; tipSkill = function (id, ev) { _tsZ(id, ev); const sk = SKI[id]; if (!sk || !sk.a) return; const c = tip.querySelector('.tc'); if (!c) return; const l = skmLvl(id), nx = skmNext(id);
+  c.insertAdjacentHTML('beforeend', `<hr><div style="color:#9ae0ff;font-size:12px">◆ Skill Mastery ${l} / ${SKM_MAX} (+${l * 2}% damage)${nx ? ` <span class="dim">— ${fmt((S.skm || {})[id] || 0)} / ${fmt(nx)} casts</span>` : ' <span class="up">Mastered</span>'}</div>`); }; }
+// ---------- Monster Trophies ----------
+function trophyCount() { return Object.keys(S.troph || {}).length; }
+{ const _kZ = killEnemy; killEnemy = function (e) { if (e.dead) return; _kZ(e); if (e.prop || e.type === 'dummy' || G.tutorial || !EN[e.type] && !BOSS[e.type]) return; S.troph = S.troph || {}; if (S.troph[e.type]) return;
+  const ch = e.boss ? .12 : e.champ ? .05 : e.elite ? .006 : .0015; if (Math.random() < ch * (1 + Math.min(300, luckEff()) / 300)) { S.troph[e.type] = 1; const n = (e.boss ? BOSS[e.type] : EN[e.type]).n, c = trophyCount();
+    banner('Monster Trophy!', `${n} trophy — ${c} collected${c % 5 === 0 ? ' • +1% damage!' : ''}`, '#e0c27a'); sfx('legend'); calcStats(); saveGame(); } }; }
+{ const _xsZ = extraStats; extraStats = function (s) { _xsZ(s); if (S) s.dmg += Math.floor(trophyCount() / 5); }; }
+LEDGER.push({ k: 'tr', n: 'Monster trophies', ic: '🏆', c: () => trophyCount(), t: [3, 10, 25, 50], b: '+1% life', f: s => s.hpPct += 1 });
+{ const _bsZ = MENUS.bestiary; MENUS.bestiary = () => { const h = _bsZ(); const n = trophyCount(), tot = Object.keys(EN).filter(k => EN[k].ai !== 'prop' && !['dummy', 'tsentry', 'cage'].includes(k)).length + Object.keys(BOSS).length;
+  return h.replace('</h2>', `</h2><div class="card" style="padding:6px 12px">🏆 <b>Monster Trophies: ${n} / ${tot}</b> <span class="dim">— rare drops (guardians 12%, champions 5%, others very rare). Every 5 trophies: +1% damage forever (now +${Math.floor(n / 5)}%).</span>${n ? `<div style="font-size:12px;color:#e0c27a">${Object.keys(S.troph).map(k => (EN[k] || BOSS[k] || {}).n).filter(Boolean).join(' • ')}</div>` : ''}</div>`); }; }
+ACH.push(
+  { id: 'skm10', n: 'Practiced Caster', d: 'Reach Skill Mastery 10 with any skill', c: () => Math.max(0, ...Object.keys(S.skm || {}).map(skmLvl)), need: 10, sp: 1 },
+  { id: 'skm20', n: 'Grand Master', d: 'Master a skill (Mastery 20)', c: () => Math.max(0, ...Object.keys(S.skm || {}).map(skmLvl)), need: 20, sp: 2 },
+  { id: 'tro10', n: 'Trophy Hunter', d: 'Collect 10 monster trophies', c: () => trophyCount(), need: 10, sp: 1 },
+  { id: 'tro40', n: 'Grand Taxidermist', d: 'Collect 40 monster trophies', c: () => trophyCount(), need: 40, sp: 3 },
+);
+WIKI_TXT.skills.push(['Skill Mastery', 'Every active skill levels up as you use it (Mastery 1–20): each level gives that skill +2% damage. Check its tooltip for progress.']);
+WIKI_TXT.world.push(['Monster Trophies', 'Each monster type and guardian can drop a one-time trophy (guardians 12%, champions 5%, elites and others rarely). Every 5 trophies gives +1% damage permanently, and the Ledger has a trophy collection too. See them in the Bestiary.']);
+// ================= ONLINE MULTIPLAYER (peer-to-peer via WebRTC; PeerJS only helps players find each other) =================
+// Lobby with room codes • see friends in Haven • chat • co-op PvE (host's floor is shared) • PvP duels (first to 3)
+const NET = { peer: null, host: false, code: '', id: '', conns: new Map(), players: new Map(), status: 'off', err: '', coopGuest: false, area: '', nid: 0, chat: [], duel: null, lastSend: 0, lastEns: 0, swapTo: null };
+const PVP_SCALE = .3, NET_MAX = 4, PEER_PREFIX = 'embervale-dev-';
+function netName() { return (S && S.netName) || (S && CLS[S.cls] ? `Kindled ${CLS[S.cls].n}` : 'Kindled'); }
+function loadPeerJS() { return new Promise((res, rej) => { if (window.Peer) return res(); const s = document.createElement('script'); s.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'; s.onload = () => res(); s.onerror = () => rej(new Error('Could not load the multiplayer library — you need an internet connection.')); document.head.appendChild(s); }); }
+function netArea() { if (!S || G.mode === 'title') return 'menu'; if (G.duel) return 'duel'; if (G.inTown) return 'town'; if (NET.host && NET.conns.size && !G.tutorial && !G.trial) return 'coop:' + G.levelId; if (NET.coopGuest) return NET.area; return 'solo'; }
+let CHK = 0; const CHUNKS = new Map();
+function send(conn, m) { try { if (!conn || !conn.open) return; const str = JSON.stringify(m); if (str.length < 12000) { conn.send(m); return; } const id = ++CHK + '_' + Math.random().toString(36).slice(2, 7), n = Math.ceil(str.length / 12000); for (let i = 0; i < n; i++) conn.send({ t: 'chunk', id, i, n, d: str.slice(i * 12000, (i + 1) * 12000) }); } catch (e) { console.warn('net send failed', m && m.t, e && e.message); } }
+function recvChunk(c, m) { let b = CHUNKS.get(m.id); if (!b) { b = { n: m.n, parts: [], got: 0, t: Date.now() }; CHUNKS.set(m.id, b); } if (b.parts[m.i] === undefined) { b.parts[m.i] = m.d; b.got++; } if (b.got === b.n) { CHUNKS.delete(m.id); try { netRecv(c, JSON.parse(b.parts.join(''))); } catch (e) { console.warn('net chunk parse', e.message); } } for (const [k, v] of CHUNKS) if (Date.now() - v.t > 30000) CHUNKS.delete(k); }
+function bcast(m, except) { for (const [id, c] of NET.conns) if (id !== except) send(c, m); }
+function toHost(m) { const c = [...NET.conns.values()][0]; send(c, m); }
+function netPost(text) { NET.chat.push(text); if (NET.chat.length > 40) NET.chat.shift(); if (G.menu === 'mp') renderMenu(); }
+// ---------- hosting & joining ----------
+async function netHost() { try { NET.status = 'connecting'; renderMenu(); await loadPeerJS(); const code = Array.from({ length: 5 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join('');
+  const p = new Peer(PEER_PREFIX + code, { debug: 0 }); NET.peer = p; NET.host = true; NET.code = code;
+  p.on('open', id => { NET.id = id; NET.status = 'host'; netPost(`🌐 Room <b>${code}</b> is open — share the code with friends`); sfx('shrine'); renderMenu(); });
+  p.on('connection', c => { if (NET.conns.size >= NET_MAX - 1) { c.on('open', () => { send(c, { t: 'full' }); setTimeout(() => c.close(), 300); }); return; } wireConn(c); });
+  p.on('error', e => netFail(e)); } catch (e) { netFail(e); } }
+async function netJoin(code) { code = String(code || '').trim().toUpperCase(); if (code.length < 4) { toast('Enter the room code your friend shared', '#ff8a8a'); return; }
+  try { NET.status = 'connecting'; renderMenu(); await loadPeerJS(); const p = new Peer(undefined, { debug: 0 }); NET.peer = p; NET.host = false; NET.code = code;
+    p.on('open', id => { NET.id = id; const c = p.connect(PEER_PREFIX + code, { reliable: true, serialization: 'json' }); wireConn(c); setTimeout(() => { if (NET.status === 'connecting') netFail(new Error('No room with that code (or the host is offline).')); }, 12000); });
+    p.on('error', e => netFail(e)); } catch (e) { netFail(e); } }
+function netFail(e) { NET.err = (e && (e.type === 'unavailable-id' ? 'That room code is taken — try again.' : e.type === 'peer-unavailable' ? 'No room with that code (or the host is offline).' : e.message)) || 'Connection failed'; NET.status = 'off'; try { NET.peer && NET.peer.destroy(); } catch (x) { } NET.peer = null; NET.conns.clear(); NET.players.clear(); if (G.menu === 'mp') renderMenu(); toast('🌐 ' + NET.err, '#ff8a8a'); }
+function netLeave() { bcast({ t: 'bye', id: NET.id }); try { NET.peer && NET.peer.destroy(); } catch (e) { } NET.peer = null; NET.conns.clear(); NET.players.clear(); NET.status = 'off'; NET.coopGuest = false; NET.host = false; if (G.duel) endDuel(null); clearRemoteMeshes(); toast('🌐 Left the room', '#9ab0d0'); renderMenu(); }
+function wireConn(c) {
+  c.on('open', () => { NET.conns.set(c.peer, c); if (!NET.host) { NET.status = 'guest'; send(c, { t: 'hello', id: NET.id, name: netName() }); netPost('🌐 Connected to the room'); sfx('shrine'); } renderMenu(); });
+  c.on('data', m => netRecv(c, m));
+  c.on('close', () => { if (G.duel && G.duel.opp === c.peer) endDuel(); NET.conns.delete(c.peer); const p = NET.players.get(c.peer); NET.players.delete(c.peer); if (p) netPost(`👋 ${p.name} left`); if (NET.host) bcast({ t: 'bye', id: c.peer }); else if (c.peer.startsWith(PEER_PREFIX)) { netPost('🌐 The host closed the room'); NET.status = 'off'; NET.coopGuest = false; if (G.duel) endDuel(null); } removeRemote(c.peer); renderMenu(); });
+}
+// ---------- messages ----------
+function netRecv(c, m) {
+  if (!m || !m.t) return;
+  if (m.t === 'chunk') return recvChunk(c, m);
+  if (NET.host && ['st', 'chat', 'bye'].includes(m.t)) bcast(m, c.peer);   // relay to everyone else
+  switch (m.t) {
+    case 'full': netFail(new Error('That room is full (4 players).')); break;
+    case 'hello': netPost(`👋 <b>${esc(m.name)}</b> joined`); sfx('click'); if (NET.host && !G.inTown && netArea().startsWith('coop')) setTimeout(() => sendFloor(c), 400); break;
+    case 'st': { m.col = /^#[0-9a-f]{3,8}$/i.test(m.col || '') ? m.col : '#d8643c'; m.lvl = Math.max(1, Math.min(999, m.lvl | 0)); m.id = String(m.id || '').replace(/[^\w-]/g, ''); m.name = String(m.name || 'Kindled').slice(0, 18); const isNew = !NET.players.has(m.id); const p = NET.players.get(m.id) || {}; Object.assign(p, m, { seen: performance.now() }); if (p.tx === undefined) { p.rx = m.x; p.ry = m.y; } p.tx = m.x; p.ty = m.y; NET.players.set(m.id, p); if (isNew && G.menu === 'mp') renderMenu(); break; }
+    case 'chat': m.col = /^#[0-9a-f]{3,8}$/i.test(m.col || '') ? m.col : '#9ad0ff'; netPost(`<b style="color:${m.col}">${esc(m.name)}:</b> ${esc(m.text)}`); toast(`💬 <b>${esc(m.name)}:</b> ${esc(m.text)}`, '#9ad0ff'); break;
+    case 'bye': { const p = NET.players.get(m.id); if (p) netPost(`👋 ${esc(p.name)} left`); NET.players.delete(m.id); removeRemote(m.id); break; }
+    case 'floor': if (!NET.host) recvFloor(m); break;
+    case 'ens': if (NET.coopGuest && !G.inTown && m.area === NET.area) recvEns(m); break;
+    case 'town': if (NET.coopGuest) { NET.coopGuest = false; toast('🌐 The party returned to Haven', '#9ad0ff'); goTown(); } break;
+    case 'hit': if (NET.host) { const e = G.ens.find(x => x.nid === m.nid && !x.dead); if (e) { NET.applying = 1; try { hurtEnemy(e, m.amt, { noProc: true, crit: m.crit, col: '#9ad0ff' }); } finally { NET.applying = 0; } } } break;
+    case 'dmg': if (G.mode === 'play' && !G.inTown) hurtPlayer(m.amt, null); break;
+    case 'duelreq': if (!NET.host && c.peer.startsWith(PEER_PREFIX)) { if (G.mode !== 'play' || G.boss || G.duel || (G.menu && !['mp', 'pause'].includes(G.menu))) { send(c, { t: 'duelno', reason: 'busy' }); break; } NET.duelReq = m; openMenu('duelask'); } break;
+    case 'duelok': if (NET.host && NET.pendingDuel === c.peer) { NET.pendingDuel = null; bcast({ t: 'town' }, c.peer); startDuel(c.peer, 0); } break;
+    case 'duelno': if (NET.host) { NET.pendingDuel = null; toast(`🌐 ${m.reason === 'busy' ? 'They are busy right now' : 'Duel declined'}`, '#9ab0d0'); } break;
+    case 'duel': if (!NET.host && c.peer.startsWith(PEER_PREFIX)) startDuel(m.from, 1); break;
+    case 'pvp': if (G.duel && G.mode === 'play') { G.lastHitBy = (NET.players.get(m.from) || {}).name || 'a rival'; hurtPlayer(m.amt, null); } break;
+    case 'pvpdead': if (G.duel) duelPoint(true); break;
+    case 'duelend': if (G.duel) endDuel(null); break;
+  }
+}
+function esc(s) { return String(s ?? '').replace(/[<>&"]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[ch])).slice(0, 160); }
+function netChat(text) { text = String(text || '').trim(); if (!text || NET.status === 'off') return; const m = { t: 'chat', id: NET.id, name: netName(), text, col: (S.cos && S.cos.color) || CLS[S.cls].col }; if (NET.host) bcast(m); else toHost(m); netPost(`<b style="color:${m.col}">${esc(m.name)} (you):</b> ${esc(text)}`); }
+// ---------- presence: send my state ----------
+function myState() { return { t: 'st', id: NET.id, name: netName(), lvl: S.lvl, cls: S.cls, col: (S.cos && S.cos.color) || CLS[S.cls].col, x: P.x, y: P.y, face: P.face, hp: P.hp, mhp: ST.maxHp, area: netArea(), sw: P.swingT > 0 ? 1 : 0, dg: P.dodgeT > 0 ? 1 : 0 }; }
+{ const _uN = update; update = function (dt) { _uN(dt); if (NET.status !== 'host' && NET.status !== 'guest' || !S || !P) return; const now = performance.now();
+  if (now - NET.lastSend > 80) { NET.lastSend = now; const st = myState(); if (NET.host) bcast(st); else toHost(st); }
+  if (NET.host && now - NET.lastEns > 100 && netArea().startsWith('coop') && G.mode === 'play') { NET.lastEns = now; sendEns(); }
+  for (const [id, p] of NET.players) { p.rx += (p.tx - p.rx) * Math.min(1, dt * 12); p.ry += (p.ty - p.ry) * Math.min(1, dt * 12); if (now - (p.seen || 0) > 15000) { NET.players.delete(id); removeRemote(id); } }
+  if (G.duel) duelTick(dt); if (NET.pendingFloor && !G.menu) recvFloor(NET.pendingFloor); }; }
+// ---------- remote player models ----------
+const REM = new Map();
+function removeRemote(id) { const r = REM.get(id); if (r) { r.g.parent && r.g.parent.remove(r.g); REM.delete(id); } }
+function clearRemoteMeshes() { for (const id of [...REM.keys()]) removeRemote(id); }
+{ const _rN = render3D; render3D = function (dt) { _rN(dt); if (!R3 || NET.status === 'off') return; const area = netArea();
+  for (const [id, p] of NET.players) { const same = p.area === area && area !== 'menu' && area !== 'solo'; let r = REM.get(id);
+    if (!same) { if (r) r.g.visible = false; continue; }
+    if (!r || r.col !== p.col || r.cls !== p.cls) { removeRemote(id); const h = makeHumanoid({ body: p.col || '#d8643c', cape: shade3(p.col || '#d8643c', .45), hatType: { warrior: 'helm', ranger: 'hood', mage: 'wizard' }[p.cls] || 'helm' }); h.g.traverse(o => { if (o.isMesh) o.receiveShadow = false; }); R3.scene.add(h.g); r = { g: h.g, h, col: p.col, cls: p.cls, mv: 0 }; REM.set(id, r); }
+    r.g.visible = true; const ox = r.g.position.x; r.g.position.set(p.rx * U, 0, p.ry * U); r.g.rotation.y = -p.face; const sp = Math.abs(r.g.position.x - ox) * 60; r.mv += dt * 10 * Math.min(1, sp * 4);
+    const k = Math.min(1, sp * 4); r.h.legL.rotation.z = Math.sin(r.mv) * .7 * k; r.h.legR.rotation.z = -Math.sin(r.mv) * .7 * k; r.h.armR.rotation.z = p.sw ? -1.6 : Math.sin(r.mv) * .4 * k; r.g.scale.setScalar(p.dg ? .8 : 1); } }; }
+{ const _doN = drawOverlay; drawOverlay = function () { _doN(); if (NET.status === 'off' || !R3 || !S || G.mode === 'title') return; const area = netArea();
+  for (const [id, p] of NET.players) { if (p.area !== area || area === 'solo') continue; const s = proj(p.rx, p.ry, 1.55); if (!s.vis) continue;
+    X.textAlign = 'center'; X.font = 'bold 12px "Trebuchet MS",sans-serif'; X.lineWidth = 3; X.strokeStyle = 'rgba(0,0,0,.85)'; const t = `${p.name} • Lv ${p.lvl}`; X.strokeText(t, s.x, s.y - 8); X.fillStyle = '#9ad0ff'; X.fillText(t, s.x, s.y - 8);
+    const w = 46, f = Math.max(0, Math.min(1, p.hp / (p.mhp || 1))); X.fillStyle = 'rgba(0,0,0,.7)'; X.fillRect(s.x - w / 2 - 1, s.y - 3, w + 2, 6); X.fillStyle = G.duel ? '#ff5a4a' : '#5ae07a'; X.fillRect(s.x - w / 2, s.y - 2, w * f, 4); } }; }
+// ---------- CO-OP: host shares the floor, runs the monsters ----------
+{ const _mkN = mkEnemy; mkEnemy = function (type, x, y, o) { const e = _mkN(type, x, y, o); if (e && NET.host) e.nid = ++NET.nid; return e; }; }
+{ const _mbN = mkBoss; mkBoss = function (k, x, y) { const e = _mbN(k, x, y); if (e && NET.host) e.nid = ++NET.nid; return e; }; }
+function floorSnap() { for (const e of G.ens) if (!e.dead && !e.prop && !e.nid) e.nid = ++NET.nid; captureResume(false); const R = S.resume; S.resume = null; if (!R) return null; const live = G.ens.filter(e => !e.dead && !e.prop && e.type !== 'dummy'); R.ens.forEach((s, i) => s.nid = live[i] && live[i].nid); R.shot = null; if (R.g) { R.g.pick = []; R.g.chests = (R.g.chests || []).map(c => ({ ...c, open: true })); } return JSON.parse(JSON.stringify(R, (k, v) => k && k[0] === '_' ? undefined : v)); }
+function sendFloor(conn) { const R = floorSnap(); if (!R) { console.warn('net: no floor snapshot'); return; } const m = { t: 'floor', R, area: netArea(), name: netName() }; if (conn) send(conn, m); else bcast(m); }
+{ const _efN = enterFloor; enterFloor = function (r, f, d) { _efN(r, f, d); if (NET.host && NET.conns.size && !G.tutorial && !G.trial && !G.duel) setTimeout(() => { sendFloor(); toast('🌐 Your party follows you to this floor', '#9ad0ff'); }, 250); }; }
+{ const _gtN = goTown; goTown = function () { const was = NET.host && NET.conns.size && !G.inTown; _gtN(); if (was) bcast({ t: 'town' }); }; }
+function recvFloor(m) { if (G.duel || G.tutorial) return; if (G.menu && G.menu !== 'mp' && G.menu !== 'pause') { if (!NET.pendingFloor) toast(`🌐 ${esc(m.name)} entered a new floor — you'll join as soon as you close this`, '#9ad0ff'); NET.pendingFloor = m; return; } NET.pendingFloor = null;
+  try { closeMenu(); const hp = P.hp, mp = P.mp, myDiff = S.diff; restoreLevel(m.R); NET.floorDiff = S.diff; S.diff = myDiff; P.hp = Math.min(ST.maxHp, Math.max(1, hp)); P.mp = Math.min(ST.maxMp, mp); const live = G.ens.filter(e => !e.dead && !e.prop); m.R.ens.forEach((s, i) => { if (live[i]) live[i].nid = s.nid; }); NET.coopGuest = true; NET.area = m.area; G.later = []; banner('Party Expedition', `${G.abyss ? 'Abyss Depth ' + G.depth : REG[G.region].n + ' — Floor ' + (G.floor + 1)}`, '#9ad0ff'); } catch (e) { console.warn(e); toast('🌐 Could not sync the floor', '#ff8a8a'); } }
+function sendEns() { const a = []; for (const e of G.ens) if (e.nid && !e.prop) a.push([e.nid, Math.round(e.x), Math.round(e.y), Math.round(e.hp), Math.round(e.maxHp), +(e.face || 0).toFixed(2), e.dead ? 1 : 0, e.type, e.boss ? 1 : 0, e.elite || 0]);
+  const eb = G.eb.slice(0, 80).map(b => [Math.round(b.x), Math.round(b.y), +b.vx.toFixed(0), +b.vy.toFixed(0), b.r, Math.round(b.dmg), b.col, +(b.life || 2).toFixed(2)]); bcast({ t: 'ens', area: netArea(), a, eb, stairs: G.stairsOpen ? 1 : 0, exit: G.exit ? [G.exit.x, G.exit.y] : null, killed: G.killed }); }
+function recvEns(m) { const seen = new Set();
+  for (const [nid, x, y, hp, mhp, face, dead, type, boss, elite] of m.a) { seen.add(nid); let e = G.ens.find(q => q.nid === nid);
+    if (!e && !dead) { e = boss ? mkBoss(type, x, y) : mkEnemy(type, x, y, { awake: true, elite: !!elite }); if (!e) continue; e.nid = nid; e.elite = elite || null; if (boss) G.boss = e; }
+    if (!e) continue; e.nx = x; e.ny = y; e.face = face; e.maxHp = mhp; if (!e.dead) { if (dead) { e.hp = 0; killEnemy(e); } else e.hp = hp; } }
+  for (const e of G.ens) if (e.nid && !seen.has(e.nid) && !e.dead) { e.dead = true; }
+  G.eb = m.eb.map(([x, y, vx, vy, r, dmg, col, life]) => ({ x, y, vx, vy, r, dmg, col, life, src: 'party foe' }));
+  G.stairsOpen = !!m.stairs; if (m.exit && !G.exit) G.exit = { x: m.exit[0], y: m.exit[1] }; G.killed = m.killed; }
+// guests: monsters follow the host's positions instead of thinking for themselves
+{ const _ueN = updEnemy; updEnemy = function (e, edt, dt) {
+  if (NET.coopGuest && e.nid !== undefined && !e.prop) { if (e.nx !== undefined) { const k = Math.min(1, dt * 10); const dx = (e.nx - e.x) * k, dy = (e.ny - e.y) * k; e.x += dx; e.y += dy; e.mv = (e.mv || 0) + Math.hypot(dx, dy); } if (e.flash > 0) e.flash -= dt; return; }
+  if (NET.host && NET.conns.size && netArea().startsWith('coop') && !e.prop) { // monsters chase whoever is closest
+    let best = null, bd = dist(e, P); const area = netArea(); for (const [id, p] of NET.players) if (p.area === area && p.hp > 0) { const d = Math.hypot(p.rx - e.x, p.ry - e.y); if (d < bd) { bd = d; best = [id, p]; } }
+    if (best) { const px = P.x, py = P.y; P.x = best[1].rx; P.y = best[1].ry; NET.swapTo = best[0]; try { _ueN(e, edt, dt); } finally { P.x = px; P.y = py; NET.swapTo = null; } return; } }
+  _ueN(e, edt, dt); }; }
+{ const _hpN = hurtPlayer; hurtPlayer = function (amt, src) { if (NET.swapTo) { const c = NET.conns.get(NET.swapTo); send(c, { t: 'dmg', amt }); return; } return _hpN(amt, src); }; }
+{ const _heN = hurtEnemy; hurtEnemy = function (e, amt, o = {}) { if (e && e.type === 'rplayer') { if (G.duel && !G.duel.wait) { send(NET.conns.get(e.rid) || [...NET.conns.values()][0], { t: 'pvp', amt: amt * PVP_SCALE, from: NET.id }); dmgText(e.x, e.y - 30, Math.round(amt * PVP_SCALE), o.crit ? '#ffd54a' : '#ffffff', o.crit, 2); } return; }
+  if (NET.coopGuest && e && e.nid !== undefined && !NET.applying) { toHost({ t: 'hit', nid: e.nid, amt, crit: !!o.crit }); }
+  return _heN(e, amt, o); }; }
+// guests follow the host through stairs and portals
+{ const _nfN = nextFloor; nextFloor = function () { if (NET.coopGuest) { if (!NET.stairT || G.t - NET.stairT > 3) { NET.stairT = G.t; toast('🌐 The host leads the way — wait for them to take the stairs', '#9ad0ff'); } return; } _nfN(); }; }
+if (typeof bossExit === 'function') { const _bxN = bossExit; bossExit = function () { if (NET.coopGuest) { if (!NET.stairT || G.t - NET.stairT > 3) { NET.stairT = G.t; toast('🌐 The host chooses where the party goes next', '#9ad0ff'); } return false; } return _bxN(); }; }
+{ const _dieN = die; die = function () { if (G.duel) { send(NET.conns.get(G.duel.opp) || [...NET.conns.values()][0], { t: 'pvpdead' }); duelPoint(false); return; } if (NET.coopGuest) NET.coopGuest = false; _dieN(); }; }
+// ---------- PvP DUELS ----------
+EN.rplayer = { n: 'Rival', ai: 'dummy', hp: 1e9, dmg: 0, spd: 0, r: 15, col: '#ff5a4a', xp: 0, sh: 'rplayer' };
+{ const _memN = makeEnemyModel; makeEnemyModel = function (d, b) { if (d.sh !== 'rplayer') return _memN(d, b); const g = new T3.Group(), inner = new T3.Group(); g.add(inner); return { g, inner, body: mat('#ffffff').clone(), legs: [], wings: [], spin: [] }; }; }
+function askDuel(id) { if (!NET.host || G.duel) return; NET.pendingDuel = id; send(NET.conns.get(id), { t: 'duelreq', from: NET.id, name: netName() }); toast('⚔ Duel request sent…', '#ff8a6a'); }
+function duelAnswer(yes) { const m = NET.duelReq; NET.duelReq = null; closeMenu(); const c = [...NET.conns.values()][0]; if (!m || !c) return; if (yes) { send(c, { t: 'duelok' }); startDuel(m.from, 1); } else send(c, { t: 'duelno' }); }
+MENUS.duelask = () => `<div style="text-align:center;min-width:420px"><h2>⚔ Duel challenge</h2><div style="margin:8px 0 12px"><b>${esc((NET.duelReq || {}).name || 'The host')}</b> challenges you to a duel — first to 3.</div><span class="btn" onclick="duelAnswer(true)">Accept</span><span class="btn" onclick="duelAnswer(false)">Decline</span></div>`;
+function startDuel(opp, side) { closeMenu(); resetLevel(); G.inTown = false; G.abyss = false; G.region = 9; G.floor = 0; G.pw = calcPw(); M = genArena(); G.duel = { opp, me: 0, them: 0, round: 1, cd: 3 }; NET.coopGuest = false;
+  duelSpawn(side); computeFlow(); buildLevel(); G.mode = 'play'; banner('Duel!', `${esc((NET.players.get(opp) || {}).name || 'Rival')} • first to 3`, '#ff6a5a'); sfx('boss'); }
+function duelSpawn(side) { const s = G.duel.side = side ?? G.duel.side; placePlayer(20, s ? 9 : 22); calcStats(); P.hp = ST.maxHp; P.mp = ST.maxMp; P.cds = {}; P.inv = 1.5; G.ens = G.ens.filter(e => e.type !== "rplayer"); const e = mkEnemy('rplayer', P.x, P.y + (s ? 300 : -300), {}); if (e) { e.rid = G.duel.opp; e.hp = e.maxHp = 1e9; } }
+function duelTick(dt) { const p = NET.players.get(G.duel.opp), e = G.ens.find(x => x.type === 'rplayer'); if (p && e) { e.x = p.rx; e.y = p.ry; e.hp = e.maxHp = 1e9; e.dead = false; } }
+function duelPoint(iWon) { const D = G.duel; if (!D || D.wait) return; if (iWon) D.me++; else D.them++; D.wait = 1; banner(iWon ? 'Point to you!' : 'Your rival scores', `${D.me} — ${D.them}`, iWon ? '#7aff7a' : '#ff6a5a'); sfx(iWon ? 'legend' : 'hurt');
+  if (D.me >= 3 || D.them >= 3) { const win = D.me >= 3; S.stats.pvpWins = (S.stats.pvpWins || 0) + (win ? 1 : 0); S.stats.pvpDuels = (S.stats.pvpDuels || 0) + 1; setTimeout(() => { banner(win ? '🏆 VICTORY' : 'Defeat', win ? 'You won the duel!' : 'Better luck next time', win ? '#ffd27a' : '#ff6a5a'); }, 900); setTimeout(() => endDuel(), 4200); return; }
+  setTimeout(() => { if (!G.duel) return; D.wait = 0; D.round++; duelSpawn(); banner(`Round ${D.round}`, 'Fight!', '#ff8a6a'); }, 2500); }
+function endDuel() { if (!G.duel) return; const opp = G.duel.opp; G.duel = null; send(NET.conns.get(opp) || [...NET.conns.values()][0], { t: 'duelend' }); goTown(); }
+// ---------- the Multiplayer menu ----------
+UNLOCK.mp = { n: 'Multiplayer', ic: '🌐', kind: 'menu', how: 'Reach level 5', ok: () => S.lvl >= 5 };
+HUB.push(['mp', '🌐', 'Multiplayer', 'Play with friends', '']);
+if (typeof HUB_GROUPS !== 'undefined') HUB_GROUPS[2][1].push('mp');
+MENUS.mp = () => {
+  const st = NET.status, on = st === 'host' || st === 'guest';
+  let h = `<h2>🌐 Multiplayer <span class="dim" style="font-size:14px">${on ? (NET.host ? 'hosting' : 'joined') + ` room <b style="color:#ffd27a;letter-spacing:2px">${NET.code}</b>` : 'play online with up to 3 friends'}</span></h2>`;
+  if (!on) {
+    h += `<div class="regcards"><div class="card"><b>🏠 Host a room</b><div class="dim">Get a 5-letter code and share it with your friends.</div><span class="btn ${st === 'connecting' ? 'dis' : ''}" onclick="netHost()">${st === 'connecting' ? 'Connecting…' : 'Host'}</span></div>
+      <div class="card"><b>🔑 Join a room</b><div class="dim">Enter the code your friend gave you.</div><input id="mpcode" maxlength="6" placeholder="CODE" style="width:110px;text-transform:uppercase;letter-spacing:3px;font-size:16px;padding:5px 8px;border-radius:8px;border:1px solid #7a5c36;background:#120e18;color:#ffe2a8"> <span class="btn ${st === 'connecting' ? 'dis' : ''}" onclick="netJoin(document.getElementById('mpcode').value)">Join</span></div></div>
+      <div class="card">Your name: <input id="mpname" maxlength="18" value="${esc(netName())}" style="padding:4px 8px;border-radius:8px;border:1px solid #7a5c36;background:#120e18;color:#ffe2a8" onchange="S.netName=this.value.trim().slice(0,18);saveGame()"></div>
+      ${NET.err ? `<div class="dim" style="color:#ff9a8a">${esc(NET.err)}</div>` : ''}
+      <div class="dim" style="font-size:12px">How it works: you connect directly to your friends' browsers (WebRTC). A free public service (PeerJS) only introduces you — the game itself stays on your computers. Needs an internet connection.</div>`;
+  } else {
+    const list = [...NET.players.values()];
+    h += `<div class="card"><b>Players (${list.length + 1}/${NET_MAX})</b><div class="smrow"><div style="flex:1">⭐ <b>${esc(netName())}</b> (you) • Lv ${S.lvl} ${CLS[S.cls].n}</div><span class="dim">${netArea()}</span></div>${list.map(p => `<div class="smrow"><div style="flex:1"><b style="color:${esc(p.col)}">${esc(p.name)}</b> • Lv ${+p.lvl || 1} ${CLS[p.cls] ? CLS[p.cls].n : ''}</div><span class="dim">${p.area === 'town' ? 'in Haven' : String(p.area).startsWith('coop') ? 'in your party' : p.area === 'duel' ? 'dueling' : 'adventuring'}</span>${NET.host && !G.duel ? ` <span class="btn" onclick="askDuel('${String(p.id).replace(/[^\w-]/g, '')}')">⚔ Duel</span>` : ''}</div>`).join('') || '<div class="dim">Waiting for friends… share the code above.</div>'}</div>
+      <div class="regcards"><div class="card"><b>🧭 Co-op expedition</b><div class="dim">${NET.host ? 'Travel from the Waystone as usual — everyone in the room joins your floor. Monsters chase whoever is closest; everyone gets loot and XP. Take the stairs and the party follows.' : 'When the host enters a floor you join them automatically. The host leads through stairs and portals.'}</div></div>
+      <div class="card"><b>⚔ PvP duel</b><div class="dim">${NET.host ? 'Press Duel next to a player. First to 3 wins. Damage between players is reduced so duels last.' : 'The host can start a duel with you. First to 3 wins.'}</div></div></div>
+      <div class="card"><b>💬 Chat</b><div class="mpchat">${NET.chat.slice(-8).map(t => `<div>${t}</div>`).join('') || '<div class="dim">No messages yet.</div>'}</div><input id="mpmsg" maxlength="140" placeholder="Say something… (Enter to send)" style="width:70%;padding:5px 8px;border-radius:8px;border:1px solid #7a5c36;background:#120e18;color:#ffe2a8" onkeydown="if(event.key==='Enter'){netChat(this.value);this.value='';}"> <span class="btn" onclick="const i=document.getElementById('mpmsg');netChat(i.value);i.value=''">Send</span></div>
+      <span class="btn" onclick="netLeave()">🚪 Leave room</span>${G.duel ? ' <span class="btn" onclick="endDuel()">End duel</span>' : ''}`;
+  }
+  return h + ` <span class="btn" onclick="backHub()">Back</span>`;
+};
+// typing in the menu must not trigger game hotkeys
+addEventListener('keydown', e => { if (e.target && (e.target.id === 'mpmsg' || e.target.id === 'mpcode' || e.target.id === 'mpname')) e.stopImmediatePropagation(); }, true);
+ACH.push({ id: 'pvp1', n: 'Duelist', d: 'Win a PvP duel', c: () => S.stats.pvpWins || 0, need: 1, sp: 1 }, { id: 'pvp10', n: 'Arena Legend', d: 'Win 10 PvP duels', c: () => S.stats.pvpWins || 0, need: 10, sp: 2 });
+WIKI_TXT.world.push(['Multiplayer', 'Open 🌐 Multiplayer from the ☰ Menu (or Arena Master Tyr). Host a room to get a 5-letter code, friends join with it (up to 4 players). In Haven you see each other and can chat. Co-op: when the host enters a dungeon floor everyone joins it — monsters chase the closest player, everyone gets their own loot and XP, and the party follows the host through stairs. PvP: the host can start a duel (first to 3, reduced damage). Needs an internet connection; players connect directly to each other.']);
+const mpStyle = document.createElement('style'); mpStyle.textContent = `.mpchat{max-height:150px;overflow:auto;font-size:12.5px;margin:4px 0 6px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.25)}.mpchat div{padding:1px 0}`; document.head.appendChild(mpStyle);
+{ const _seN = seeE; seeE = function (e) { if (e && e.type === 'rplayer') return; return _seN(e); }; }
+{ const _crN = canResume; canResume = function () { return _crN() && !G.duel && !G.arena && !NET.coopGuest; }; }
+// ================= safety fixes for duels, co-op state, arena guardians, upgrade markers =================
+// leaving a duel any way other than its end screen cleans it up
+{ const _gtB = goTown; goTown = function () { if (G.duel && !NET.endingDuel) { const o = G.duel.opp; G.duel = null; send(NET.conns.get(o) || [...NET.conns.values()][0], { t: 'duelend' }); } if (NET.coopGuest && !NET.netTown) NET.coopGuest = false; _gtB(); }; }
+{ const _edB = endDuel; endDuel = function () { NET.endingDuel = 1; try { _edB(); } finally { NET.endingDuel = 0; } }; }
+{ const _qtB = quitToTitle; quitToTitle = function () { if (G.duel) { const o = G.duel.opp; G.duel = null; send(NET.conns.get(o) || [...NET.conns.values()][0], { t: 'duelend' }); } NET.coopGuest = false; _qtB(); }; }
+{ const _ncB = continueGame; continueGame = function () { G.duel = null; NET.coopGuest = false; _ncB(); }; }
+{ const _uB2 = update; update = function (dt) { if (G.duel && pressed.t) pressed.t = false; _uB2(dt); }; }
+// a co-op guest who heads off on their own stops being a guest
+{ const _efB = enterFloor; enterFloor = function (r, f, d) { if (NET.coopGuest) NET.coopGuest = false; if (G.duel) { const o = G.duel.opp; G.duel = null; send(NET.conns.get(o) || [...NET.conns.values()][0], { t: 'duelend' }); } _efB(r, f, d); }; }
+{ const _dieB = die; die = function () { if (G.duel && !NET.conns.has(G.duel.opp) && !(NET.conns.size && !NET.host)) G.duel = null; _dieB(); }; }
+{ const _nrB = netRecv; netRecv = function (c, m) { if (m && m.t === 'town') NET.netTown = 1; try { _nrB(c, m); } finally { NET.netTown = 0; } }; }
+// arena guardians are just very tough arena foes — not real guardian kills
+{ const _bdB = bossDefeated; bossDefeated = function (e) { if (G.arena) { G.boss = null; shake(14); banner('Arena Guardian Slain!', `Wave ${G.arena.wave}`, '#ff8a6a'); dropItem(genItem(G.pw + 1, { minR: 2, bonus: .3 }), e.x, e.y); drop('ore', ri(3, 5), e.x, e.y); S.stats.arenaBosses = (S.stats.arenaBosses || 0) + 1; return; } _bdB(e); }; }
+// upgrade markers refresh as soon as your gear changes
+{ const _csB2 = calcStats; calcStats = function () { _csB2(); if (typeof UPC !== 'undefined') UPC.clear(); }; }
 // ================= MAIN LOOP =================
 let lastT = performance.now(), errShown = false;
 function frame(now) {

@@ -13,7 +13,8 @@ See `How to play.txt` for controls. New players start with a guided tutorial.
 - 20 weapon types, each with a signature Art and mastery
 - 11 item rarities, item sets, crafting, gems, infusions, awakening and ascension
 - Haven: a village that grows as you play, with stall keepers, villager requests and expeditions
-- Long-term systems: Constellation, Seasons, Weekly Hunts, Nemesis, Ledger & Renown, and more
+- Long-term systems: Constellation, Seasons, Weekly Hunts, Nemesis, Ledger & Renown, Region Stars, Rebirth, Skill Mastery, Monster Trophies, the Endless Arena and more
+- Online multiplayer (peer-to-peer via WebRTC/PeerJS): room codes, see friends in Haven, chat, co-op dungeons and PvP duels
 
 ## Building from source
 The game is plain JavaScript in `source/`, concatenated into one HTML file:

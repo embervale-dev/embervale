@@ -11,7 +11,7 @@ function captureResume(withShot) {
   const m = {}; for (const k in M) { const v = M[k]; if (k === 'flow') continue; m[k] = v instanceof Uint8Array ? { u8: b64(v) } : v; }
   const ens = G.ens.filter(e => !e.dead && !e.prop && e.type !== 'dummy').map(e => ({ type: e.type, x: e.x, y: e.y, hp: e.hp, maxHp: e.maxHp, elite: e.elite || null, champ: !!e.champ, name: e.d && e.d.n, boss: !!e.boss, counted: !!e.counted, golden: !!e.golden, nemesis: !!e.nemesis, invader: !!e.invader, minion: !!e.minion, awake: !!e.awake, dmg: e.dmg, r: e.r, xp: e.xp, gold: e.gold }));
   const props = G.ens.filter(e => !e.dead && e.prop).map(e => ({ type: e.type, x: e.x, y: e.y }));
-  const g = {}; for (const k of RES_KEYS) if (G[k] !== undefined) g[k] = G[k];
+  const g = {}; for (const k of RES_KEYS) if (G[k] !== undefined) g[k] = JSON.parse(JSON.stringify(G[k], (kk, v) => kk && kk[0] === '_' ? undefined : v) ?? 'null');
   const prev = S.resume;
   S.resume = { v: 1, t: Date.now(), region: G.region, floor: G.floor, depth: G.depth, abyss: !!G.abyss, pw: G.pw, diff: S.diff, M: m, ens, props, g, P: { x: P.x, y: P.y, hp: P.hp, mp: P.mp, surge: P.surge, face: P.face }, shot: withShot ? snapShot() : (prev && prev.shot) || null };
   try { const str = JSON.stringify(S.resume); if (str.length > 1.6e6) S.resume.shot = null; } catch (e) { S.resume = null; }

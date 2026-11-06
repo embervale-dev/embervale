@@ -332,7 +332,7 @@ function buildTown() {
       mk(GEO.box, mat('#8a6a40'), 1.7, 1, .08, 0, 1.2, 0, g); mk(GEO.box, mat('#5a3a20'), 1.9, .15, .3, 0, 1.78, 0, g);
       for (let i = 0; i < 5; i++) mk(GEO.box, mat('#f0e4c0'), .28, .36, .02, -.6 + i * .3, 1.2 + (i % 2) * .08, .05, g, false);
     } else {
-      const roof = { shop: '#c84a3a', smith: '#5a5a6a', sage: '#4a5ab0', jewel: '#2a8a8a', curio: '#8a3a8a' }[n.kind];
+      const roof = { shop: '#c84a3a', smith: '#5a5a6a', sage: '#4a5ab0', jewel: '#2a8a8a', curio: '#8a3a8a' }[n.kind] || n.roof || '#6a5a3a';
       for (const [x, z] of [[-.9, -.6], [.9, -.6], [-.9, .6], [.9, .6]]) mk(GEO.box, mat('#5a3a22'), .1, 1.9, .1, x, .95, z, g);
       const awn = mk(GEO.box, mat(roof), 2.1, .08, 1.5, 0, 1.95, 0, g); awn.rotation.x = .12;
       mk(GEO.box, mat('#7a5030'), 1.8, .7, .5, 0, .35, .5, g);

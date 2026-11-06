@@ -28,6 +28,22 @@ THINGS TO DISCOVER
   villagers to rescue, Haven requests, the Guardian Gauntlet and the
   Weekly Invasion. The Wiki (H) explains every one of them.
 
+MULTIPLAYER (online)
+  Play on the website (embervale.neonxsl.dev) or any copy with internet.
+  Open the Menu -> Multiplayer (from level 5), press Host and share the
+  5-letter code. Friends press Join and type the code (up to 4 players).
+  - Haven: see each other and chat.
+  - Co-op: when the host enters a dungeon floor, everyone joins it.
+    Monsters chase the closest player and everyone gets their own loot.
+  - PvP: the host can start a duel with a player — first to 3 wins.
+
+MORE STALLS AS YOU LEVEL
+  Alchemist (6), Enchanter (14), Beastmaster (16), Cartographer (18),
+  Arena Master (20), Banker (25) and Oracle (30) open shop in Haven over
+  time — elixirs, single-bonus enchanting, pet training, region stars,
+  the Endless Arena, a gold vault with interest, weekly prophecies and
+  Rebirth.
+
 SAVES
   Progress saves automatically in your browser (3 save slots).
   Use "Save Slots -> Export" on the title screen to back up a character

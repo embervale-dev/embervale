@@ -47,7 +47,7 @@ function fitMenu() {
   panel.style.removeProperty('--fitz'); const inner = panel; inner.classList.remove('fitz');
   const key = G.menu + (G.menu === 'wiki' ? ':' + (WIKI_Q ? 'q' : WIKI_TAB) : '');
   if (!fitOver()) return;
-  fitSections(key);
+  if (!['stash', 'shop', 'jewel', 'wander', 'craft'].includes(G.menu)) fitSections(key);
   if (!FIT_NOPAGE.includes(G.menu)) for (let pass = 0; pass < 2 && fitOver(); pass++) if (!fitPaginate(key + ':' + pass)) break;
   if (fitOver()) { // gentle final fit: shrink a little (never below 82%)
     const minZ = innerHeight < 760 ? .66 : innerHeight < 900 ? .74 : .82; const r = Math.max(minZ, Math.min(panel.clientHeight / panel.scrollHeight, panel.clientWidth / panel.scrollWidth) - .01); panel.classList.add('fitz'); let z = r; panel.style.setProperty('--fitz', z.toFixed(3)); for (let i = 0; i < 6 && fitOver() && z > minZ - .08; i++) { z -= .025; panel.style.setProperty('--fitz', z.toFixed(3)); } }

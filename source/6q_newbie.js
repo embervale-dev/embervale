@@ -37,7 +37,8 @@ HOOK('buyMarks', 'curio', { pre: () => S.marks, post: (m) => S.marks < m });
 { const _cqQ = claimQuest; claimQuest = function (i) { const q = S.quests[i]; _cqQ(i); if (q && S.quests[i] !== q) stallDone('board'); }; }
 // ---------- Haven Guide tracker (town only, until done) ----------
 function guideHTML() { const st = stState(); const ks = Object.keys(STALLS).filter(k => unl(k) && (G.npcs || []).some(n => n.kind === k)); if (!ks.length || ks.every(k => st.task[k])) return '';
-  return `<div class="gh">🏡 Haven Guide <span class="dim">${ks.filter(k => st.task[k]).length}/${ks.length}</span></div>` + ks.map(k => { const n = G.npcs.find(x => x.kind === k); return `<div class="gi ${st.task[k] ? 'ok' : ''}">${st.task[k] ? '✔' : '○'} <b>${n ? n.ic : ''} ${STALLS[k].task}</b></div>`; }).join(''); }
+  const todo = ks.filter(k => !st.task[k]), shown = todo.slice(0, 4);
+  return `<div class="gh">🏡 Haven Guide <span class="dim">${ks.length - todo.length}/${ks.length} done</span></div>` + shown.map(k => { const n = G.npcs.find(x => x.kind === k); return `<div class="gi">○ <b>${n ? n.ic : ''} ${STALLS[k].task}</b></div>`; }).join('') + (todo.length > 4 ? `<div class="gi dim">+ ${todo.length - 4} more…</div>` : ''); }
 // ---------- next-step hint (always tells you what to do) ----------
 function nextStep() {
   if (!S || !P || G.tutorial || G.tut) return '';

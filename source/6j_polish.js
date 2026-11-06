@@ -12,10 +12,11 @@ gainXP = function (x) {
   if (S.lvl <= l0) return;
   const rw = [];
   for (let L = l0 + 1; L <= S.lvl; L++) {
+    if (L <= (S.lvlHi || 0)) continue;
     if (L % 5 === 0) { S.marks += 10; addGem(pick2(Object.keys(GEMS)), gemTier()); rw.push('🔶 10 Marks + 💎 a gem'); }
     if (L % 10 === 0) { S.sp += 1; const it = genItem(maxPw() + 1, { minR: 3 }); it.isNew = true; (S.inv.length < S.invMax ? S.inv : S.stash).push(it); noteFound(it); rw.push(`+1 bonus skill point and <span style="color:${RAR[it.r].c}">${it.name}</span>`); }
   }
-  const n = S.lvl - l0;
+  S.lvlHi = Math.max(S.lvlHi || 0, S.lvl); const n = S.lvl - l0;
   LV_CARD.innerHTML = `<div class="lt">LEVEL ${S.lvl}</div><div class="ls">❤ +${fmt(ST.maxHp - hp0)} life • 💧 +${fmt(ST.maxMp - mp0)} mana • ✨ +${n} skill point${n > 1 ? 's' : ''} <span class="dim">[K]</span></div>${rw.length ? `<div class="lm">🏅 Milestone: ${rw.join(' • ')}</div>` : `<div class="dim" style="font-size:11px">Next milestone at level ${Math.ceil((S.lvl + 1) / 5) * 5}</div>`}`;
   LV_CARD.classList.remove('on'); void LV_CARD.offsetWidth; LV_CARD.classList.add('on'); lvCardT = 3.6;
 };
