@@ -12261,7 +12261,7 @@ function netRecv(c, m) {
     case 'full': netFail(new Error('That room is full (4 players).')); break;
     case 'hello': netPost(`👋 <b>${esc(m.name)}</b> joined`); sfx('click'); if (NET.host && !G.inTown && netArea().startsWith('coop')) setTimeout(() => sendFloor(c), 400); break;
     case 'st': { m.col = /^#[0-9a-f]{3,8}$/i.test(m.col || '') ? m.col : '#d8643c'; m.lvl = Math.max(1, Math.min(999, m.lvl | 0)); m.id = String(m.id || '').replace(/[^\w-]/g, ''); m.name = String(m.name || 'Kindled').slice(0, 18); const isNew = !NET.players.has(m.id); const p = NET.players.get(m.id) || {}; Object.assign(p, m, { seen: performance.now() }); if (p.tx === undefined) { p.rx = m.x; p.ry = m.y; } p.tx = m.x; p.ty = m.y; NET.players.set(m.id, p); if (isNew && G.menu === 'mp') renderMenu(); break; }
-    case 'chat': m.col = /^#[0-9a-f]{3,8}$/i.test(m.col || '') ? m.col : '#9ad0ff'; netPost(`<b style="color:${m.col}">${esc(m.name)}:</b> ${esc(m.text)}`); toast(`💬 <b>${esc(m.name)}:</b> ${esc(m.text)}`, '#9ad0ff'); break;
+    case 'chat': m.col = /^#[0-9a-f]{3,8}$/i.test(m.col || '') ? m.col : '#9ad0ff'; netPost(`<b style="color:${m.col}">${esc(m.name)}:</b> ${esc(m.text)}`); if (G.menu && G.menu !== 'mp') toast(`💬 <b>${esc(m.name)}:</b> ${esc(m.text)}`, '#9ad0ff'); break;
     case 'bye': { const p = NET.players.get(m.id); if (p) netPost(`👋 ${esc(p.name)} left`); NET.players.delete(m.id); removeRemote(m.id); break; }
     case 'floor': if (!NET.host) recvFloor(m); break;
     case 'ens': if (NET.coopGuest && !G.inTown && m.area === NET.area) recvEns(m); break;
@@ -12371,7 +12371,7 @@ MENUS.mp = () => {
   return h + ` <span class="btn" onclick="backHub()">Back</span>`;
 };
 // typing in the menu must not trigger game hotkeys
-addEventListener('keydown', e => { if (e.target && (e.target.id === 'mpmsg' || e.target.id === 'mpcode' || e.target.id === 'mpname')) e.stopImmediatePropagation(); }, true);
+document.addEventListener('keydown', e => { if (e.target && (e.target.id === 'mpmsg' || e.target.id === 'mpcode' || e.target.id === 'mpname')) e.stopPropagation(); });
 ACH.push({ id: 'pvp1', n: 'Duelist', d: 'Win a PvP duel', c: () => S.stats.pvpWins || 0, need: 1, sp: 1 }, { id: 'pvp10', n: 'Arena Legend', d: 'Win 10 PvP duels', c: () => S.stats.pvpWins || 0, need: 10, sp: 2 });
 WIKI_TXT.world.push(['Multiplayer', 'Open 🌐 Multiplayer from the ☰ Menu (or Arena Master Tyr). Host a room to get a 5-letter code, friends join with it (up to 4 players). In Haven you see each other and can chat. Co-op: when the host enters a dungeon floor everyone joins it — monsters chase the closest player, everyone gets their own loot and XP, and the party follows the host through stairs. PvP: the host can start a duel (first to 3, reduced damage). Needs an internet connection; players connect directly to each other.']);
 const mpStyle = document.createElement('style'); mpStyle.textContent = `.mpchat{max-height:150px;overflow:auto;font-size:12.5px;margin:4px 0 6px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.25)}.mpchat div{padding:1px 0}`; document.head.appendChild(mpStyle);
@@ -12392,6 +12392,62 @@ const mpStyle = document.createElement('style'); mpStyle.textContent = `.mpchat{
 { const _bdB = bossDefeated; bossDefeated = function (e) { if (G.arena) { G.boss = null; shake(14); banner('Arena Guardian Slain!', `Wave ${G.arena.wave}`, '#ff8a6a'); dropItem(genItem(G.pw + 1, { minR: 2, bonus: .3 }), e.x, e.y); drop('ore', ri(3, 5), e.x, e.y); S.stats.arenaBosses = (S.stats.arenaBosses || 0) + 1; return; } _bdB(e); }; }
 // upgrade markers refresh as soon as your gear changes
 { const _csB2 = calcStats; calcStats = function () { _csB2(); if (typeof UPC !== 'undefined') UPC.clear(); }; }
+// ================= in-game chat: press / to talk to your multiplayer room =================
+// Recent messages show bottom-left and fade out; / opens the input, Enter sends, Esc closes.
+const CHAT = { el: null, log: null, inp: null, open: false, shown: false, hinted: false };
+function chatOnline() { return (NET.status === 'host' || NET.status === 'guest') && S && G.mode !== 'title'; }
+function chatBuild() {
+  if (CHAT.el) return;
+  const d = document.createElement('div'); d.id = 'chatbox';
+  d.innerHTML = '<div id="chatlog"></div><input id="chatin" maxlength="140" autocomplete="off" spellcheck="false" placeholder="Say something… (Enter to send, Esc to close)">';
+  document.body.appendChild(d); CHAT.el = d; CHAT.log = d.querySelector('#chatlog'); CHAT.inp = d.querySelector('#chatin');
+  CHAT.inp.addEventListener('keydown', e => {
+    e.stopPropagation();   // typing must not trigger game hotkeys
+    if (e.key === 'Enter') { e.preventDefault(); const v = CHAT.inp.value; CHAT.inp.value = ''; netChat(v); chatClose(); }
+    else if (e.key === 'Escape') { e.preventDefault(); chatClose(); }
+  });
+  CHAT.inp.addEventListener('keyup', e => e.stopPropagation());
+  CHAT.inp.addEventListener('blur', () => { if (CHAT.open) chatClose(); });
+}
+function chatAdd(html, cls) {
+  chatBuild(); const d = document.createElement('div'); d.innerHTML = html; if (cls) d.className = cls;
+  CHAT.log.appendChild(d); while (CHAT.log.children.length > 40) CHAT.log.firstChild.remove();
+  setTimeout(() => d.classList.add('old'), 10000); CHAT.log.scrollTop = CHAT.log.scrollHeight;
+}
+function chatOpen() {
+  chatBuild(); CHAT.open = true; CHAT.el.classList.add('open');
+  for (const k in keys) keys[k] = false; pressed = {}; mouse.down = false;   // stop walking/attacking while typing
+  CHAT.inp.value = ''; CHAT.inp.focus(); CHAT.log.scrollTop = CHAT.log.scrollHeight;
+}
+function chatClose() { if (!CHAT.el) return; CHAT.open = false; CHAT.el.classList.remove('open'); CHAT.inp.blur(); }
+// every room message (chat, joins, leaves) also lands in the in-game log
+{ const _npC = netPost; netPost = function (text) { _npC(text); chatAdd(text); }; }
+// show the box only while you're in a room and in the game
+{ const _uC = update; update = function (dt) { _uC(dt); const on = !!chatOnline();
+  if (on !== CHAT.shown) { CHAT.shown = on; chatBuild(); CHAT.el.style.display = on ? 'flex' : 'none'; if (!on) chatClose();
+    if (on && !CHAT.hinted) { CHAT.hinted = true; chatAdd('Press <b>/</b> to chat', 'hint'); } } }; }
+// "/" opens chat (only on the main game screen, never while typing elsewhere)
+addEventListener('keydown', e => {
+  if (e.key !== '/' || e.repeat) return;
+  const t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if (!S || G.mode === 'title' || G.menu) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  if (chatOnline()) chatOpen(); else toast('💬 Chat works in a multiplayer room — open ☰ Menu → 🌐 Multiplayer', '#9ad0ff');
+}, true);
+const chatStyle = document.createElement('style');
+chatStyle.textContent = `
+#chatbox{position:fixed;left:72px;bottom:140px;width:min(360px,calc(100vw - 88px));z-index:5;display:none;flex-direction:column;gap:6px;pointer-events:none;font-size:13px;line-height:1.35}
+#chatlog{display:flex;flex-direction:column;gap:3px;max-height:190px;overflow:hidden;padding:2px}
+#chatlog div{align-self:flex-start;max-width:100%;padding:3px 9px;border-radius:8px;background:rgba(10,8,16,.62);color:#ece0c8;text-shadow:0 1px 2px #000;overflow-wrap:anywhere;transition:opacity .6s}
+#chatlog div.hint{color:#a39884;font-style:italic}
+#chatbox:not(.open) #chatlog div.old{opacity:0}
+#chatbox.open{pointer-events:auto}
+#chatbox.open #chatlog{overflow-y:auto;background:rgba(10,8,16,.55);border:1px solid rgba(214,168,82,.35);border-radius:10px;padding:6px}
+#chatbox.open #chatlog div{background:none;padding:1px 2px}
+#chatin{display:none;width:100%;box-sizing:border-box;padding:7px 10px;border-radius:9px;border:1px solid rgba(214,168,82,.7);background:rgba(14,11,22,.94);color:#ffe2a8;font:inherit;outline:none;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+#chatin:focus{border-color:var(--gold,#ffd27a)}
+#chatbox.open #chatin{display:block}`;
+document.head.appendChild(chatStyle);
 // ================= MAIN LOOP =================
 let lastT = performance.now(), errShown = false;
 function frame(now) {

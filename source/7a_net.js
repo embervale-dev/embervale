@@ -46,7 +46,7 @@ function netRecv(c, m) {
     case 'full': netFail(new Error('That room is full (4 players).')); break;
     case 'hello': netPost(`👋 <b>${esc(m.name)}</b> joined`); sfx('click'); if (NET.host && !G.inTown && netArea().startsWith('coop')) setTimeout(() => sendFloor(c), 400); break;
     case 'st': { m.col = /^#[0-9a-f]{3,8}$/i.test(m.col || '') ? m.col : '#d8643c'; m.lvl = Math.max(1, Math.min(999, m.lvl | 0)); m.id = String(m.id || '').replace(/[^\w-]/g, ''); m.name = String(m.name || 'Kindled').slice(0, 18); const isNew = !NET.players.has(m.id); const p = NET.players.get(m.id) || {}; Object.assign(p, m, { seen: performance.now() }); if (p.tx === undefined) { p.rx = m.x; p.ry = m.y; } p.tx = m.x; p.ty = m.y; NET.players.set(m.id, p); if (isNew && G.menu === 'mp') renderMenu(); break; }
-    case 'chat': m.col = /^#[0-9a-f]{3,8}$/i.test(m.col || '') ? m.col : '#9ad0ff'; netPost(`<b style="color:${m.col}">${esc(m.name)}:</b> ${esc(m.text)}`); toast(`💬 <b>${esc(m.name)}:</b> ${esc(m.text)}`, '#9ad0ff'); break;
+    case 'chat': m.col = /^#[0-9a-f]{3,8}$/i.test(m.col || '') ? m.col : '#9ad0ff'; netPost(`<b style="color:${m.col}">${esc(m.name)}:</b> ${esc(m.text)}`); if (G.menu && G.menu !== 'mp') toast(`💬 <b>${esc(m.name)}:</b> ${esc(m.text)}`, '#9ad0ff'); break;
     case 'bye': { const p = NET.players.get(m.id); if (p) netPost(`👋 ${esc(p.name)} left`); NET.players.delete(m.id); removeRemote(m.id); break; }
     case 'floor': if (!NET.host) recvFloor(m); break;
     case 'ens': if (NET.coopGuest && !G.inTown && m.area === NET.area) recvEns(m); break;
@@ -156,7 +156,7 @@ MENUS.mp = () => {
   return h + ` <span class="btn" onclick="backHub()">Back</span>`;
 };
 // typing in the menu must not trigger game hotkeys
-addEventListener('keydown', e => { if (e.target && (e.target.id === 'mpmsg' || e.target.id === 'mpcode' || e.target.id === 'mpname')) e.stopImmediatePropagation(); }, true);
+document.addEventListener('keydown', e => { if (e.target && (e.target.id === 'mpmsg' || e.target.id === 'mpcode' || e.target.id === 'mpname')) e.stopPropagation(); });
 ACH.push({ id: 'pvp1', n: 'Duelist', d: 'Win a PvP duel', c: () => S.stats.pvpWins || 0, need: 1, sp: 1 }, { id: 'pvp10', n: 'Arena Legend', d: 'Win 10 PvP duels', c: () => S.stats.pvpWins || 0, need: 10, sp: 2 });
 WIKI_TXT.world.push(['Multiplayer', 'Open 🌐 Multiplayer from the ☰ Menu (or Arena Master Tyr). Host a room to get a 5-letter code, friends join with it (up to 4 players). In Haven you see each other and can chat. Co-op: when the host enters a dungeon floor everyone joins it — monsters chase the closest player, everyone gets their own loot and XP, and the party follows the host through stairs. PvP: the host can start a duel (first to 3, reduced damage). Needs an internet connection; players connect directly to each other.']);
 const mpStyle = document.createElement('style'); mpStyle.textContent = `.mpchat{max-height:150px;overflow:auto;font-size:12.5px;margin:4px 0 6px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.25)}.mpchat div{padding:1px 0}`; document.head.appendChild(mpStyle);
