@@ -34,7 +34,7 @@ populate = function (R) {
   const hd = hazDef(), n = ri(3, 6); for (let i = 0; i < n; i++) { const p = spotM(); if (p) G.haz.push({ ...p, r: rnd(48, 88), h: hd, ang: rnd(0, 6.283), t: rnd(0, 3.5), hit: false }); }
   if (Math.random() < .35) G.secret = planSecret();
   if (Math.random() < .14 && M.rooms.length >= 4) { const list = []; for (let i = 0; i < 3; i++) { const p = spotM(); if (p) list.push({ ...p, lit: false }); } if (list.length === 3) G.braz = { list, done: false }; }
-  if ((S.rescued || []).length < CAPTIVES.length && Math.random() < .12) { const p = spotM(); if (p) { mkEnemy('cage', p.x, p.y, {}); G.later.push({ t: 2, fn: () => toast('🔒 You hear someone calling for help on this floor...', '#ffd27a') }); } }
+  if ((S.rescued || []).length < CAPTIVES.length && Math.random() < .12) { const p = spotM(); if (p) { mkEnemy('cage', p.x, p.y, {}); G.later.push({ t: 2, fn: () => toast(ico('lock') + ' You hear someone calling for help on this floor...', '#ffd27a') }); } }
 };
 // ---------- hazards in play ----------
 function hazDmg() { return ST.maxHp * .07 * (S.opts.relaxed ? .65 : 1) * (1 - Math.min(60, ST.dr) / 200) * (1 + S.diff * .15); }
@@ -85,12 +85,12 @@ update = function (dt) {
   if (s && !s.opened) { if ((P.atkCd > atkPrevB + .01 && dist(P, s.c) < 110) || G.pp.some(b => Math.hypot(b.x - s.c.x, b.y - s.c.y) < 36) || G.rings.some(r => r.r > 60 && dist(r, s.c) < r.r)) openSecret(); }
   atkPrevB = P.atkCd;
   const B = G.braz;
-  if (B && !B.done) { for (const b of B.list) if (!b.lit && dist(P, b) < 42) { b.lit = true; sfx('shrine'); burst(b.x, b.y, '#ff9a3a', 24, 160, .7, 3, 1.2); const n = B.list.filter(x => x.lit).length; toast(`🔥 Brazier lit (${n}/3)`, '#ffb04a'); }
+  if (B && !B.done) { for (const b of B.list) if (!b.lit && dist(P, b) < 42) { b.lit = true; sfx('shrine'); burst(b.x, b.y, '#ff9a3a', 24, 160, .7, 3, 1.2); const n = B.list.filter(x => x.lit).length; toast(`${ico('fire')} Brazier lit (${n}/3)`, '#ffb04a'); }
     if (B.list.every(b => b.lit)) { B.done = true; S.stats.braziers = (S.stats.braziers || 0) + 1; banner('The Ember Vault Opens!', 'All three braziers burn', '#ffb04a'); sfx('legend'); shake(8);
       for (let i = 0; i < 2; i++) dropItem(G.tutorial ? genItem(1, { maxR: 1 }) : genItem(G.pw + 2, { minR: 2, bonus: .3 }), P.x, P.y); dropGem(P.x, P.y); dropGem(P.x, P.y); for (let i = 0; i < 14; i++) coin(P.x, P.y, Math.pow(1.12, G.pw) * rnd(2, 5) * (1 + goldEff() / 100)); if (Math.random() < .25) drop('frag', 1, P.x, P.y); } }
   G.expT -= dt;
   if (G.expT <= 0 && G.floorTiles && !G.boss && !G.trial && !G.tutorial) { G.expT = 1; let seen = 0; for (let i = 0; i < M.t.length; i++) if (M.t[i] && M.seen[i]) seen++; G.expPct = seen / G.floorTiles;
-    if (G.expPct >= .95 && !G.explored) { G.explored = true; S.stats.mapped = (S.stats.mapped || 0) + 1; const x = Math.round(xpNeed(S.lvl) * .12); gainXP(x / (1 + ST.xp / 100)); const g = Math.round(Math.pow(1.12, G.pw) * 40 * (1 + goldEff() / 100)); S.gold += g; feed(`🗺 Floor fully explored! <span class="gold">+${fmt(g)} gold</span> +${fmt(x)} XP`, '#9ad0ff'); sfx('shrine'); } }
+    if (G.expPct >= .95 && !G.explored) { G.explored = true; S.stats.mapped = (S.stats.mapped || 0) + 1; const x = Math.round(xpNeed(S.lvl) * .12); gainXP(x / (1 + ST.xp / 100)); const g = Math.round(Math.pow(1.12, G.pw) * 40 * (1 + goldEff() / 100)); S.gold += g; feed(`${ico('map')} Floor fully explored! <span class="gold">+${fmt(g)} gold</span> +${fmt(x)} XP`, '#9ad0ff'); sfx('shrine'); } }
 };
 // captives freed
 const _kB = killEnemy;
@@ -100,7 +100,7 @@ killEnemy = function (e) {
   if (cage) { S.rescued = S.rescued || []; const C = CAPTIVES[S.rescued.length]; if (!C) return; S.rescued.push(C[0]); S.stats.rescued = S.rescued.length;
     dmgText(e.x, e.y - 30, 'Thank you!', '#ffe9a0', true, 2.4); sfx('legend'); burst(e.x, e.y, '#ffe9a0', 30, 200, .9, 3, 1);
     const x = Math.round(xpNeed(S.lvl) * .2); gainXP(x / (1 + ST.xp / 100)); S.gold += Math.round(Math.pow(1.12, G.pw) * 60);
-    SPK.captive = { n: C[0], ic: '🧑', col: '#ffe9a0' }; G.later.push({ t: .6, fn: () => startDialog([['you', `(You pry open the cage. ${C[0]} stumbles out.)`], ['captive', `${C[3][0]} I'll make my way to Haven — find me there!`]]) }); }
+    SPK.captive = { n: C[0], ic: ico('person'), col: '#ffe9a0' }; G.later.push({ t: .6, fn: () => startDialog([['you', `(You pry open the cage. ${C[0]} stumbles out.)`], ['captive', `${C[3][0]} I'll make my way to Haven — find me there!`]]) }); }
 };
 const _gtB = goTown;
 goTown = function () { _gtB(); rescuedVillagers().forEach((v, i) => G.vill.push({ ...v, x: (10 + i * 3.4) * TILE, y: (19 + (i % 2)) * TILE, r: 12, tx: 0, ty: 0, wt: rnd(0, 3), face: 0, mv: 0, sayT: rnd(2, 8), say: '', sayLeft: 0, rescued: 1 })); };
@@ -157,17 +157,17 @@ const _doB = drawOverlay;
 drawOverlay = function () {
   _doB(); if (!R3 || !P || G.mode === 'title' || !M || G.hideHud) return;
   const lab = (o, z, t, col, dmax = 320) => { if (!o || dist(o, P) > dmax) return; const s = proj(o.x, o.y, z); if (!s.vis) return; X.font = 'bold 12px "Trebuchet MS",sans-serif'; X.textAlign = 'center'; X.lineWidth = 3; X.strokeStyle = 'rgba(0,0,0,.85)'; X.strokeText(t, s.x, s.y); X.fillStyle = col; X.fillText(t, s.x, s.y); };
-  if (G.secret && !G.secret.opened) lab(G.secret.c, 1.7, '⛏ Cracked wall — strike it!', '#ffb050', 260);
-  if (G.braz && !G.braz.done) for (const b of G.braz.list) lab(b, 1.6, b.lit ? '🔥 Lit' : '🔥 Unlit brazier — walk to it', b.lit ? '#ffb04a' : '#c8a070', 300);
+  if (G.secret && !G.secret.opened) lab(G.secret.c, 1.7, 'Cracked wall — strike it!', '#ffb050', 260);
+  if (G.braz && !G.braz.done) for (const b of G.braz.list) lab(b, 1.6, b.lit ? 'Lit' : 'Unlit brazier — walk to it', b.lit ? '#ffb04a' : '#c8a070', 300);
   for (const h of G.haz) lab(h, .5, h.h.n, h.h.col === '#2a1040' ? '#c080ff' : h.h.col, 160);
-  for (const t of G.trophies || []) lab(t, 1.6, '🏆 ' + t.n, '#ffd27a', 140);
-  for (const e of G.ens) if (e.type === 'cage' && !e.dead) lab(e, 1.9, '🔒 Prisoner — break the cage!', '#ffe9a0', 360);
+  for (const t of G.trophies || []) lab(t, 1.6, '★ ' + t.n, '#ffd27a', 140);
+  for (const e of G.ens) if (e.type === 'cage' && !e.dead) lab(e, 1.9, 'Prisoner — break the cage!', '#ffe9a0', 360);
 };
 const _dmB = drawMini;
 drawMini = function () {
   _dmB(); const c = H.mctx, s = miniS(), R = Math.floor(190 / s / 2), ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   const mark = (o, col, ch) => { if (!o) return; const dx = o.x / TILE - ptx, dy = o.y / TILE - pty; if (Math.abs(dx) >= R || Math.abs(dy) >= R) return; c.fillStyle = col; c.font = 'bold 11px sans-serif'; c.textAlign = 'center'; c.fillText(ch, (dx + R) * s, (dy + R) * s + 4); };
-  if (G.braz && !G.braz.done) for (const b of G.braz.list) if (!b.lit) mark(b, '#ffb04a', '▲');
+  if (G.braz && !G.braz.done) for (const b of G.braz.list) if (!b.lit) mark(b, '#ffb04a', '◇');
   for (const e of G.ens) if (e.type === 'cage' && !e.dead) mark(e, '#ffe9a0', '!');
 };
 const _uhB = updateHUD;
@@ -176,8 +176,8 @@ updateHUD = function (dt) {
   let el = $('h-exp'); if (!el) { el = document.createElement('div'); el.id = 'h-exp'; el.style.cssText = 'font-size:12px;margin-top:4px;color:#b8c8e0'; const tl = $('h-tl'); if (tl) tl.appendChild(el); }
   if (G.inTown || G.tutorial) { setH(el, 'hexp', ''); return; }
   const parts = [];
-  if (G.floorTiles && !G.boss) parts.push(G.explored ? '🗺 Fully explored ✔' : `🗺 Explored ${Math.floor((G.expPct || 0) * 100)}%`);
-  if (G.braz && !G.braz.done) parts.push(`🔥 Braziers ${G.braz.list.filter(b => b.lit).length}/3`);
-  if (G.inHaz) parts.push(`<span style="color:#ff9a6a">⚠ ${G.inHaz.n}</span>`);
+  if (G.floorTiles && !G.boss) parts.push(G.explored ? ico('map') + ' Fully explored ' + ico('check') : `${ico('map')} Explored ${Math.floor((G.expPct || 0) * 100)}%`);
+  if (G.braz && !G.braz.done) parts.push(`${ico('fire')} Braziers ${G.braz.list.filter(b => b.lit).length}/3`);
+  if (G.inHaz) parts.push(`<span style="color:#ff9a6a">${ico('warn')} ${G.inHaz.n}</span>`);
   setH(el, 'hexp', parts.join(' • '));
 };

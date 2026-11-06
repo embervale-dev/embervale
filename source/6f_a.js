@@ -9,17 +9,17 @@ const _xsA = extraStats;
 extraStats = function (s) { _xsA(s); const c = setCounts(); for (const k in c) { const B = SETS[k].b; if (c[k] >= 2) B[0][1](s); if (c[k] >= 4) B[1][1](s); } };
 function setHTML(k) {
   const S_ = SETS[k], c = setCounts()[k] || 0;
-  return `<hr><div style="color:${S_.col};font-weight:bold">◈ ${S_.n} (${c}/4 worn)</div>` +
-    S_.pieces.map(p => { const on = S.eq[p] && S.eq[p].set === k; return `<div style="font-size:12px;color:${on ? S_.col : '#777'}">${on ? '✔' : '○'} ${AT[p].n}</div>`; }).join('') +
+  return `<hr><div style="color:${S_.col};font-weight:bold">${ico('set-piece')} ${S_.n} (${c}/4 worn)</div>` +
+    S_.pieces.map(p => { const on = S.eq[p] && S.eq[p].set === k; return `<div style="font-size:12px;color:${on ? S_.col : '#777'}">${on ? ico('check') : '○'} ${AT[p].n}</div>`; }).join('') +
     S_.b.map((b, i) => `<div style="font-size:12px;color:${c >= (i ? 4 : 2) ? '#7aff7a' : '#888'}">(${i ? 4 : 2}) ${b[0]}</div>`).join('');
 }
 const _itA = itemTip; itemTip = function (it, cmp) { const h = _itA(it, cmp); return it.set ? h + setHTML(it.set) : h; };
 const _cellA = cell; cell = function (it, act) { const h = _cellA(it, act); return it.set ? h.replace(`class="cell r${it.r}"`, 'class="cell rset" style="--sc:' + SETS[it.set].col + '"') : h; };
-const _shA = statsHTML; statsHTML = function () { const c = setCounts(); let h = _shA(); const keys = Object.keys(c); if (keys.length) h += `<div style="display:block;margin-top:6px">${keys.map(k => `<div style="color:${SETS[k].col};display:block">◈ ${SETS[k].n} ${c[k]}/4</div>`).join('')}</div>`; return h; };
+const _shA = statsHTML; statsHTML = function () { const c = setCounts(); let h = _shA(); const keys = Object.keys(c); if (keys.length) h += `<div style="display:block;margin-top:6px">${keys.map(k => `<div style="color:${SETS[k].col};display:block">${ico('set-piece')} ${SETS[k].n} ${c[k]}/4</div>`).join('')}</div>`; return h; };
 function setDropRoll(e) {
   const ch = e.boss ? .18 : e.champ ? .12 : e.elite ? .015 : 0; if (!ch || Math.random() > ch * (1 + luckEff() / 300)) return;
   const pool = Object.keys(SETS).filter(k => G.abyss || SETS[k].reg.includes(G.region)); if (!pool.length) return;
-  dropItem(genSetItem(pick(pool), null, G.pw + 1), e.x, e.y); toast('◈ A Set item dropped!', '#5ae0a0');
+  dropItem(genSetItem(pick(pool), null, G.pw + 1), e.x, e.y); toast(ico('set-piece') + ' A Set item dropped!', '#5ae0a0');
 }
 const _kA = killEnemy; killEnemy = function (e) { if (e.dead) return; _kA(e); if (!e.prop) setDropRoll(e); };
 const _nfA = noteFound; noteFound = function (it) { _nfA(it); if (it.set) { S.found.set = S.found.set || {}; const f = S.found.set[it.set] = S.found.set[it.set] || {}; f[it.slot] = 1; } };
@@ -35,7 +35,7 @@ function doCraft() {
   const A = AFF[CR.aff]; if (A) { let v = rnd(A.min, A.max) * (1 + .12 * it.r) * 1.15; if (A.sc) v *= Math.pow(A.sc, it.il); const nv = { k: CR.aff, v: v >= 100 ? Math.round(v) : Math.round(v * 10) / 10 }; const i = it.aff.findIndex(a => a.k === CR.aff); if (i >= 0) it.aff[i] = nv; else if (it.aff.length) it.aff[0] = nv; else it.aff.push(nv); }
   if (CR.r === 4 && CR.u) it.u = CR.u; it.name = itemName(it); it.isNew = true; it.crafted = 1;
   S.inv.push(it); noteFound(it); S.stats.crafted = (S.stats.crafted || 0) + 1; sfx('lvl'); burst(P.x, P.y, '#ffb04a', 30, 200, .7, 3, 1);
-  toast(`🛠 Crafted <span style="color:${RAR[it.r].c}">${it.name}</span>!`); saveGame(); renderMenu();
+  toast(`${ico('craft')} Crafted <span style="color:${RAR[it.r].c}">${it.name}</span>!`); saveGame(); renderMenu();
 }
 const _salvA = salvage; salvage = function (it) { const leg = it.r >= 4; _salvA(it); if (leg) { S.ess = (S.ess || 0) + (it.r >= 5 ? 2 : 1); } };
 MENUS.craft = () => {
@@ -44,17 +44,17 @@ MENUS.craft = () => {
   const uPool = isW ? UNQ_W : UNQ_A; if (CR.u && !uPool.includes(CR.u)) CR.u = '';
   const opt = (arr, cur, fn) => arr.map(([v, n]) => `<span class="btn ${cur === v ? 'on' : ''}" style="padding:3px 9px;font-size:12px" onclick="${fn}('${v}')">${n}</span>`).join('');
   const have = (n, h) => `<span style="color:${h >= n ? '#7aff7a' : '#ff7a6a'}">${fmt(n)}</span>`;
-  return `<h2>🛠 Brann's Workbench</h2><div class="dim">"Tell me what you need, and I'll forge it. No luck involved — just good steel and the right materials." Crafted items are made at your highest item level.</div>
-  <h3>1. Slot</h3><div>${opt([['weapon', '⚔ Weapon'], ...ARMOR_SLOTS.map(s => [s, AT[s].ic + ' ' + AT[s].n])], CR.slot, 'crSlot')}</div>
+  return `<h2>${ico('craft')} Brann's Workbench</h2><div class="dim">"Tell me what you need, and I'll forge it. No luck involved — just good steel and the right materials." Crafted items are made at your highest item level.</div>
+  <h3>1. Slot</h3><div>${opt([['weapon', ico('swords') + ' Weapon'], ...ARMOR_SLOTS.map(s => [s, AT[s].ic + ' ' + AT[s].n])], CR.slot, 'crSlot')}</div>
   ${isW ? `<h3>2. Weapon type</h3><div>${opt(Object.keys(WT).map(t => [t, WT[t].ic + ' ' + WT[t].n]), CR.t, 'crT')}</div>` : ''}
   <h3>${isW ? 3 : 2}. Rarity</h3><div>${opt([['2', 'Rare'], ['3', 'Epic'], ['4', 'Legendary']], String(CR.r), 'crR')}</div>
   <h3>${isW ? 4 : 3}. Guaranteed bonus <span class="dim">(rolled 15% stronger than normal)</span></h3><div>${opt(pool.map(k => [k, AFF[k].n.replace(/^[% ]+/, '')]), CR.aff, 'crA')}</div>
-  ${CR.r === 4 ? `<h3>Legendary power <span class="dim">(choosing one costs +1 essence)</span></h3><div>${opt([['', '🎲 Random'], ...uPool.map(u => [u, UNQ[u].n])], CR.u, 'crU')}</div>${CR.u ? `<div class="dim" style="color:#ffb05a">★ ${UNQ[CR.u].d}</div>` : ''}` : ''}
-  <div class="card" style="margin-top:10px">Cost: ${have(c.sh, S.shards)} ✦ shards • ${have(c.ore, S.ore)} ◆ ore • ${have(c.g, S.gold)} gold${c.ess ? ` • ${have(c.ess, S.ess || 0)} 🜃 Legendary Essence` : ''}<div class="dim">You have ${fmt(S.shards)} ✦, ${S.ore} ◆, ${fmt(S.gold)} gold, ${S.ess || 0} 🜃 essence. Essence comes from salvaging Legendary (1) and Mythic (2) items.</div></div>
-  <div class="btn bigb ${canCraft() ? '' : 'dis'}" onclick="doCraft()">🛠 Craft</div><span class="btn" onclick="openMenu('smith')">Back to Brann</span>`;
+  ${CR.r === 4 ? `<h3>Legendary power <span class="dim">(choosing one costs +1 essence)</span></h3><div>${opt([['', ico('dice') + ' Random'], ...uPool.map(u => [u, UNQ[u].n])], CR.u, 'crU')}</div>${CR.u ? `<div class="dim" style="color:#ffb05a">★ ${UNQ[CR.u].d}</div>` : ''}` : ''}
+  <div class="card" style="margin-top:10px">Cost: ${have(c.sh, S.shards)} ✦ shards • ${have(c.ore, S.ore)} ◆ ore • ${have(c.g, S.gold)} gold${c.ess ? ` • ${have(c.ess, S.ess || 0)} ${ico('essence')} Legendary Essence` : ''}<div class="dim">You have ${fmt(S.shards)} ✦, ${S.ore} ◆, ${fmt(S.gold)} gold, ${S.ess || 0} ${ico('essence')} essence. Essence comes from salvaging Legendary (1) and Mythic (2) items.</div></div>
+  <div class="btn bigb ${canCraft() ? '' : 'dis'}" onclick="doCraft()">${ico('craft')} Craft</div><span class="btn" onclick="openMenu('smith')">Back to Brann</span>`;
 };
 function crSlot(v) { CR.slot = v; renderMenu(); } function crT(v) { CR.t = v; renderMenu(); } function crR(v) { CR.r = +v; renderMenu(); } function crA(v) { CR.aff = v; renderMenu(); } function crU(v) { CR.u = v; renderMenu(); }
-{ const _smA = MENUS.smith; MENUS.smith = () => _smA().replace('<h2>⚒️ Blacksmith Brann</h2>', `<h2>⚒️ Blacksmith Brann <span class="btn" style="font-size:13px" onclick="openMenu('craft')">🛠 Craft gear</span></h2>`); }
+{ const _smA = MENUS.smith; MENUS.smith = () => _smA().replace('<h2>' + ico('anvil') + ' Blacksmith Brann</h2>', `<h2>${ico('anvil')} Blacksmith Brann <span class="btn" style="font-size:13px" onclick="openMenu('craft')">${ico('craft')} Craft gear</span></h2>`); }
 // ---------- skill runes ----------
 function runeOf(id) { return (S.runes || {})[id]; }
 function setRune(id, k) { S.runes = S.runes || {}; S.runes[id] = S.runes[id] === k ? null : k; sfx('click'); renderMenu(); }

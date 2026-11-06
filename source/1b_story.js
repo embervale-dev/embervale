@@ -24,13 +24,13 @@ const FORGE_COST = 120; // celestial fragments per artifact
 const UVAL = { chain: .12, explode: .12, multi: .3, frost: .08, echo: .25, giant: .12, thunder: .15, reaper: .1, storm: .12, pierce: .15, vamp: .05, orbit: .08, phoenix: 0, haste: .03, colossus: 0, kindled: .05 };
 
 const SPK = {
-  elowen: { n: 'Sage Elowen', ic: '📘', col: '#9ab8ff' },
-  morvane: { n: 'Morvane, the Ashen Herald', ic: '🌑', col: '#c070ff' },
-  you: { n: 'You', ic: '🔥', col: '#ffb04a' },
-  orla: { n: 'Merchant Orla', ic: '💰', col: '#e0b050' },
-  brann: { n: 'Blacksmith Brann', ic: '⚒️', col: '#e07a50' },
-  warden: { n: 'Freed Warden', ic: '✨', col: '#ffe9a0' },
-  boss: { n: 'Guardian', ic: '💀', col: '#ff6a5a' },
+  elowen: { n: 'Sage Elowen', ic: ico('book'), col: '#9ab8ff' },
+  morvane: { n: 'Morvane, the Ashen Herald', ic: ico('moon'), col: '#c070ff' },
+  you: { n: 'You', ic: ico('fire'), col: '#ffb04a' },
+  orla: { n: 'Merchant Orla', ic: ico('gold'), col: '#e0b050' },
+  brann: { n: 'Blacksmith Brann', ic: ico('anvil'), col: '#e07a50' },
+  warden: { n: 'Freed Warden', ic: ico('sparkle'), col: '#ffe9a0' },
+  boss: { n: 'Guardian', ic: ico('skull'), col: '#ff6a5a' },
 };
 const STORY_INTRO = [
   ['elowen', 'Wake, Kindled one. When I found you, you were nothing but ash in the fountain\'s coals... yet the Ember chose to relight you.'],
@@ -99,10 +99,10 @@ const HINTS = {
   lowhp: 'Low on life! Press 1 to drink a potion. Potions refill whenever you return to Haven (T).',
   sp: 'You have a skill point! Press K to open the skill tree and bind new skills to Q / E / R / F.',
   surge: 'Your Ember Surge gauge is full — press V to unleash a devastating blast.',
-  item: 'You found gear! Press I to compare it, or use ⚡ Auto-equip to wear your best items automatically.',
+  item: `You found gear! Press I to compare it, or use ${ico('bolt')} Auto-equip to wear your best items automatically.`,
   trap: 'Spike traps glow red just before they strike. Lure monsters onto them!',
   imp: 'A Gilded Imp! Chase it down before it escapes with its treasure.',
-  page: 'You found a Lost Page! Read it any time in the 📖 Journal (L).',
+  page: `You found a Lost Page! Read it any time in the ${ico('book')} Journal (L).`,
   frag: 'A Celestial Fragment! Collect 120 and Brann can forge a legendary Celestial artifact.',
   elite: 'Elites have a colored ring and special traits. They drop much better loot.',
 };

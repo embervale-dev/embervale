@@ -18,18 +18,18 @@ for (const k in NEW_EN) { const [r, d, lore] = NEW_EN[k]; EN[k] = d; REG[r].en.p
 
 // ---- 4 new weapon types ----
 Object.assign(WT, {
-  rapier:   { n: 'Rapier', ic: '🤺', dmg: 9, cd: .28, k: 'thrust', rng: 122, w: 16, kb: 60, crit: .15, col: '#e8eef8' },
-  glaive:   { n: 'Glaive', ic: '🌙', dmg: 20, cd: .8, k: 'arc', rng: 112, arc: 2.9, kb: 220, col: '#c0b0ff' },
-  shuriken: { n: 'Shuriken', ic: '✴️', dmg: 7, cd: .34, k: 'fan', spd: 820, cnt: 3, pr: 2, col: '#d8d8e8' },
-  scepter:  { n: 'Scepter', ic: '⚜️', dmg: 15, cd: .62, k: 'orb', spd: 620, splash: 85, col: '#ffd27a' },
+  rapier:   { n: 'Rapier', ic: ico('w-rapier-t3'), dmg: 9, cd: .28, k: 'thrust', rng: 122, w: 16, kb: 60, crit: .15, col: '#e8eef8' },
+  glaive:   { n: 'Glaive', ic: ico('w-glaive-t3'), dmg: 20, cd: .8, k: 'arc', rng: 112, arc: 2.9, kb: 220, col: '#c0b0ff' },
+  shuriken: { n: 'Shuriken', ic: ico('w-shuriken-t3'), dmg: 7, cd: .34, k: 'fan', spd: 820, cnt: 3, pr: 2, col: '#d8d8e8' },
+  scepter:  { n: 'Scepter', ic: ico('w-scepter-t3'), dmg: 15, cd: .62, k: 'orb', spd: 620, splash: 85, col: '#ffd27a' },
 });
 
 // ---- 4 new skills ----
 SK.push(
-  { id: 'warcry', b: 0, t: 1, n: 'War Cry', ic: '📯', a: 1, max: 5, mp: 20, cd: 12, d: r => `Roar: blast nearby foes back, stun them 1.5s and gain +${15 + 5 * r}% damage for 6s.` },
-  { id: 'snare', b: 1, t: 2, n: "Hunter's Net", ic: '🕸️', a: 1, max: 5, mp: 20, cd: 9, d: r => `Hurl a net at the cursor that roots foes for ${(2 + .3 * r).toFixed(1)}s and deals ${100 + 30 * r}% weapon damage.` },
-  { id: 'fblink', b: 2, t: 1, n: 'Frost Blink', ic: '💠', a: 1, max: 5, mp: 15, cd: 5, d: r => `Teleport to the cursor, freezing foes at both ends for ${80 + 20 * r}% weapon damage.` },
-  { id: 'singularity', b: 2, t: 3, n: 'Singularity', ic: '🕳️', a: 1, max: 5, mp: 45, cd: 16, d: r => `Open a black hole at the cursor for 4s that drags foes in and deals ${40 + 10 * r}% weapon damage 4×/s.` },
+  { id: 'warcry', b: 0, t: 1, n: 'War Cry', ic: ico('sk-warcry'), a: 1, max: 5, mp: 20, cd: 12, d: r => `Roar: blast nearby foes back, stun them 1.5s and gain +${15 + 5 * r}% damage for 6s.` },
+  { id: 'snare', b: 1, t: 2, n: "Hunter's Net", ic: ico('sk-huntersnet'), a: 1, max: 5, mp: 20, cd: 9, d: r => `Hurl a net at the cursor that roots foes for ${(2 + .3 * r).toFixed(1)}s and deals ${100 + 30 * r}% weapon damage.` },
+  { id: 'fblink', b: 2, t: 1, n: 'Frost Blink', ic: ico('sk-frostblink'), a: 1, max: 5, mp: 15, cd: 5, d: r => `Teleport to the cursor, freezing foes at both ends for ${80 + 20 * r}% weapon damage.` },
+  { id: 'singularity', b: 2, t: 3, n: 'Singularity', ic: ico('sk-singularity'), a: 1, max: 5, mp: 45, cd: 16, d: r => `Open a black hole at the cursor for 4s that drags foes in and deals ${40 + 10 * r}% weapon damage 4×/s.` },
 );
 SK.forEach(s => SKI[s.id] = s);
 
@@ -65,12 +65,12 @@ const CHAMP_NAMES = [
 ];
 // ---- Haven restoration ----
 const HAVEN_B = {
-  library:   { n: 'Grand Library', ic: '📚', d: l => `+${4 * l}% experience`, f: (s, l) => s.xp += 4 * l },
-  armory:    { n: 'Town Armory', ic: '🛡️', d: l => `+${3 * l}% damage and +${l}% damage reduction`, f: (s, l) => { s.dmg += 3 * l; s.dr += l; } },
-  infirmary: { n: 'Infirmary', ic: '⛑️', d: l => `+${l} potion refilled on every new floor, +${10 * l}% life regen`, f: (s, l) => s.hpReg *= 1 + .1 * l },
-  market:    { n: 'Market Square', ic: '🏪', d: l => `Items sell for +${15 * l}% gold`, f: () => { } },
-  inn:       { n: 'The Warm Hearth Inn', ic: '🛏️', d: l => `Rested bonus holds +${l} more day${l > 1 ? 's' : ''} and builds ${25 * l}% faster`, f: () => { } },
+  library:   { n: 'Grand Library', ic: ico('library'), d: l => `+${4 * l}% experience`, f: (s, l) => s.xp += 4 * l },
+  armory:    { n: 'Town Armory', ic: ico('shield'), d: l => `+${3 * l}% damage and +${l}% damage reduction`, f: (s, l) => { s.dmg += 3 * l; s.dr += l; } },
+  infirmary: { n: 'Infirmary', ic: ico('infirmary'), d: l => `+${l} potion refilled on every new floor, +${10 * l}% life regen`, f: (s, l) => s.hpReg *= 1 + .1 * l },
+  market:    { n: 'Market Square', ic: ico('shop'), d: l => `Items sell for +${15 * l}% gold`, f: () => { } },
+  inn:       { n: 'The Warm Hearth Inn', ic: ico('bed'), d: l => `Rested bonus holds +${l} more day${l > 1 ? 's' : ''} and builds ${25 * l}% faster`, f: () => { } },
 };
 const HAVEN_COST = [600, 4500, 30000];
 // ---- daily gifts & fortune wheel ----
-const GIFTS = [['● Gold', 'gold'], ['💎 2 Gems', 'gems'], ['🔶 15 Marks', 'marks'], ['◆ 6 Ember Ore', 'ore'], ['✦ 25 Shards', 'shards'], ['✧ 2 Celestial Fragments', 'frag'], ['🎁 Legendary + 40 Marks', 'big']];
+const GIFTS = [['● Gold', 'gold'], [ico('gem') + ' 2 Gems', 'gems'], [ico('marks') + ' 15 Marks', 'marks'], ['◆ 6 Ember Ore', 'ore'], ['✦ 25 Shards', 'shards'], ['✧ 2 Celestial Fragments', 'frag'], [ico('gift') + ' Legendary + 40 Marks', 'big']];

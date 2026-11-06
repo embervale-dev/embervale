@@ -50,4 +50,4 @@ function updGhosts(dt) { if (!G.gpp.length) return; for (const b of G.gpp) { b.l
 setInterval(() => { const now = performance.now(), el = Math.min(1, (now - (MPS.bgLast || now)) / 1000); MPS.bgLast = now;
   if (!document.hidden || !MP_ONLINE() || !S || G.mode !== 'play') return;
   try { for (let t = el; t > 0; t -= .05) update(Math.min(.05, t)); } catch (e) { console.warn('bg tick', e); } }, 100);
-{ const _paS = MENUS.pause; MENUS.pause = () => { const h = _paS(); return MP_ONLINE() ? `<div class="dim" style="text-align:center;color:#9ad0ff;margin-bottom:6px">🌐 Online — the game keeps running while this menu is open</div>` + h : h; }; }
+{ const _paS = MENUS.pause; MENUS.pause = () => { const h = _paS(); return MP_ONLINE() ? `<div class="dim" style="text-align:center;color:#9ad0ff;margin-bottom:6px">${ico('globe')} Online — the game keeps running while this menu is open</div>` + h : h; }; }

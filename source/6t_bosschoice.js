@@ -14,15 +14,15 @@ MENUS.bosschoice = () => {
   const items = G.pick.filter(p => p.k === 'item').length, pots = `${S.pots}/${S.potMax}`, life = `${fmt(P.hp)} / ${fmt(ST.maxHp)}`;
   let next = '', note = '';
   if (G.gauntlet || G.trial) next = '';
-  else if (G.abyss) { next = `▼ Descend to Abyss Depth ${G.depth + 1}`; note = 'Foes grow stronger with every depth.'; }
-  else if (G.region + 1 < NREG) { const r = G.region + 1, rec = reqLvl(r, S.diff); next = `▶ Continue to ${REG[r].n} — Floor 1`; note = `Recommended level ${rec}+ • you are level ${S.lvl}${S.lvl < rec ? ' <span style="color:#ff9a6a">(it will be tough!)</span>' : ' <span class="up">(ready)</span>'}`; }
-  else if (S.done[S.diff].every(Boolean)) { next = '▼ Enter the Abyss — Depth 1'; note = 'The endless descent. How deep can you go?'; }
+  else if (G.abyss) { next = `↓ Descend to Abyss Depth ${G.depth + 1}`; note = 'Foes grow stronger with every depth.'; }
+  else if (G.region + 1 < NREG) { const r = G.region + 1, rec = reqLvl(r, S.diff); next = `→ Continue to ${REG[r].n} — Floor 1`; note = `Recommended level ${rec}+ • you are level ${S.lvl}${S.lvl < rec ? ' <span style="color:#ff9a6a">(it will be tough!)</span>' : ' <span class="up">(ready)</span>'}`; }
+  else if (S.done[S.diff].every(Boolean)) { next = '↓ Enter the Abyss — Depth 1'; note = 'The endless descent. How deep can you go?'; }
   const title = G.abyss ? `Abyss Depth ${G.depth} Cleared` : `${REG[G.region].n} Conquered!`;
-  return `<div style="min-width:560px;max-width:640px;text-align:center"><h2>💀 ${title}</h2>
+  return `<div style="min-width:560px;max-width:640px;text-align:center"><h2>${ico('skull')} ${title}</h2>
     <div class="dim" style="margin-bottom:10px">Where to next, Kindled?</div>
-    <div class="bcstat">❤ ${life} &nbsp;•&nbsp; 🧪 ${pots} potions &nbsp;•&nbsp; 🎒 ${S.inv.length}/${S.invMax} bag${items ? ` &nbsp;•&nbsp; <span style="color:#ffb04a">⚠ ${items} item${items > 1 ? 's' : ''} still on the ground</span>` : ''}</div>
+    <div class="bcstat">${ico('heart')} ${life} &nbsp;•&nbsp; ${ico('potion')} ${pots} potions &nbsp;•&nbsp; ${ico('bag')} ${S.inv.length}/${S.invMax} bag${items ? ` &nbsp;•&nbsp; <span style="color:#ffb04a">${ico('warn')} ${items} item${items > 1 ? 's' : ''} still on the ground</span>` : ''}</div>
     ${next ? `<div class="bcopt" onclick="bcNext()"><b>${next}</b><div class="dim">${note}<br>Keep your current life and potions — no trip home.</div></div>` : ''}
-    <div class="bcopt" onclick="bcHome()"><b>🏡 Return to Haven</b><div class="dim">Refill life and potions, sell and upgrade your loot, then travel again from the Waystone.</div></div>
+    <div class="bcopt" onclick="bcHome()"><b>${ico('haven')} Return to Haven</b><div class="dim">Refill life and potions, sell and upgrade your loot, then travel again from the Waystone.</div></div>
     <div class="dim" style="margin-top:8px;font-size:12px">Press Esc to stay here and keep exploring — step back into the portal to choose again.</div></div>`;
 };
 const bcStyle = document.createElement('style'); bcStyle.textContent = `.bcstat{font-size:13px;color:#e8dcc0;background:rgba(0,0,0,.25);border-radius:10px;padding:6px 10px;margin:0 0 12px}

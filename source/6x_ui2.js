@@ -1,6 +1,6 @@
 // ================= UI UPGRADE 2: aligned item badges, paper-doll inventory, bag filters & sorting, upgrade markers =================
 let INV_F = 'all', INV_SORT = 'rar';
-const INV_FILTERS = [['all', 'All'], ['weapon', '⚔ Weapons'], ['armor', '🛡 Armor'], ['jewel', '💍 Jewelry'], ['new', '✨ New'], ['up', '▲ Upgrades']];
+const INV_FILTERS = [['all', 'All'], ['weapon', ico('swords') + ' Weapons'], ['armor', ico('shield') + ' Armor'], ['jewel', ico('jewelry') + ' Jewelry'], ['new', ico('sparkle') + ' New'], ['up', '↑ Upgrades']];
 function invMatch(it) { if (INV_F === 'all') return true; if (INV_F === 'weapon') return it.slot === 'weapon'; if (INV_F === 'armor') return WGT_SLOTS.includes(it.slot); if (INV_F === 'jewel') return it.slot === 'ring' || it.slot === 'amulet'; if (INV_F === 'new') return !!it.isNew; if (INV_F === 'up') return isUpgrade(it); return true; }
 const UPC = new Map(); let upcT = 0;
 function isUpgrade(it) { if (G.t - upcT > 1) { UPC.clear(); upcT = G.t; } if (!UPC.has(it.id)) { let g = 0; try { g = gainPct(it); } catch (e) { } UPC.set(it.id, g); } return UPC.get(it.id) > .5; }
@@ -8,13 +8,13 @@ function invSorted(list) { const a = list.slice(); if (INV_SORT === 'rar') a.sor
 function setInvF(f) { INV_F = f; sfx('click'); renderMenu(); } function setInvSort(s) { INV_SORT = s; sfx('click'); renderMenu(); }
 function balancedEnd(h, start) { const re = /<div\b|<\/div>/g; re.lastIndex = start; let d = 0, m; while ((m = re.exec(h))) { d += m[0] === '</div>' ? -1 : 1; if (d === 0) return re.lastIndex; } return h.length; }
 // cells get an upgrade marker
-{ const _cellX = cell; cell = function (it, act) { let h = _cellX(it, act); if (act === 'uiInv' && S && S.inv.includes(it) && isUpgrade(it)) h = h.replace(/<\/div>$/, '<s class="upm" title="Upgrade for you">▲</s></div>'); return h; }; }
+{ const _cellX = cell; cell = function (it, act) { let h = _cellX(it, act); if (act === 'uiInv' && S && S.inv.includes(it) && isUpgrade(it)) h = h.replace(/<\/div>$/, '<s class="upm" title="Upgrade for you">↑</s></div>'); return h; }; }
 { const _ivX = MENUS.inv; MENUS.inv = () => { let h = _ivX(); if (!S) return h;
   // header: bag capacity bar + currency chips
   const pct = Math.min(100, S.inv.length / S.invMax * 100), full = S.inv.length >= S.invMax;
-  h = h.replace(/<h2>Inventory[\s\S]*?<\/h2>/, `<h2 class="invh">🎒 Inventory <span class="bagcap ${full ? 'full' : ''}"><span class="bagbar"><i style="width:${pct}%"></i></span>${S.inv.length} / ${S.invMax}${full ? ' — full!' : ''}</span><span class="chips"><span class="chip gold">● ${fmt(S.gold)}</span><span class="chip ore">◆ ${S.ore} ore</span><span class="chip shard">✦ ${S.shards} shards</span>${S.ess ? `<span class="chip ess">🜃 ${S.ess}</span>` : ''}</span></h2>`);
+  h = h.replace(/<h2>Inventory[\s\S]*?<\/h2>/, `<h2 class="invh">${ico('bag')} Inventory <span class="bagcap ${full ? 'full' : ''}"><span class="bagbar"><i style="width:${pct}%"></i></span>${S.inv.length} / ${S.invMax}${full ? ' — full!' : ''}</span><span class="chips"><span class="chip gold">● ${fmt(S.gold)}</span><span class="chip ore">◆ ${S.ore} ore</span><span class="chip shard">✦ ${S.shards} shards</span>${S.ess ? `<span class="chip ess">${ico('essence')} ${S.ess}</span>` : ''}</span></h2>`);
   // paper doll
-  h = h.replace('<div class="eq">', '<div class="eq doll"><div class="dollfig">🧍</div>');
+  h = h.replace('<div class="eq">', '<div class="eq doll"><div class="dollfig">' + ico('person') + '</div>');
   // filtered, sorted bag
   const a = h.indexOf('<div class="grid">'); if (a >= 0) { const b = balancedEnd(h, a); const list = invSorted(S.inv.filter(invMatch)), empties = INV_F === 'all' ? Math.max(0, S.invMax - S.inv.length) : 0;
     const bar = `<div class="invtools"><div class="invf">${INV_FILTERS.map(([k, n]) => `<span class="fchip ${INV_F === k ? 'on' : ''}" onclick="setInvF('${k}')">${n}${k === 'new' ? ` <b>${S.inv.filter(i => i.isNew).length}</b>` : k === 'up' ? ` <b>${S.inv.filter(isUpgrade).length}</b>` : ''}</span>`).join('')}</div><div class="invs">Sort: ${[['rar', 'Rarity'], ['lvl', 'Level'], ['type', 'Type']].map(([k, n]) => `<span class="fchip ${INV_SORT === k ? 'on' : ''}" onclick="setInvSort('${k}')">${n}</span>`).join('')}</div></div>`;

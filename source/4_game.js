@@ -24,7 +24,7 @@ function placePlayer(tx, ty) { P.x = (tx + .5) * TILE; P.y = (ty + .5) * TILE; G
 
 // ---------- feedback helpers ----------
 function toast(msg, col) {
-  const k = msg.slice(0, 24); if (G.msgT[k] && G.t - G.msgT[k] < 1.2) return; G.msgT[k] = G.t;
+  const k = plain(msg).slice(0, 24); if (G.msgT[k] && G.t - G.msgT[k] < 1.2) return; G.msgT[k] = G.t;
   const d = document.createElement('div'); d.innerHTML = msg; if (col) d.style.color = col; $('toast').appendChild(d); setTimeout(() => d.remove(), 2800);
   while ($('toast').children.length > 5) $('toast').firstChild.remove();
 }
@@ -134,14 +134,14 @@ function nextFloor() {
 function goTown() {
   resetLevel(); G.inTown = true; G.abyss = false; M = genTown();
   G.npcs = [
-    { n: 'Merchant Orla', x: 9, y: 9, col: '#d8a040', menu: 'shop', ic: '💰', kind: 'shop' },
-    { n: 'Blacksmith Brann', x: 29, y: 9, col: '#c05030', menu: 'smith', ic: '⚒️', kind: 'smith' },
-    { n: 'Bounty Board', x: 9, y: 20, col: '#a07850', menu: 'quests', ic: '📜', kind: 'board' },
-    { n: 'Sage Elowen', x: 29, y: 20, col: '#7080e0', menu: 'sage', ic: '📘', kind: 'sage' },
-    { n: 'Waystone', x: 19, y: 6, col: '#ff9a3a', menu: 'portal', ic: '🌀', kind: 'portal' },
-    { n: 'Stash', x: 14, y: 21, col: '#b08040', menu: 'stash', ic: '🧰', kind: 'stash' },
-    { n: 'Jeweler Sefa', x: 24, y: 21, col: '#40b0b0', menu: 'jewel', ic: '💎', kind: 'jewel' },
-    { n: 'Quartermaster Ilse', x: 14, y: 9, col: '#b050b0', menu: 'curio', ic: '🔶', kind: 'curio' },
+    { n: 'Merchant Orla', x: 9, y: 9, col: '#d8a040', menu: 'shop', ic: ico('gold'), kind: 'shop' },
+    { n: 'Blacksmith Brann', x: 29, y: 9, col: '#c05030', menu: 'smith', ic: ico('anvil'), kind: 'smith' },
+    { n: 'Bounty Board', x: 9, y: 20, col: '#a07850', menu: 'quests', ic: ico('scroll'), kind: 'board' },
+    { n: 'Sage Elowen', x: 29, y: 20, col: '#7080e0', menu: 'sage', ic: ico('book'), kind: 'sage' },
+    { n: 'Waystone', x: 19, y: 6, col: '#ff9a3a', menu: 'portal', ic: ico('portal'), kind: 'portal' },
+    { n: 'Stash', x: 14, y: 21, col: '#b08040', menu: 'stash', ic: ico('toolbox'), kind: 'stash' },
+    { n: 'Jeweler Sefa', x: 24, y: 21, col: '#40b0b0', menu: 'jewel', ic: ico('gem'), kind: 'jewel' },
+    { n: 'Quartermaster Ilse', x: 14, y: 9, col: '#b050b0', menu: 'curio', ic: ico('marks'), kind: 'curio' },
   ].map(n => ({ ...n, x: (n.x + .5) * TILE, y: (n.y + .5) * TILE, near: false }));
   placePlayer(19, 18);
   G.vill = VILLAGERS.map((v, i) => ({ ...v, x: (12 + i * 5) * TILE, y: (15 + (i % 2) * 2) * TILE, r: 12, tx: 0, ty: 0, wt: rnd(0, 3), face: 0, mv: 0, sayT: rnd(2, 8), say: '', sayLeft: 0 }));
@@ -173,13 +173,13 @@ function quest(ev, arg, n = 1) {
     if (q.have >= q.need) continue;
     if (q.t === ev && (ev !== 'kill' || q.target === arg)) {
       q.have = ev === 'combo' ? Math.max(q.have, Math.min(q.need, n)) : Math.min(q.need, q.have + n);
-      if (q.have >= q.need) { toast(`📜 Bounty complete: ${q.txt}`, '#ffd27a'); sfx('shrine'); }
+      if (q.have >= q.need) { toast(`${ico('scroll')} Bounty complete: ${q.txt}`, '#ffd27a'); sfx('shrine'); }
     }
   }
 }
 function hint(k) {
   if (!S.opts.hints || S.hints[k] || !HINTS[k]) return; S.hints[k] = 1;
-  const h = $('hintbox'); if (!h) return; h.innerHTML = '💡 ' + HINTS[k]; h.classList.remove('show'); void h.offsetWidth; h.classList.add('show');
+  const h = $('hintbox'); if (!h) return; h.innerHTML = ico('idea') + ' ' + HINTS[k]; h.classList.remove('show'); void h.offsetWidth; h.classList.add('show');
 }
 function checkHints() {
   if (G.inTown || !P) return;
@@ -206,7 +206,7 @@ function checkAch() {
     if (S.ach[a.id]) continue;
     if (a.c() >= a.need) {
       S.ach[a.id] = 1; const g = Math.round(100 * Math.pow(1.12, maxPw())); S.gold += g; S.shards += 10; S.sp += a.sp;
-      toast(`🏆 Achievement: <b>${a.n}</b> — +${fmt(g)}g, +10 shards${a.sp ? `, +${a.sp} skill point${a.sp > 1 ? 's' : ''}` : ''}`, '#ffd54a'); sfx('legend');
+      toast(`${ico('trophy')} Achievement: <b>${a.n}</b> — +${fmt(g)}g, +10 shards${a.sp ? `, +${a.sp} skill point${a.sp > 1 ? 's' : ''}` : ''}`, '#ffd54a'); sfx('legend');
     }
   }
 }
@@ -259,7 +259,7 @@ function updPlayer(dt) {
   }
   if (ST.u.orbit) for (let k = 0; k < 2; k++) { const a = -G.t * 3 + k * Math.PI; orbHit(p.x + Math.cos(a) * 66, p.y + Math.sin(a) * 66, 14, pdmg() * .5, 'ocd', '#ff8a3a', true); }
 }
-function addSurge(v) { if (P.surge < 100) { P.surge = Math.min(100, P.surge + v * (1 + ST.surge / 100)); if (P.surge >= 100) { toast('🔥 Ember Surge ready — press V!', '#ffb04a'); sfx('shrine'); } } }
+function addSurge(v) { if (P.surge < 100) { P.surge = Math.min(100, P.surge + v * (1 + ST.surge / 100)); if (P.surge >= 100) { toast(ico('fire') + ' Ember Surge ready — press V!', '#ffb04a'); sfx('shrine'); } } }
 function unleashSurge() {
   if (P.surge < 100) { if (P.surge > 0) toast(`Ember Surge charging (${Math.floor(P.surge)}%)`); return; }
   P.surge = 0; S.stats.surges++;
@@ -416,7 +416,7 @@ function chainLightning(start, dmg, n, fromHit, o = {}) {
   }
   sfx('zap');
 }
-function seeE(e) { if (e.prop || e.type === 'dummy' || e.type === 'tsentry') return; const b = S.best[e.type]; if (!b) { S.best[e.type] = { s: 1, k: 0 }; feed(`📖 New Bestiary entry: <b>${e.d.n}</b>`, '#c0a0ff'); } }
+function seeE(e) { if (e.prop || e.type === 'dummy' || e.type === 'tsentry') return; const b = S.best[e.type]; if (!b) { S.best[e.type] = { s: 1, k: 0 }; feed(`${ico('book')} New Bestiary entry: <b>${e.d.n}</b>`, '#c0a0ff'); } }
 function wake(e) { if (e.prop) return; seeE(e); e.awake = true; for (const o of G.ens) if (!o.awake && !o.prop && dist(o, e) < 260) o.awake = true; }
 function coin(x, y, v) { G.pick.push({ k: 'gold', v: Math.max(1, v), x, y, vx: rnd(-170, 170), vy: rnd(-170, 170), t: 0, z: .3, vz: rnd(2, 4) }); }
 function drop(k, v, x, y) { G.pick.push({ k, v, x, y, vx: rnd(-100, 100), vy: rnd(-100, 100), t: 0, z: .3, vz: rnd(2, 4) }); }
@@ -436,7 +436,7 @@ function killEnemy(e) {
     return;
   }
   if (e.counted) G.killed++;
-  if (e.type !== 'dummy' && e.type !== 'tsentry') { const b = S.best[e.type] || (S.best[e.type] = { s: 1, k: 0 }); b.k++; if ([25, 100, 500].includes(b.k)) feed(`🎯 Hunter's Knowledge: <b>${e.d.n}</b> ×${b.k} — +${hunterBonus(e.type) * 100}% damage vs them`, '#ffd27a'); }
+  if (e.type !== 'dummy' && e.type !== 'tsentry') { const b = S.best[e.type] || (S.best[e.type] = { s: 1, k: 0 }); b.k++; if ([25, 100, 500].includes(b.k)) feed(`${ico('target')} Hunter's Knowledge: <b>${e.d.n}</b> ×${b.k} — +${hunterBonus(e.type) * 100}% damage vs them`, '#ffd27a'); }
   S.stats.kills++; gainXP(e.xp * (G.mod === 'blood' ? 1.5 : 1));
   addSurge(e.boss ? 30 : e.elite ? 8 : 1.5);
   const coins = e.boss ? 14 : e.type === 'gimp' ? 25 : ri(1, e.elite ? 5 : 2);
@@ -445,7 +445,7 @@ function killEnemy(e) {
     const ic = e.mimic ? 1 : e.elite ? .2 : e.minion ? .003 : .018 * (1 + Math.min(300, luckEff()) / 400);
     if (Math.random() < ic) dropItem(genItem(G.pw + ri(-1, 1), { minR: e.elite ? 1 : 0 }), e.x, e.y);
     if (e.mimic || e.type === 'gimp') { dropItem(genItem(G.pw + 1, { minR: 2 }), e.x, e.y); dropItem(genItem(G.pw + 1, { minR: 2 }), e.x, e.y); }
-    if (e.type === 'gimp') { S.stats.imps++; toast('💰 You caught the Gilded Imp!', '#ffd54a'); sfx('legend'); }
+    if (e.type === 'gimp') { S.stats.imps++; toast(ico('gold') + ' You caught the Gilded Imp!', '#ffd54a'); sfx('legend'); }
     if (e.elite) drop('ore', ri(1, 2), e.x, e.y);
     else if (Math.random() < .025) drop('ore', 1, e.x, e.y);
     if (Math.random() < .05) drop('hp', 0, e.x, e.y);
@@ -516,7 +516,7 @@ function hurtPlayer(amt, src) {
     if (src.elite === 'Vampiric') src.hp = Math.min(src.maxHp, src.hp + src.maxHp * .08);
   }
   if (P.hp <= 0) {
-    if (ST.u.phoenix && P.phx) { P.phx = false; P.hp = ST.maxHp * .5; P.inv = 2; burst(P.x, P.y, '#ff9a2a', 60, 300, 1, 4); ringFx(P.x, P.y, 200, '#ff9a2a', .6); toast('🔥 Phoenix rebirth!', '#ffb04a'); aoe(P.x, P.y, 200, pdmg() * 3, { noProc: true, kb: 400 }); return; }
+    if (ST.u.phoenix && P.phx) { P.phx = false; P.hp = ST.maxHp * .5; P.inv = 2; burst(P.x, P.y, '#ff9a2a', 60, 300, 1, 4); ringFx(P.x, P.y, 200, '#ff9a2a', .6); toast(ico('fire') + ' Phoenix rebirth!', '#ffb04a'); aoe(P.x, P.y, 200, pdmg() * 3, { noProc: true, kb: 400 }); return; }
     die();
   }
 }
@@ -853,7 +853,7 @@ function updPick(dt) {
       if (p.k === 'gold') { const v = Math.round(p.v); S.gold += v; quest('gold', 0, v); sfx('gold'); p.dead = true; G.goldAcc = (G.goldAcc || 0) + v; }
       else if (p.k === 'ore') { S.ore += p.v; feed(`<span class="ore">◆ +${p.v} Ember Ore</span>`, '#9ad0ff'); sfx('item'); p.dead = true; }
       else if (p.k === 'frag') { S.frag += p.v; feed(`<span style="color:#7ffcff">✧ +${p.v} Celestial Fragment${p.v > 1 ? 's' : ''}</span> <span class="dim">(${S.frag}/${FORGE_COST})</span>`, '#7ffcff'); sfx('legend'); p.dead = true; hint('frag'); }
-      else if (p.k === 'page') { if (!S.pages.includes(p.v)) S.pages.push(p.v); feed(`📜 <span style="color:#f0e0b0">Lost Page found (${S.pages.length}/${PAGES.length})</span>`, '#f0e0b0'); toast(`<i>"${PAGES[p.v]}"</i>`, '#f0e0b0'); sfx('shrine'); p.dead = true; hint('page'); }
+      else if (p.k === 'page') { if (!S.pages.includes(p.v)) S.pages.push(p.v); feed(`${ico('scroll')} <span style="color:#f0e0b0">Lost Page found (${S.pages.length}/${PAGES.length})</span>`, '#f0e0b0'); toast(`<i>"${PAGES[p.v]}"</i>`, '#f0e0b0'); sfx('shrine'); p.dead = true; hint('page'); }
       else if (p.k === 'shard') { S.shards += p.v; feed(`<span class="shard">✦ +${p.v} Shards</span>`, '#ff8af0'); sfx('item'); p.dead = true; }
       else if (p.k === 'hp') { healP(ST.maxHp * .1); sfx('potion'); p.dead = true; }
       else if (p.k === 'mp') { P.mp = Math.min(ST.maxMp, P.mp + ST.maxMp * .25); sfx('potion'); p.dead = true; }
@@ -864,8 +864,8 @@ function updPick(dt) {
           if (it.r >= 4) S.stats.legend++; if (it.r >= 5) S.stats.mythic++; if (it.r >= 6) S.stats.celestial++;
           const gp = gainPct(it), slot = it.slot === 'weapon' ? 'weapon' : it.slot;
           const sameStyle = it.slot !== 'weapon' || !S.eq.weapon || isRanged(it.t) === isRanged(S.eq.weapon.t);
-          if (S.opts.autoEq && gp > .5 && sameStyle) { equip(it, slot); afterGear(); it.isNew = false; feed(`⚡ Auto-equipped <span style="color:${RAR[it.r].c}">${it.name}</span> <span class="up">+${gp.toFixed(1)}% power</span>`, RAR[it.r].c); }
-          else feed(`${icon(it)} <span style="color:${RAR[it.r].c}">${it.name}</span>${gp > .5 ? ` <span class="up">▲ +${gp.toFixed(1)}% power</span>` : ''}`, RAR[it.r].c);
+          if (S.opts.autoEq && gp > .5 && sameStyle) { equip(it, slot); afterGear(); it.isNew = false; feed(`${ico('bolt')} Auto-equipped <span style="color:${RAR[it.r].c}">${it.name}</span> <span class="up">+${gp.toFixed(1)}% power</span>`, RAR[it.r].c); }
+          else feed(`${icon(it)} <span style="color:${RAR[it.r].c}">${it.name}</span>${gp > .5 ? ` <span class="up">${ico('up')} +${gp.toFixed(1)}% power</span>` : ''}`, RAR[it.r].c);
         }
         else toast('Inventory full! Salvage items (I, Shift+Click).', '#ff8a8a');
       }
@@ -876,9 +876,9 @@ function updPick(dt) {
 function isRanged(t) { return ['shot', 'orb', 'fan', 'boom'].includes(WT[t].k); }
 function upgradeHint(it) {
   const cur = it.slot === 'weapon' ? S.eq.weapon : S.eq[it.slot];
-  if (!cur) return ' <span class="up">▲ empty slot</span>';
-  if (it.slot === 'weapon') return wDps(it) > wDps(cur) * 1.02 ? ' <span class="up">▲ upgrade</span>' : '';
-  return (itemStats(it).hp || 0) > (itemStats(cur).hp || 0) * 1.05 && it.r >= cur.r ? ' <span class="up">▲</span>' : '';
+  if (!cur) return ` <span class="up">${ico('up')} empty slot</span>`;
+  if (it.slot === 'weapon') return wDps(it) > wDps(cur) * 1.02 ? ` <span class="up">${ico('up')} upgrade</span>` : '';
+  return (itemStats(it).hp || 0) > (itemStats(cur).hp || 0) * 1.05 && it.r >= cur.r ? ` <span class="up">${ico('up')}</span>` : '';
 }
 function updFx(dt) {
   for (const p of G.parts) { p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .92; p.vy *= .92; p.z += p.vz * dt; p.vz -= p.g * dt; if (p.z < 0) { p.z = 0; p.vz *= -.3; } }
@@ -894,12 +894,12 @@ function updFx(dt) {
 function checkInteract() {
   if (G.stairs) {
     const need = Math.ceil(G.total * .7);
-    if (!G.stairsOpen && G.killed >= need) { G.stairsOpen = true; toast('✨ The stairs have unsealed!', '#7aff7a'); sfx('shrine'); }
+    if (!G.stairsOpen && G.killed >= need) { G.stairsOpen = true; toast(ico('sparkle') + ' The stairs have unsealed!', '#7aff7a'); sfx('shrine'); }
     if (dist(P, G.stairs) < 30) { if (G.stairsOpen) { nextFloor(); return; } else toast(`The stairs are sealed — slay ${need - G.killed} more foes`, '#ff9a6a'); }
   }
   if (G.memory && !G.memory.used && dist(P, G.memory) < 36) {
     G.memory.used = true; const reg = G.region; sfx('shrine'); burst(G.memory.x, G.memory.y, '#ffe9a0', 40, 200, 1, 3, 1);
-    playStory('mem' + reg, RMEM[reg], () => { const x = Math.round(xpNeed(S.lvl) * .3); gainXP(x / (1 + ST.xp / 100)); toast(`✨ Ember Memory witnessed — +${fmt(x)} XP`, '#ffe9a0'); });
+    playStory('mem' + reg, RMEM[reg], () => { const x = Math.round(xpNeed(S.lvl) * .3); gainXP(x / (1 + ST.xp / 100)); toast(`${ico('sparkle')} Ember Memory witnessed — +${fmt(x)} XP`, '#ffe9a0'); });
   }
   if (G.exit && dist(P, G.exit) < 34) { if (typeof bossExit === 'function') { if (bossExit()) return; } else { if (G.abyss) nextFloor(); else { sfx('stairs'); goTown(); } return; } }
   for (const c of G.chests) {

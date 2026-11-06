@@ -26,22 +26,22 @@ updateHUD = function (dt) {
   const mz = document.querySelector('.mzl'); if (mz) { const t = S.opts.mz ? 'wide' : 'close'; if (mz.textContent !== t) mz.textContent = t; }
 };
 // ---------- grouped menu hub ----------
-const HUB_GROUPS = [['🧙 Character', ['inv', 'skills', 'paragon', 'wardrobe']], ['🏆 Progress', ['quests', 'season', 'achieve', 'ledger', 'stats']], ['🏡 Haven & Log', ['haven', 'exped', 'gift', 'log']], ['📚 Codex & World', ['map', 'journal', 'bestiary', 'arsenal', 'wiki']]];
+const HUB_GROUPS = [[ico('wizard') + ' Character', ['inv', 'skills', 'paragon', 'wardrobe']], [ico('trophy') + ' Progress', ['quests', 'season', 'achieve', 'ledger', 'stats']], [ico('haven') + ' Haven & Log', ['haven', 'exped', 'gift', 'log']], [ico('book') + ' Codex & World', ['map', 'journal', 'bestiary', 'arsenal', 'wiki']]];
 { const _paN = MENUS.pause; MENUS.pause = () => { const h = _paN(); const re = /<div class="hubt" onclick="openMenu\('(\w+)'\)">[\s\S]*?<span class="hk">[\s\S]*?<\/span>(?:<i>[\s\S]*?<\/i>)?<\/div>/g; const tiles = {}; let m; while ((m = re.exec(h))) tiles[m[1]] = m[0];
   const a = h.indexOf('<div class="hub">'); if (a < 0) return h; const used = new Set(); let grid = '<div class="hub">';
   for (const [n, keys] of HUB_GROUPS) { const t = keys.filter(k => tiles[k]); if (!t.length) continue; grid += `<div class="hubsec">${n}</div>` + t.map(k => { used.add(k); return tiles[k]; }).join(''); }
-  const rest = Object.keys(tiles).filter(k => !used.has(k)); if (rest.length) grid += `<div class="hubsec">✨ More</div>` + rest.map(k => tiles[k]).join('');
+  const rest = Object.keys(tiles).filter(k => !used.has(k)); if (rest.length) grid += `<div class="hubsec">${ico('sparkle')} More</div>` + rest.map(k => tiles[k]).join('');
   grid += '</div>'; let b = a, depth = 0; const reTag = /<div\b|<\/div>/g; reTag.lastIndex = a; let t; while ((t = reTag.exec(h))) { depth += t[0] === '</div>' ? -1 : 1; if (depth === 0) { b = reTag.lastIndex; break; } }
   return h.slice(0, a) + grid + h.slice(b); }; }
 // ---------- character stats: grouped sections with highlights ----------
 { const _shN = statsHTML; statsHTML = function () { let h = _shN();
   const sec = (before, title, ic) => { h = h.replace(`<div><span>${before}</span>`, `<div class="stsec">${ic} ${title}</div><div><span>${before}</span>`); };
-  sec('Weapon', 'Offense', '⚔'); sec('Max Life', 'Defense', '🛡'); sec('Magic Find', 'Utility', '✨'); sec('Burn/Freeze', 'Elements', '🔥');
+  sec('Weapon', 'Offense', ico('swords')); sec('Max Life', 'Defense', ico('shield')); sec('Magic Find', 'Utility', ico('sparkle')); sec('Burn/Freeze', 'Elements', ico('fire'));
   h = h.replace(/<div><span>Est\. DPS<\/span><span>([^<]*)<\/span><\/div>/, '<div class="sthi"><span>Est. DPS</span><span>$1</span></div>');
   return h; }; }
 // ---------- rare things look rare: rarity-themed tooltips, item frames, names and loot feed ----------
 { const _tiN = tipItem; tipItem = function (id, ev) { _tiN(id, ev); const it = findItem(id); if (!it) return; const tcs = tip.querySelectorAll('.tc');
   const cur = eqSlotOf(it) ? null : (it.slot === 'weapon' ? S.eq.weapon : S.eq[it.slot]);
   [it, cur].forEach((x, i) => { const tc = tcs[i]; if (!x || !tc) return; const r = x.art ? 6 : x.r; tc.classList.add('rt' + r); tc.style.setProperty('--rc', RAR[r].c);
-    const tn = tc.querySelector('.tn'); if (tn && !tc.querySelector('.rchip')) tn.insertAdjacentHTML('beforebegin', `<div class="rchip">${x.art ? '✦ Celestial Artifact' : RAR[r].n}${x.set ? ' • ◈ Set' : ''}${i ? ' • equipped' : ''}</div>`); }); moveTip(ev); }; }
+    const tn = tc.querySelector('.tn'); if (tn && !tc.querySelector('.rchip')) tn.insertAdjacentHTML('beforebegin', `<div class="rchip">${x.art ? '✦ Celestial Artifact' : RAR[r].n}${x.set ? ' • ◆ Set' : ''}${i ? ' • equipped' : ''}</div>`); }); moveTip(ev); }; }
 { const _feN = feed; feed = function (html, col) { _feN(html, col); const f = $('lootfeed'); const d = f && f.lastElementChild; if (!d || !col) return; const r = RAR.findIndex(x => x.c === col); if (r >= 4) { d.classList.add('lf' + Math.min(r, 8)); d.style.setProperty('--rc', col); } }; }

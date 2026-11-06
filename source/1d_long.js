@@ -1,6 +1,6 @@
 // ================= LONG-TERM SYSTEMS: data =================
 // ---- Ember Constellation (endless progression) ----
-const PARA_C = [['Might', '#ff7a5a', '⚔️'], ['Guard', '#7ab0ff', '🛡️'], ['Swiftness', '#6ad46a', '💨'], ['Fortune', '#ffd54a', '🍀']];
+const PARA_C = [['Might', '#ff7a5a', ico('swords')], ['Guard', '#7ab0ff', ico('shield')], ['Swiftness', '#6ad46a', ico('wind')], ['Fortune', '#ffd54a', ico('clover')]];
 const PARA_MAX = 50;
 const PARA = [
   { c: 0, k: 'pDmg', n: 'Ember Might', d: v => `+${(v * .5).toFixed(1)}% damage`, f: (s, v) => s.dmg += v * .5 },
@@ -24,14 +24,14 @@ const PARA_UNLOCK = 30; // character level that awakens the Constellation
 
 // ---- gems ----
 const GEMS = {
-  ruby:     { n: 'Ruby', ic: '🔴', col: '#ff4a5a', st: 'dmg', v: 1.5, u: '% damage' },
-  sapphire: { n: 'Sapphire', ic: '🔵', col: '#4a8aff', st: 'cdr', v: .5, u: '% cooldown reduction' },
-  emerald:  { n: 'Emerald', ic: '🟢', col: '#4ae07a', st: 'critD', v: 3, u: '% crit damage' },
-  topaz:    { n: 'Topaz', ic: '🟡', col: '#ffd54a', st: 'luck', v: 3, u: '% magic find' },
-  amethyst: { n: 'Amethyst', ic: '🟣', col: '#b06aff', st: 'hpPct', v: 1.2, u: '% max life' },
-  diamond:  { n: 'Diamond', ic: '⚪', col: '#e8f4ff', st: 'dr', v: .35, u: '% damage reduction' },
-  onyx:     { n: 'Onyx', ic: '⚫', col: '#5a5a6a', st: 'ls', v: .2, u: '% life steal' },
-  opal:     { n: 'Opal', ic: '🟠', col: '#ffa04a', st: 'atkSpd', v: .7, u: '% attack speed' },
+  ruby:     { n: 'Ruby', ic: ico('gem-ruby', '', 'color:#ff4a5a'), col: '#ff4a5a', st: 'dmg', v: 1.5, u: '% damage' },
+  sapphire: { n: 'Sapphire', ic: ico('gem-sapphire', '', 'color:#4a8aff'), col: '#4a8aff', st: 'cdr', v: .5, u: '% cooldown reduction' },
+  emerald:  { n: 'Emerald', ic: ico('gem-emerald', '', 'color:#4ae07a'), col: '#4ae07a', st: 'critD', v: 3, u: '% crit damage' },
+  topaz:    { n: 'Topaz', ic: ico('gem-topaz', '', 'color:#ffd54a'), col: '#ffd54a', st: 'luck', v: 3, u: '% magic find' },
+  amethyst: { n: 'Amethyst', ic: ico('gem-amethyst', '', 'color:#b06aff'), col: '#b06aff', st: 'hpPct', v: 1.2, u: '% max life' },
+  diamond:  { n: 'Diamond', ic: ico('gem-diamond', '', 'color:#e8f4ff'), col: '#e8f4ff', st: 'dr', v: .35, u: '% damage reduction' },
+  onyx:     { n: 'Onyx', ic: ico('gem-onyx', '', 'color:#5a5a6a'), col: '#5a5a6a', st: 'ls', v: .2, u: '% life steal' },
+  opal:     { n: 'Opal', ic: ico('gem-opal', '', 'color:#ffa04a'), col: '#ffa04a', st: 'atkSpd', v: .7, u: '% attack speed' },
 };
 const GEM_TN = ['', 'Chipped', 'Flawed', 'Rough', 'Clear', 'Fine', 'Brilliant', 'Radiant', 'Royal', 'Imperial', 'Celestial'];
 function gemVal(g, t) { return GEMS[g].v * t * (1 + .05 * t); }
@@ -98,15 +98,15 @@ const SJ_T = [
 ];
 // ---- trials ----
 const TRULES = {
-  glass: { n: 'Glass Cannon', d: 'You deal +100% damage but take +100% damage', ic: '💎' },
-  swarm: { n: 'The Swarm', d: 'Twice as many foes', ic: '🐝' },
-  elites: { n: 'Champions', d: 'Every foe is an elite', ic: '👑' },
-  nopot: { n: 'Abstinence', d: 'Potions are disabled', ic: '🚫' },
-  haste: { n: 'Frenzy', d: 'Foes move and attack 30% faster', ic: '⚡' },
-  volatile: { n: 'Volatile', d: 'Every foe bursts into bolts on death', ic: '💥' },
-  blood: { n: 'Bloodlust', d: 'Foes deal +50% damage; you gain +5% life steal', ic: '🩸' },
-  fragile: { n: 'Fragile', d: 'No life regeneration', ic: '🥀' },
-  giants: { n: 'Giants', d: 'Foes are huge and have double life', ic: '🗿' },
-  marks: { n: 'Marksmen', d: 'Only ranged and spellcasting foes', ic: '🏹' },
+  glass: { n: 'Glass Cannon', d: 'You deal +100% damage but take +100% damage', ic: ico('rule-glass') },
+  swarm: { n: 'The Swarm', d: 'Twice as many foes', ic: ico('bee') },
+  elites: { n: 'Champions', d: 'Every foe is an elite', ic: ico('crown') },
+  nopot: { n: 'Abstinence', d: 'Potions are disabled', ic: ico('ban') },
+  haste: { n: 'Frenzy', d: 'Foes move and attack 30% faster', ic: ico('bolt') },
+  volatile: { n: 'Volatile', d: 'Every foe bursts into bolts on death', ic: ico('explosion') },
+  blood: { n: 'Bloodlust', d: 'Foes deal +50% damage; you gain +5% life steal', ic: ico('blood') },
+  fragile: { n: 'Fragile', d: 'No life regeneration', ic: ico('wilted') },
+  giants: { n: 'Giants', d: 'Foes are huge and have double life', ic: ico('statue') },
+  marks: { n: 'Marksmen', d: 'Only ranged and spellcasting foes', ic: ico('rule-marksmen') },
 };
 const RANGED_AI = ['shoot', 'spread', 'blink', 'turret', 'summon'];

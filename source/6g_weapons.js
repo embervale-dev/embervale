@@ -91,11 +91,11 @@ const _uhW = updateHUD;
 updateHUD = function (dt) {
   _uhW(dt); if (!S || !P || G.mode === 'title') return; const el = H['h-buffs']; if (!el) return;
   let h = ''; const B = (ic, n, col, tt) => h += `<div class="buff wart" title="${tt}" style="border-color:${col}">${ic}<span>${n}</span></div>`;
-  if (ST.wt === 'scythe' && P.souls) B('👻', P.souls, '#a89ad8', `Souls: +${3 * P.souls}% damage${P.souls >= 10 ? ' — next swing heals' : ''}`);
-  if (ST.wt === 'axe' && P.blust) B('🩸', P.blust, '#ff5a3a', `Bloodlust: +${6 * P.blust}% attack speed`);
-  if (ST.wt === 'flail' && P.mom) B('🌀', P.mom, '#9a9aa8', `Momentum: +${4 * P.mom}% attack speed`);
-  if (ST.wt === 'rapier' && P.ripo) B('🤺', P.ripo, '#e8eef8', 'Riposte: guaranteed crits');
-  if (ST.wt === 'katana' && G.t - ART.last >= 1 && !G.inTown) B('🎋', '!', '#f0f4ff', 'Quickdraw ready: next swing crits for +50%');
+  if (ST.wt === 'scythe' && P.souls) B(ico('ghost'), P.souls, '#a89ad8', `Souls: +${3 * P.souls}% damage${P.souls >= 10 ? ' — next swing heals' : ''}`);
+  if (ST.wt === 'axe' && P.blust) B(ico('blood'), P.blust, '#ff5a3a', `Bloodlust: +${6 * P.blust}% attack speed`);
+  if (ST.wt === 'flail' && P.mom) B(ico('vortex'), P.mom, '#9a9aa8', `Momentum: +${4 * P.mom}% attack speed`);
+  if (ST.wt === 'rapier' && P.ripo) B(ico('riposte'), P.ripo, '#e8eef8', 'Riposte: guaranteed crits');
+  if (ST.wt === 'katana' && G.t - ART.last >= 1 && !G.inTown) B(ico('quickdraw'), '!', '#f0f4ff', 'Quickdraw ready: next swing crits for +50%');
   const old = el.querySelectorAll('.wart'); old.forEach(x => x.remove()); if (h) el.insertAdjacentHTML('beforeend', h);
 };
 // ---------- infusions at the forge ----------
@@ -107,13 +107,13 @@ function doInfuse(k) {
   sfx('legend'); burst(P.x, P.y, INFUSE[k].col, 30, 200, .7, 3, 1); toast(`${INFUSE[k].ic} ${it.name} is now <b>${INFUSE[k].n}</b>!`, INFUSE[k].col); saveGame(); renderMenu();
 }
 { const _smW = MENUS.smith; MENUS.smith = () => { const it = S.eq.weapon, c = infCost();
-  return _smW() + `<h3>🔥 Elemental Infusion</h3><div class="dim">Bathe your main-hand weapon in an element. It glows with that element's color and its attacks gain a 20% chance to apply it. Re-infusing replaces the old element. Cost: ${c.ore} ◆ ore, ${c.sh} ✦ shards, ${fmt(c.g)} gold.</div>
+  return _smW() + `<h3>${ico('fire')} Elemental Infusion</h3><div class="dim">Bathe your main-hand weapon in an element. It glows with that element's color and its attacks gain a 20% chance to apply it. Re-infusing replaces the old element. Cost: ${c.ore} ◆ ore, ${c.sh} ✦ shards, ${fmt(c.g)} gold.</div>
   ${it ? `<div style="margin:4px 0">Weapon: <span style="color:${RAR[it.r].c}">${it.name}</span>${it.inf ? ` — currently <span style="color:${INFUSE[it.inf].col}">${INFUSE[it.inf].ic} ${INFUSE[it.inf].n}</span>` : ''}</div>${Object.keys(INFUSE).map(k => `<span class="btn ${it.inf === k ? 'on' : ''}" title="${INFUSE[k].d}" onclick="doInfuse('${k}')" style="border-color:${INFUSE[k].col}">${INFUSE[k].ic} ${INFUSE[k].n}</span>`).join('')}<div class="dim">${Object.keys(INFUSE).map(k => `${INFUSE[k].ic} ${INFUSE[k].d}`).join(' • ')}</div>` : '<div class="dim">Equip a weapon to infuse it.</div>'}`; }; }
 // ---------- tooltips, arsenal, wiki ----------
-function wBars(t) { const r = WROLE[t]; const bar = (n, v) => `<div style="display:flex;align-items:center;gap:6px;font-size:11px"><span style="width:76px;color:#aaa">${n}</span><span style="letter-spacing:1px;color:#ffd27a">${'■'.repeat(v)}<span style="color:#444">${'■'.repeat(5 - v)}</span></span></div>`;
+function wBars(t) { const r = WROLE[t]; const bar = (n, v) => `<div style="display:flex;align-items:center;gap:6px;font-size:11px"><span style="width:76px;color:#aaa">${n}</span><span style="letter-spacing:1px;color:#ffd27a">${'●'.repeat(v)}<span style="color:#444">${'●'.repeat(5 - v)}</span></span></div>`;
   return `<div style="color:#ffd27a;font-size:12px;margin-top:3px">Role: <b>${r[0]}</b></div>${bar('Single target', r[1])}${bar('Crowds', r[2])}${bar('Reach', r[3])}${bar('Safety', r[4])}${bar('Speed', r[5])}`; }
 function wArtHTML(t) { const l = wmLvl(t);
-  return `<div style="color:#ffb05a;font-size:12px;margin-top:4px">◆ Art — <b>${WART[t][0]}</b>${l >= ART_EMP ? ' <span style="color:#7aff7a">(empowered)</span>' : ''}: ${WART[t][1]}</div><div class="dim" style="font-size:11px">${WT[t].n} Mastery ${l} / 40${l < ART_EMP ? ` — Art empowered (+25%) at Mastery ${ART_EMP}` : l < W_GLOW ? ` — weapon glows at Mastery ${W_GLOW}` : ' — Mastered ✔'}</div>`; }
+  return `<div style="color:#ffb05a;font-size:12px;margin-top:4px">◆ Art — <b>${WART[t][0]}</b>${l >= ART_EMP ? ' <span style="color:#7aff7a">(empowered)</span>' : ''}: ${WART[t][1]}</div><div class="dim" style="font-size:11px">${WT[t].n} Mastery ${l} / 40${l < ART_EMP ? ` — Art empowered (+25%) at Mastery ${ART_EMP}` : l < W_GLOW ? ` — weapon glows at Mastery ${W_GLOW}` : ' — Mastered ' + ico('check')}</div>`; }
 const _itW = itemTip; itemTip = function (it, cmp) { let h = _itW(it, cmp); if (it.slot === 'weapon') { h += `<hr>${wBars(it.t)}${wArtHTML(it.t)}`; if (it.inf) h += `<div style="color:${INFUSE[it.inf].col};font-size:12px">${INFUSE[it.inf].ic} ${INFUSE[it.inf].n}: ${INFUSE[it.inf].d}</div>`; } return h; };
 const _wdW = wDps; wDps = function (it) { if (!it) return 0; const w = WT[it.t]; return itemStats(it).wdmg / w.cd * (w.cnt ? Math.min(w.cnt, 2) * .8 : 1) * (w.splash ? 1.25 : 1); };
 { const _arsW = MENUS.arsenal; MENUS.arsenal = () => { const h = _arsW(); const rows = Object.keys(WT).map(t => `<div class="card" style="padding:6px 10px"><b>${WT[t].ic} ${WT[t].n}</b> <span class="dim">${WROLE[t][0]}</span>${wmLvl(t) >= ART_EMP ? ' <span style="color:#7aff7a;font-size:11px">Art empowered</span>' : ''}<div style="font-size:12px;color:#ffb05a">◆ ${WART[t][0]}: <span class="dim">${WART[t][1]}</span></div></div>`).join('');

@@ -638,15 +638,15 @@ function drawOverlay() {
   }
   // labels
   const label = (x, y, z, txt, col, font = 'bold 12px "Trebuchet MS",sans-serif', glow) => { const s = proj(x, y, z); if (!s.vis) return; X.font = font; X.lineWidth = glow ? 4 : 3; X.strokeStyle = 'rgba(0,0,0,.9)'; X.strokeText(txt, s.x, s.y); X.fillStyle = col; X.fillText(txt, s.x, s.y); };
-  for (const p of G.pick) if (p.k === 'item' && dist(p, P) < 230 && p.it.r >= (S.opts.labels || 0)) label(p.x, p.y, .85, `${icon(p.it)} ${p.it.name}${typeof pickMark === 'function' ? pickMark(p) : ''}`, RAR[p.it.r].c, p.it.r >= 7 ? 'bold 17px Georgia,serif' : p.it.r >= 4 ? 'bold 14px Georgia,serif' : p.it.r >= 2 ? 'bold 12px "Trebuchet MS",sans-serif' : undefined, p.it.r >= 4 ? RAR[p.it.r].c : null);
-  for (const n of G.npcs) { label(n.x, n.y, 2.9, n.ic, '#fff', '22px "Apple Color Emoji","Segoe UI Emoji",sans-serif'); label(n.x, n.y, 2.5, n.n, '#ffe2a8', 'bold 14px Georgia,serif'); }
+  for (const p of G.pick) if (p.k === 'item' && dist(p, P) < 230 && p.it.r >= (S.opts.labels || 0)) label(p.x, p.y, .85, `${p.it.name}${typeof pickMark === 'function' ? pickMark(p) : ''}`, RAR[p.it.r].c, p.it.r >= 7 ? 'bold 17px Georgia,serif' : p.it.r >= 4 ? 'bold 14px Georgia,serif' : p.it.r >= 2 ? 'bold 12px "Trebuchet MS",sans-serif' : undefined, p.it.r >= 4 ? RAR[p.it.r].c : null);
+  for (const n of G.npcs) { { const s = proj(n.x, n.y, 2.9); if (s.vis) drawIco(X, icoKeyOf(n.ic), s.x, s.y - 8, 26, '#fff'); } label(n.x, n.y, 2.5, n.n, '#ffe2a8', 'bold 14px Georgia,serif'); }
   for (const v of G.vill || []) {
     label(v.x, v.y, 1.55, v.n, '#d8ccb0', 'bold 11px sans-serif');
     if (v.sayLeft > 0) { const sp = proj(v.x, v.y, 2.0); if (sp.vis) { X.font = '13px "Trebuchet MS",sans-serif'; const w = Math.min(320, X.measureText(v.say).width + 20); X.globalAlpha = Math.min(1, v.sayLeft); X.fillStyle = 'rgba(250,244,230,.95)'; X.strokeStyle = '#7a5e2c'; X.lineWidth = 1.5; X.beginPath(); if (X.roundRect) X.roundRect(sp.x - w / 2, sp.y - 30, w, 24, 8); else X.rect(sp.x - w / 2, sp.y - 30, w, 24); X.fill(); X.stroke(); X.beginPath(); X.moveTo(sp.x - 6, sp.y - 6); X.lineTo(sp.x, sp.y + 2); X.lineTo(sp.x + 6, sp.y - 6); X.fill(); X.fillStyle = '#2a2018'; X.fillText(v.say, sp.x, sp.y - 13, 300); X.globalAlpha = 1; } }
   }
-  if (G.memory && !G.memory.used && dist(G.memory, P) < 420) label(G.memory.x, G.memory.y, 2.1, '✨ Ember Memory — touch to remember', '#ffe9a0');
+  if (G.memory && !G.memory.used && dist(G.memory, P) < 420) label(G.memory.x, G.memory.y, 2.1, 'Ember Memory — touch to remember', '#ffe9a0');
   for (const s of G.shrines) if (!s.used && dist(s, P) < 260) label(s.x, s.y, 2.1, s.s.n + ' — ' + s.s.d, s.s.col);
-  if (G.stairs && dist(G.stairs, P) < 300) label(G.stairs.x, G.stairs.y, 1.2, G.stairsOpen ? '▼ Descend' : `🔒 Sealed (${Math.max(0, Math.ceil(G.total * .7) - G.killed)} more)`, G.stairsOpen ? '#ffd27a' : '#ff8a6a');
+  if (G.stairs && dist(G.stairs, P) < 300) label(G.stairs.x, G.stairs.y, 1.2, G.stairsOpen ? '↓ Descend' : `Sealed (${Math.max(0, Math.ceil(G.total * .7) - G.killed)} more)`, G.stairsOpen ? '#ffd27a' : '#ff8a6a');
   if (G.exit) label(G.exit.x, G.exit.y, 2.3, G.abyss ? 'Descend Deeper' : 'Return to Haven', '#cfe4ff');
   for (const c of G.chests) if (!c.open && dist(c, P) < 200) label(c.x, c.y, .9, 'Chest', '#ffd54a', 'bold 11px sans-serif');
   // damage numbers

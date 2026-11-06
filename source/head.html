@@ -239,7 +239,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .mini::after{content:'N';position:absolute;left:50%;top:3px;transform:translateX(-50%);font:bold 11px Georgia,serif;color:#ffd27a;text-shadow:0 0 4px #000;pointer-events:none}
 .mzl{position:absolute;right:6px;bottom:6px;font-size:9px;color:#c8b088;background:rgba(0,0,0,.5);border-radius:6px;padding:0 5px;pointer-events:none}
 #h-boss .bbar{height:20px!important;border:1px solid #c07a3a!important;box-shadow:0 0 22px rgba(255,60,30,.45),inset 0 2px 4px rgba(0,0,0,.6)!important}
-#h-boss .bn::before{content:'☠ ';color:#ff6a5a}#h-boss .bn::after{content:' ☠';color:#ff6a5a}
+#h-boss .bn::before{content:'◆ ';color:#ff6a5a}#h-boss .bn::after{content:' ◆';color:#ff6a5a}
 #h-boss .bt{font-weight:bold;font-size:12px!important;letter-spacing:.5px}
 #h-target{background:var(--glass)!important;border:var(--trim)!important;border-radius:12px!important}
 .buff{border-radius:10px!important;background:radial-gradient(circle at 50% 35%,rgba(50,40,64,.95),rgba(10,8,16,.95))!important;box-shadow:0 2px 8px rgba(0,0,0,.6)}
@@ -649,6 +649,17 @@ html body#px:is(.smooth,:not(.smooth)) #h-target{box-shadow:0 0 14px rgba(255,90
 html body#px:is(.smooth,:not(.smooth)) .embers i{box-shadow:0 0 8px #ff8a2a!important;border-radius:50%!important;animation:fxRise linear infinite!important}
 /* ---- screen flash used by new effects ---- */
 #fxflash{position:fixed;inset:0;pointer-events:none;z-index:25;opacity:0;transition:opacity .5s}
+/* ---- icons (art/build.js) ---- */
+svg.gi,img.gi{width:1.15em;height:1.15em;display:inline-block;vertical-align:-.2em;fill:currentColor;flex:none}
+img.gi{object-fit:contain}
+svg.gi.big,img.gi.big{width:2em;height:2em}
+.gi-item{position:relative;display:inline-block;width:1.6em;height:1.6em;vertical-align:middle;line-height:0}
+.gi-item>img.gi{width:100%;height:100%;vertical-align:top}
+.gi-item.inf>img.gi{filter:drop-shadow(0 0 3px var(--inf)) drop-shadow(0 0 1px var(--inf))}
+.gi-em{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cell .gi-item{width:42px;height:42px}
+.cell.r9 .gi-item,.cell.r10 .gi-item,.cell.r11 .gi-item{animation:giShim 2.6s ease-in-out infinite}
+@keyframes giShim{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25) saturate(1.2)}}
 </style></head>
 <body id="px">
 <canvas id="g3"></canvas>

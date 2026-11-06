@@ -2,7 +2,7 @@
 const ov = $('ov'), panel = $('panel'), tip = $('tip');
 const MENUS = {};
 const LOCKED_MENUS = ['title', 'class', 'dead', 'intro', 'confirm', 'dialog', 'boon'];
-const CHAR_TABS = [['inv', '🎒 Inventory', 'I'], ['skills', '✨ Skills', 'K'], ['paragon', '✦ Constellation', 'P'], ['quests', '📜 Bounties', 'J'], ['achieve', '🏆 Feats', 'O'], ['journal', '📖 Journal', 'L'], ['bestiary', '🐺 Bestiary', 'B'], ['arsenal', '⚔️ Arsenal', 'N'], ['wardrobe', '👑 Wardrobe', 'G'], ['map', '🗺️ Map', 'M']];
+const CHAR_TABS = [['inv', ico('bag') + ' Inventory', 'I'], ['skills', ico('sparkle') + ' Skills', 'K'], ['paragon', '✦ Constellation', 'P'], ['quests', ico('scroll') + ' Bounties', 'J'], ['achieve', ico('trophy') + ' Feats', 'O'], ['journal', ico('book') + ' Journal', 'L'], ['bestiary', ico('wolf') + ' Bestiary', 'B'], ['arsenal', ico('swords') + ' Arsenal', 'N'], ['wardrobe', ico('crown') + ' Wardrobe', 'G'], ['map', ico('map') + ' Map', 'M']];
 function openMenu(name) {
   if (G.menu && G.menu !== name && (name === 'help' || name === 'settings' || name === 'wiki')) G.prevMenu = G.menu;
   G.menu = name; ov.classList.add('show'); mouse.down = false; hideTip(); renderMenu();
@@ -23,8 +23,8 @@ function renderMenu() {
   if (G.menu === 'map') { const c = $('mapc'); if (c) drawBigMap(c); }
   if (G.menu === 'wiki') { wikiRender(); const q = $('wikiq'); if (q && WIKI_Q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
 }
-const TAB_GROUPS = [['🧙 Character', ['inv', 'skills', 'paragon', 'wardrobe']], ['🏆 Progress', ['quests', 'season', 'achieve']], ['📚 Codex', ['journal', 'bestiary', 'arsenal', 'wiki']], ['🗺️ Map', ['map']]];
-const TAB_NAMES = { inv: ['🎒 Inventory', 'I'], skills: ['✨ Skills', 'K'], paragon: ['✦ Constellation', 'P'], wardrobe: ['👑 Wardrobe', 'G'], quests: ['📜 Bounties', 'J'], season: ['🏅 Season', 'Y'], achieve: ['🏆 Feats', 'O'], journal: ['📖 Journal', 'L'], bestiary: ['🐺 Bestiary', 'B'], arsenal: ['⚔️ Arsenal', 'N'], wiki: ['❓ Wiki', 'H'], map: ['🗺️ Map', 'M'] };
+const TAB_GROUPS = [[ico('wizard') + ' Character', ['inv', 'skills', 'paragon', 'wardrobe']], [ico('trophy') + ' Progress', ['quests', 'season', 'achieve']], [ico('books') + ' Codex', ['journal', 'bestiary', 'arsenal', 'wiki']], [ico('map') + ' Map', ['map']]];
+const TAB_NAMES = { inv: [ico('bag') + ' Inventory', 'I'], skills: [ico('sparkle') + ' Skills', 'K'], paragon: ['✦ Constellation', 'P'], wardrobe: [ico('crown') + ' Wardrobe', 'G'], quests: [ico('scroll') + ' Bounties', 'J'], season: [ico('medal') + ' Season', 'Y'], achieve: [ico('trophy') + ' Feats', 'O'], journal: [ico('book') + ' Journal', 'L'], bestiary: [ico('wolf') + ' Bestiary', 'B'], arsenal: [ico('swords') + ' Arsenal', 'N'], wiki: [ico('help') + ' Wiki', 'H'], map: [ico('map') + ' Map', 'M'] };
 function tabs(cur) {
   const grp = TAB_GROUPS.find(g => g[1].includes(cur)) || TAB_GROUPS[0];
   return `<div class="tabs grp">${TAB_GROUPS.map(g => `<div class="tab ${g === grp ? 'on' : ''}" onclick="openMenu('${g[1][0]}')">${g[0]}</div>`).join('')}<div style="flex:1"></div><div class="tab" onclick="closeMenu()" title="Close (Esc)">✕</div></div>` +
@@ -56,16 +56,16 @@ function itemTip(it, cmp) {
   if (it.u) h += `<div class="uq">★ ${UNQ[it.u].d}</div>`;
   if (it.u2) h += `<div class="uq">★ ${UNQ[it.u2].d}</div>`;
   if (it.art) h += `<div style="color:#7ffcff;margin-top:4px">✦ <b>Signature:</b> ${ARTI[it.art].d}</div><div class="dim" style="font-style:italic;margin-top:3px">"${ARTI[it.art].lore}"</div>`;
-  if (it.locked) h += `<div class="dim">🔒 Locked — Alt+Click to unlock</div>`;
+  if (it.locked) h += `<div class="dim">${ico('lock')} Locked — Alt+Click to unlock</div>`;
   if (cmp) return h + `<div class="dim" style="margin-top:4px">— Currently equipped —</div>`;
   const eqs = eqSlotOf(it);
   if (eqs) h += `<div class="dim" style="margin-top:4px">Equipped (${SLOTN[eqs]})</div>`;
   else {
     const cur = it.slot === 'weapon' ? S.eq.weapon : S.eq[it.slot];
-    if (it.slot === 'weapon') { const a = wDps(it), b = wDps(cur); if (cur) { const p = Math.round((a / b - 1) * 100); h += `<div class="${p >= 0 ? 'up' : 'dn'}">${p >= 0 ? '▲' : '▼'} ${Math.abs(p)}% raw DPS vs equipped</div>`; } else h += `<div class="up">▲ No weapon equipped</div>`; }
-    else if (cur) { const a = itemStats(it), b = itemStats(cur); const d = (a.hp || 0) - (b.hp || 0); if (a.hp || b.hp) h += `<div class="${d >= 0 ? 'up' : 'dn'}">${d >= 0 ? '▲' : '▼'} ${fmt(Math.abs(d))} Life vs equipped</div>`; }
-    else h += `<div class="up">▲ Empty slot</div>`;
-    if (S.inv.includes(it)) { const g = gainPct(it); h += `<div class="${g >= 0 ? 'up' : 'dn'}" style="font-weight:bold">${g >= 0 ? '▲' : '▼'} ${Math.abs(g).toFixed(1)}% overall power ${it.slot === 'weapon' ? '(as main hand)' : ''}</div><div class="dim">Counts every stat: damage, crit, life steal, elements, uniques, life & more</div>`; }
+    if (it.slot === 'weapon') { const a = wDps(it), b = wDps(cur); if (cur) { const p = Math.round((a / b - 1) * 100); h += `<div class="${p >= 0 ? 'up' : 'dn'}">${p >= 0 ? '↑' : '↓'} ${Math.abs(p)}% raw DPS vs equipped</div>`; } else h += `<div class="up">↑ No weapon equipped</div>`; }
+    else if (cur) { const a = itemStats(it), b = itemStats(cur); const d = (a.hp || 0) - (b.hp || 0); if (a.hp || b.hp) h += `<div class="${d >= 0 ? 'up' : 'dn'}">${d >= 0 ? '↑' : '↓'} ${fmt(Math.abs(d))} Life vs equipped</div>`; }
+    else h += `<div class="up">↑ Empty slot</div>`;
+    if (S.inv.includes(it)) { const g = gainPct(it); h += `<div class="${g >= 0 ? 'up' : 'dn'}" style="font-weight:bold">${g >= 0 ? '↑' : '↓'} ${Math.abs(g).toFixed(1)}% overall power ${it.slot === 'weapon' ? '(as main hand)' : ''}</div><div class="dim">Counts every stat: damage, crit, life steal, elements, uniques, life & more</div>`; }
   }
   h += `<div class="dim">Sell value: <span class="gold">${fmt(itemVal(it))}g</span></div>`;
   return h;
@@ -83,7 +83,7 @@ function tipSkill(id, ev) {
   h += `<div>${s.d(Math.max(1, r))}</div>`; if (r && r < s.max) h += `<div class="dim" style="margin-top:6px">Next rank: ${s.d(r + 1)}</div>`;
   tip.innerHTML = `<div class="tc">${h}</div>`; tip.style.display = 'flex'; moveTip(ev);
 }
-function cell(it, act) { return `<div class="cell r${it.r}" onmouseenter="tipItem(${it.id},event)" onmousemove="moveTip(event)" onmouseleave="hideTip()" onclick="${act}(${it.id},event)" oncontextmenu="${act}(${it.id},event,1);return false;">${icon(it)}${it.plus ? `<b>+${it.plus}</b>` : ''}${it.isNew ? '<i>NEW</i>' : ''}${it.locked ? '<u>🔒</u>' : ''}</div>`; }
+function cell(it, act) { return `<div class="cell r${it.r}" onmouseenter="tipItem(${it.id},event)" onmousemove="moveTip(event)" onmouseleave="hideTip()" onclick="${act}(${it.id},event)" oncontextmenu="${act}(${it.id},event,1);return false;">${icon(it)}${it.plus ? `<b>+${it.plus}</b>` : ''}${it.isNew ? '<i>NEW</i>' : ''}${it.locked ? '<u>' + ico('lock') + '</u>' : ''}</div>`; }
 
 // ---------- inventory ----------
 function statsHTML() {
@@ -100,13 +100,13 @@ function statsHTML() {
 }
 MENUS.inv = () => {
   let h = tabs('inv') + `<h2>Inventory <span class="dim">${S.inv.length}/${S.invMax}</span> <span class="gold" style="font-size:15px">● ${fmt(S.gold)}</span> <span class="ore" style="font-size:15px">◆ ${S.ore} ore</span> <span class="shard" style="font-size:15px">✦ ${S.shards} shards</span></h2><div class="invwrap"><div class="eq">`;
-  for (const sl of SLOTS) { const it = S.eq[sl]; h += `<div class="eqrow">${it ? cell(it, 'uiInv') : `<div class="cell empty">${sl === 'weapon' || sl === 'weapon2' ? '⚔' : AT[sl].ic}</div>`}<div>${SLOTN[sl]}</div></div>`; }
+  for (const sl of SLOTS) { const it = S.eq[sl]; h += `<div class="eqrow">${it ? cell(it, 'uiInv') : `<div class="cell empty">${ico('slot-' + (sl === 'weapon2' ? 'weapon' : sl))}</div>`}<div>${SLOTN[sl]}</div></div>`; }
   h += `</div><div class="grid">`;
   for (const it of S.inv) h += cell(it, 'uiInv');
   for (let i = S.inv.length; i < S.invMax; i++) h += `<div class="cell empty"></div>`;
   h += `</div><div class="stats">${statsHTML()}</div></div>
   <div class="hint">Click: equip / unequip • Right-click weapon: equip to Off Hand • Shift+Click: salvage • Alt+Click: lock/unlock • Hover to compare</div>
-  <span class="btn" onclick="salvageJunk(1)">Salvage all Common & Uncommon</span><span class="btn" onclick="salvageJunk(2)">Salvage all Rare & below</span><span class="btn" onclick="sortInv()">Sort</span><span class="btn" onclick="autoEquip()" title="Weighs every stat: damage, crit, attack speed, life steal, elements, unique powers, life, armor and more">⚡ Auto-equip best gear</span>`;
+  <span class="btn" onclick="salvageJunk(1)">Salvage all Common & Uncommon</span><span class="btn" onclick="salvageJunk(2)">Salvage all Rare & below</span><span class="btn" onclick="sortInv()">Sort</span><span class="btn" onclick="autoEquip()" title="Weighs every stat: damage, crit, attack speed, life steal, elements, unique powers, life, armor and more">${ico('bolt')} Auto-equip best gear</span>`;
   return h;
 };
 function afterGear() { calcStats(); P.hp = Math.min(P.hp, ST.maxHp); P.mp = Math.min(P.mp, ST.maxMp); }
@@ -142,7 +142,7 @@ function autoEquip() {
     if (b2 && b2 !== S.eq.weapon2) { const i = S.inv.indexOf(b2); S.inv.splice(i, 1); if (S.eq.weapon2) S.inv.push(S.eq.weapon2); S.eq.weapon2 = b2; changes.push(b2); }
   }
   afterGear(); const gain = (curScore() / before - 1) * 100;
-  toast(changes.length ? `⚡ Equipped ${changes.length} item${changes.length > 1 ? 's' : ''} — overall power <span class="up">+${gain.toFixed(1)}%</span>` : 'You are already wearing your best gear!'); sfx(changes.length ? 'lvl' : 'click'); renderMenu();
+  toast(changes.length ? `${ico('bolt')} Equipped ${changes.length} item${changes.length > 1 ? 's' : ''} — overall power <span class="up">+${gain.toFixed(1)}%</span>` : 'You are already wearing your best gear!'); sfx(changes.length ? 'lvl' : 'click'); renderMenu();
 }
 function swapEq() { [S.eq.weapon, S.eq.weapon2] = [S.eq.weapon2, S.eq.weapon]; calcStats(); }
 function itemScore(it) { const s = itemStats(it); return (s.hp || 0) + (s.dr || 0) * 20 * Math.pow(1.11, it.il) + it.aff.length * 8 * Math.pow(1.11, it.il) + (it.u ? 40 * Math.pow(1.11, it.il) : 0); }
@@ -183,7 +183,7 @@ MENUS.skills = () => {
 };
 
 // ---------- map / quests / feats / pause ----------
-MENUS.map = () => tabs('map') + `<h2>${G.inTown ? 'Haven' : curReg().n} <span class="dim">${G.inTown ? '' : G.abyss ? 'Depth ' + G.depth : 'Floor ' + (G.floor + 1) + ' / ' + FLOORS}</span></h2><canvas id="mapc" width="760" height="540" style="border-radius:8px;cursor:default;display:block"></canvas><div class="hint">🟠 Stairs (red = sealed) • 🟡 Chest • 🔵 Portal • ✦ Shrine • White arrow = you</div>`;
+MENUS.map = () => tabs('map') + `<h2>${G.inTown ? 'Haven' : curReg().n} <span class="dim">${G.inTown ? '' : G.abyss ? 'Depth ' + G.depth : 'Floor ' + (G.floor + 1) + ' / ' + FLOORS}</span></h2><canvas id="mapc" width="760" height="540" style="border-radius:8px;cursor:default;display:block"></canvas><div class="hint">${ico('dot', '', 'color:#ffb04a')} Stairs (red = sealed) • ${ico('dot', '', 'color:#ffd54a')} Chest • ${ico('dot', '', 'color:#7ab8ff')} Portal • ✦ Shrine • White arrow = you</div>`;
 function drawBigMap(c) {
   const cx = c.getContext('2d'), W = c.width, Hh = c.height; cx.fillStyle = '#0a0910'; cx.fillRect(0, 0, W, Hh);
   const s = Math.min(W / M.w, Hh / M.h), ox = (W - M.w * s) / 2, oy = (Hh - M.h * s) / 2;
@@ -198,7 +198,7 @@ function drawBigMap(c) {
   cx.save(); cx.translate(ox + P.x / TILE * s, oy + P.y / TILE * s); cx.rotate(P.face); cx.fillStyle = '#fff'; cx.beginPath(); cx.moveTo(9, 0); cx.lineTo(-6, -6); cx.lineTo(-3, 0); cx.lineTo(-6, 6); cx.closePath(); cx.fill(); cx.restore();
 }
 MENUS.quests = () => {
-  let h = tabs('quests') + `<h2>📜 Bounties <span class="btn" style="font-size:12px" onclick="talkNPC('quests')">💬 Read the notices</span></h2><div class="dim">Complete bounties anywhere and claim rewards from any screen. New bounties replace claimed ones.</div>`;
+  let h = tabs('quests') + `<h2>${ico('scroll')} Bounties <span class="btn" style="font-size:12px" onclick="talkNPC('quests')">${ico('chat')} Read the notices</span></h2><div class="dim">Complete bounties anywhere and claim rewards from any screen. New bounties replace claimed ones.</div>`;
   S.quests.forEach((q, i) => {
     const done = q.have >= q.need;
     h += `<div class="card ${done ? 'done' : ''}"><b>${q.txt}</b> <span class="dim">${fmt(q.have)} / ${fmt(q.need)}</span><div class="qbar"><div style="width:${q.have / q.need * 100}%"></div></div>
@@ -218,19 +218,19 @@ function claimQuest(i) {
 function rerollQuest(i) { const c = rerollCost(); if (S.gold < c) { toast('Not enough gold'); sfx('error'); return; } S.gold -= c; S.quests.splice(i, 1, genQuest()); sfx('click'); renderMenu(); }
 MENUS.achieve = () => {
   const done = ACH.filter(a => S.ach[a.id]).length;
-  return tabs('achieve') + `<h2>🏆 Feats <span class="dim">${done} / ${ACH.length}</span></h2><div class="dim">Each feat grants gold and shards — some grant bonus skill points.</div><div class="achg">` +
-    ACH.map(a => { const v = Math.min(a.need, a.c()), d = S.ach[a.id]; return `<div class="card ach ${d ? 'done' : 'lk'}"><div class="ai">${d ? '🏆' : '🔒'}</div><div style="flex:1"><b>${a.n}</b>${a.sp ? ` <span class="pts" style="font-size:11px">+${a.sp} SP</span>` : ''}<div class="dim">${a.d}</div><div class="qbar"><div style="width:${v / a.need * 100}%"></div></div><div class="dim">${fmt(v)} / ${fmt(a.need)}</div></div></div>`; }).join('') + '</div>';
+  return tabs('achieve') + `<h2>${ico('trophy')} Feats <span class="dim">${done} / ${ACH.length}</span></h2><div class="dim">Each feat grants gold and shards — some grant bonus skill points.</div><div class="achg">` +
+    ACH.map(a => { const v = Math.min(a.need, a.c()), d = S.ach[a.id]; return `<div class="card ach ${d ? 'done' : 'lk'}"><div class="ai">${d ? ico('trophy') : ico('lock')}</div><div style="flex:1"><b>${a.n}</b>${a.sp ? ` <span class="pts" style="font-size:11px">+${a.sp} SP</span>` : ''}<div class="dim">${a.d}</div><div class="qbar"><div style="width:${v / a.need * 100}%"></div></div><div class="dim">${fmt(v)} / ${fmt(a.need)}</div></div></div>`; }).join('') + '</div>';
 };
 const HUB = [
-  ['inv', '🎒', 'Inventory', 'Gear, stats & auto-equip', 'I'], ['skills', '✨', 'Skills', 'Learn & bind abilities', 'K'], ['paragon', '✦', 'Constellation', 'Endless star bonuses', 'P'], ['wardrobe', '👑', 'Wardrobe', 'Titles, colors & pets', 'G'],
-  ['quests', '📜', 'Bounties', 'Tasks & rewards', 'J'], ['season', '🏅', 'Season', 'Monthly journey', 'Y'], ['achieve', '🏆', 'Feats', 'Achievements', 'O'], ['map', '🗺️', 'Map', 'Explored floor', 'M'],
-  ['journal', '📖', 'Journal', 'Story & lore pages', 'L'], ['bestiary', '🐺', 'Bestiary', 'Monsters & mastery', 'B'], ['arsenal', '⚔️', 'Arsenal', 'Weapons & artifacts', 'N'], ['wiki', '❓', 'Wiki', 'Everything explained', 'H'],
+  ['inv', ico('bag'), 'Inventory', 'Gear, stats & auto-equip', 'I'], ['skills', ico('sparkle'), 'Skills', 'Learn & bind abilities', 'K'], ['paragon', '✦', 'Constellation', 'Endless star bonuses', 'P'], ['wardrobe', ico('crown'), 'Wardrobe', 'Titles, colors & pets', 'G'],
+  ['quests', ico('scroll'), 'Bounties', 'Tasks & rewards', 'J'], ['season', ico('medal'), 'Season', 'Monthly journey', 'Y'], ['achieve', ico('trophy'), 'Feats', 'Achievements', 'O'], ['map', ico('map'), 'Map', 'Explored floor', 'M'],
+  ['journal', ico('book'), 'Journal', 'Story & lore pages', 'L'], ['bestiary', ico('wolf'), 'Bestiary', 'Monsters & mastery', 'B'], ['arsenal', ico('swords'), 'Arsenal', 'Weapons & artifacts', 'N'], ['wiki', ico('help'), 'Wiki', 'Everything explained', 'H'],
 ];
 MENUS.pause = () => {
   const badge = k => k === 'skills' && S.sp ? S.sp : k === 'paragon' && S.para.pts ? S.para.pts : k === 'quests' ? (S.quests.filter(q => q.have >= q.need).length || '') : k === 'season' ? ($('mb-sj') ? $('mb-sj').textContent : '') : '';
   return `<div style="min-width:760px"><h2 style="text-align:center">☰ Menu <span class="dim" style="font-size:13px">Playtime ${fmtTime(S.stats.time)} • ${fmt(S.stats.kills)} kills</span></h2>
   <div class="hub">${HUB.map(h => `<div class="hubt" onclick="openMenu('${h[0]}')"><div class="hi">${h[1]}</div><b>${h[2]}</b><div class="dim">${h[3]}</div><span class="hk">${h[4]}</span>${badge(h[0]) ? `<i>${badge(h[0])}</i>` : ''}</div>`).join('')}</div>
-  <div style="text-align:center;margin-top:10px"><span class="btn" onclick="closeMenu()">▶ Resume</span><span class="btn" onclick="openMenu('settings')">⚙ Settings</span><span class="btn" onclick="closeMenu();startTutorial()">🎓 Replay Tutorial</span><span class="btn" onclick="saveGame();toast('Game saved')">💾 Save</span><span class="btn" onclick="quitToTitle()">⏏ Save & Quit</span></div></div>`;
+  <div style="text-align:center;margin-top:10px"><span class="btn" onclick="closeMenu()">${ico('play')} Resume</span><span class="btn" onclick="openMenu('settings')">${ico('gears')} Settings</span><span class="btn" onclick="closeMenu();startTutorial()">${ico('cap')} Replay Tutorial</span><span class="btn" onclick="saveGame();toast('Game saved')">${ico('save')} Save</span><span class="btn" onclick="quitToTitle()">${ico('eject')} Save & Quit</span></div></div>`;
 };
 MENUS.settings = () => {
   const o = S ? S.opts : { vol: .5, quality: 'high', shake: true, nums: true };
@@ -239,7 +239,7 @@ MENUS.settings = () => {
   <div class="card">Graphics ${['low', 'medium', 'high'].map(q => `<span class="btn ${o.quality === q ? 'on' : ''}" onclick="setOpt('quality','${q}')">${q[0].toUpperCase() + q.slice(1)}</span>`).join('')}<div class="dim">Low disables shadows & glow for older computers</div></div>
   <div class="card">Screen shake <span class="btn ${o.shake ? 'on' : ''}" onclick="setOpt('shake',${!o.shake})">${o.shake ? 'On' : 'Off'}</span></div>
   <div class="card">Damage numbers ${['All', 'Big hits only', 'Off'].map((n, i) => `<span class="btn ${(o.numMode | 0) === i ? 'on' : ''}" onclick="setOpt('numMode',${i})">${n}</span>`).join('')}</div>
-  <div class="card">🌿 Relaxed mode <span class="btn ${o.relaxed ? 'on' : ''}" onclick="setOpt('relaxed',${!o.relaxed})">${o.relaxed ? 'On' : 'Off'}</span><div class="dim">Take 35% less damage and lose no gold when you fall. Great for a calmer adventure — switch any time.</div></div>
+  <div class="card">${ico('leaf')} Relaxed mode <span class="btn ${o.relaxed ? 'on' : ''}" onclick="setOpt('relaxed',${!o.relaxed})">${o.relaxed ? 'On' : 'Off'}</span><div class="dim">Take 35% less damage and lose no gold when you fall. Great for a calmer adventure — switch any time.</div></div>
   <div class="card">Auto-equip upgrades on pickup <span class="btn ${o.autoEq ? 'on' : ''}" onclick="setOpt('autoEq',${!o.autoEq})">${o.autoEq ? 'On' : 'Off'}</span><div class="dim">Wears found gear automatically when it raises your overall power (keeps your weapon style)</div></div>
   <div class="card">Auto-salvage on pickup ${['Off', 'Common', 'Uncommon & below'].map((n, i) => `<span class="btn ${(o.autoSalv | 0) === i ? 'on' : ''}" onclick="setOpt('autoSalv',${i})">${n}</span>`).join('')}<div class="dim">Never salvages items with unique powers</div></div>
   <div class="card">Show loot labels ${['All', 'Uncommon+', 'Rare+'].map((n, i) => `<span class="btn ${(o.labels | 0) === i ? 'on' : ''}" onclick="setOpt('labels',${i})">${n}</span>`).join('')}</div>
@@ -258,7 +258,7 @@ MENUS.help = () => `<h2>How to Play</h2><div class="invwrap"><table class="keys"
   <b>Goal:</b> Recover 12 Ember Shards from the guardians of 12 regions. Each region has 6 floors and a guardian on floor 7.<br>
   <b>Stairs</b> unseal after slaying 70% of a floor's foes.<br>
   <b>Combo:</b> chain hits to build a combo for up to +40% damage. Getting hit halves it.<br>
-  <b>Ember Surge:</b> fighting fills the 🔥 gauge. Press V to detonate it and empower yourself.<br>
+  <b>Ember Surge:</b> fighting fills the ${ico('fire')} gauge. Press V to detonate it and empower yourself.<br>
   <b>Perfect Dodge:</b> roll through an attack at the last moment to slow time and make your next hit a crit.<br>
   <b>Hazards:</b> barrels explode (hit them near foes!), crates hold gold, spike traps glow red before striking. Chase down <span class="gold">Gilded Imps</span> before they escape!<br>
   <b>Floor modifiers</b> like Blood Moon or Gilded Halls change the rules for a floor.<br>
@@ -269,20 +269,20 @@ MENUS.help = () => `<h2>How to Play</h2><div class="invwrap"><table class="keys"
 // ---------- town menus ----------
 function buyCost(it) { return itemVal(it) * 5; }
 const SERV = {
-  belt: { n: '🧪 Potion Belt', d: () => `Max potions ${S.potMax} → ${S.potMax + 1}`, cost: () => Math.round(150 * Math.pow(2.6, S.potMax - 3)), ok: () => S.potMax < 8, buy: () => { S.potMax++; S.pots = S.potMax; } },
-  potency: { n: '❤️ Potion Potency', d: () => `Potions heal ${40 + 5 * S.potLvl}% → ${45 + 5 * S.potLvl}%`, cost: () => Math.round(120 * Math.pow(2.2, S.potLvl)), ok: () => S.potLvl < 10, buy: () => S.potLvl++ },
-  satchel: { n: '🎒 Bigger Satchel', d: () => `Inventory ${S.invMax} → ${S.invMax + 5} slots`, cost: () => Math.round(300 * Math.pow(2.3, (S.invMax - 30) / 5)), ok: () => S.invMax < 60, buy: () => S.invMax += 5 },
-  gamble: { n: '🎲 Mystery Cache', d: () => 'A random item with boosted rarity', cost: () => Math.round(60 * Math.pow(1.12, maxPw())), ok: () => S.inv.length < S.invMax, buy: () => { const it = genItem(maxPw(), { bonus: .8 }); it.isNew = true; S.inv.push(it); noteFound(it); toast(`You got: <span style="color:${RAR[it.r].c}">${it.name}</span>`); if (it.r >= 4) { sfx('legend'); S.stats.legend++; } } },
+  belt: { n: ico('potion') + ' Potion Belt', d: () => `Max potions ${S.potMax} → ${S.potMax + 1}`, cost: () => Math.round(150 * Math.pow(2.6, S.potMax - 3)), ok: () => S.potMax < 8, buy: () => { S.potMax++; S.pots = S.potMax; } },
+  potency: { n: ico('heart') + ' Potion Potency', d: () => `Potions heal ${40 + 5 * S.potLvl}% → ${45 + 5 * S.potLvl}%`, cost: () => Math.round(120 * Math.pow(2.2, S.potLvl)), ok: () => S.potLvl < 10, buy: () => S.potLvl++ },
+  satchel: { n: ico('bag') + ' Bigger Satchel', d: () => `Inventory ${S.invMax} → ${S.invMax + 5} slots`, cost: () => Math.round(300 * Math.pow(2.3, (S.invMax - 30) / 5)), ok: () => S.invMax < 60, buy: () => S.invMax += 5 },
+  gamble: { n: ico('dice') + ' Mystery Cache', d: () => 'A random item with boosted rarity', cost: () => Math.round(60 * Math.pow(1.12, maxPw())), ok: () => S.inv.length < S.invMax, buy: () => { const it = genItem(maxPw(), { bonus: .8 }); it.isNew = true; S.inv.push(it); noteFound(it); toast(`You got: <span style="color:${RAR[it.r].c}">${it.name}</span>`); if (it.r >= 4) { sfx('legend'); S.stats.legend++; } } },
 };
 function buyServ(k) { const s = SERV[k]; const c = s.cost(); if (!s.ok()) { toast('Not available'); return; } if (S.gold < c) { toast('Not enough gold', '#ff8a8a'); sfx('error'); return; } S.gold -= c; s.buy(); sfx('gold'); afterGear(); renderMenu(); }
 MENUS.shop = () => {
-  let h = `<h2>💰 Merchant Orla <span class="gold" style="font-size:16px">● ${fmt(S.gold)}</span></h2><div class="dim">"Fresh steel from the deep. Stock changes every time you return from an expedition."</div><h3>Wares</h3><div class="row">`;
+  let h = `<h2>${ico('gold')} Merchant Orla <span class="gold" style="font-size:16px">● ${fmt(S.gold)}</span></h2><div class="dim">"Fresh steel from the deep. Stock changes every time you return from an expedition."</div><h3>Wares</h3><div class="row">`;
   for (const it of S.shop) h += `<div class="ware">${cell(it, 'buyItem')}<div class="${S.gold >= buyCost(it) ? 'gold' : 'dim'}">${fmt(buyCost(it))}g</div></div>`;
   if (!S.shop.length) h += '<div class="dim">Sold out!</div>';
   h += `</div><h3>Services</h3>`;
   for (const k in SERV) { const s = SERV[k]; h += `<div class="smrow"><div class="nm">${s.n} <span class="dim">${s.ok() ? s.d() : 'MAXED / unavailable'}</span></div>${s.ok() ? `<span class="btn ${S.gold < s.cost() ? 'dis' : ''}" onclick="buyServ('${k}')">${fmt(s.cost())}g</span>` : ''}</div>`; }
   h += `<h3>Sell <span class="dim">(click an item to sell it)</span></h3><div class="grid">${S.inv.map(it => cell(it, 'sellItem')).join('') || '<div class="dim">Your bag is empty</div>'}</div>
-  <span class="btn" onclick="sellJunk()">Sell all Common & Uncommon</span><span class="btn" onclick="talkNPC('shop')">💬 Talk</span><span class="btn" onclick="closeMenu()">Leave</span>`;
+  <span class="btn" onclick="sellJunk()">Sell all Common & Uncommon</span><span class="btn" onclick="talkNPC('shop')">${ico('chat')} Talk</span><span class="btn" onclick="closeMenu()">Leave</span>`;
   return h;
 };
 function buyItem(id) { const i = S.shop.findIndex(x => x.id === id); if (i < 0) return; const it = S.shop[i], c = buyCost(it); if (S.gold < c) { toast('Not enough gold', '#ff8a8a'); sfx('error'); return; } if (S.inv.length >= S.invMax) { toast('Inventory full'); return; } S.gold -= c; S.shop.splice(i, 1); S.inv.push(it); noteFound(it); sfx('gold'); hideTip(); renderMenu(); }
@@ -291,7 +291,7 @@ function sellJunk() { let g = 0; S.inv = S.inv.filter(it => { if (it.r <= 1 && !
 function upCost(it) { return { g: Math.round(30 * Math.pow(1.12, it.il) * (it.plus + 1) * (1 + it.r * .3)), o: it.plus + 1 }; }
 function refCost(it) { return 4 * (it.r + 1); }
 MENUS.smith = () => {
-  let h = `<h2>⚒️ Blacksmith Brann</h2><div><span class="gold">● ${fmt(S.gold)}</span> &nbsp; <span class="ore">◆ ${S.ore} Ember Ore</span> &nbsp; <span class="shard">✦ ${S.shards} Shards</span></div>
+  let h = `<h2>${ico('anvil')} Blacksmith Brann</h2><div><span class="gold">● ${fmt(S.gold)}</span> &nbsp; <span class="ore">◆ ${S.ore} Ember Ore</span> &nbsp; <span class="shard">✦ ${S.shards} Shards</span></div>
   <div class="dim">"Upgrades add +10% base power and +5% affix power per level (max +10). Reforging rerolls an item's affixes. Ore drops from elites, chests and guardians."</div>`;
   const list = [...SLOTS.map(s => S.eq[s]).filter(Boolean), ...S.inv];
   for (const it of list) {
@@ -305,7 +305,7 @@ MENUS.smith = () => {
   else { h += `<div class="dim">Choose an artifact to forge. Each costs ${FORGE_COST} Celestial Fragments. Artifacts carry two unique powers, a signature effect, six affixes and far greater base power.</div><div class="row" style="margin-top:6px">`;
     for (const k in ARTI) { const A = ARTI[k]; h += `<div class="card" style="width:240px;padding:6px 9px"><b style="color:#7ffcff">${WT[A.t].ic} ${A.n}</b> <span class="dim">${WT[A.t].n}</span><div class="dim" style="font-size:12px">${A.d}</div><span class="btn ${S.frag < FORGE_COST ? 'dis' : ''}" onclick="forgeArt('${k}')">Forge</span></div>`; }
     h += '</div>'; }
-  return h + `<br><span class="btn" onclick="talkNPC('smith')">💬 Talk</span><span class="btn" onclick="closeMenu()">Leave</span>`;
+  return h + `<br><span class="btn" onclick="talkNPC('smith')">${ico('chat')} Talk</span><span class="btn" onclick="closeMenu()">Leave</span>`;
 };
 function forgeArt(k) { if (S.frag < FORGE_COST) return; if (S.inv.length >= S.invMax) { toast('Make room in your inventory first'); return; } S.frag -= FORGE_COST; const it = genArtifact(k, maxPw() + 3); it.isNew = true; S.inv.push(it); S.stats.celestial++; noteFound(it); sfx('legend'); banner('✦ CELESTIAL ARTIFACT FORGED ✦', it.name, RAR[6].c); toast(`Brann hands you <span style="color:#7ffcff">${it.name}</span>`); saveGame(); renderMenu(); }
 function noop() { }
@@ -329,31 +329,31 @@ const LORE = [
 MENUS.sage = () => {
   const shards = S.done[0].filter(Boolean).length, next = S.done[S.diff].indexOf(false);
   const lore = next < 0 ? `"You have conquered every guardian on ${DIFF[S.diff]}. The Abyss beckons — and harder trials await at the Waystone."` : `"${LORE[next]}"`;
-  return `<h2>📘 Sage Elowen</h2><p class="lore">${lore}</p>
+  return `<h2>${ico('spellbook')} Sage Elowen</h2><p class="lore">${lore}</p>
   <div class="card">Ember Shards recovered (Normal): <b class="gold">${shards} / ${NREG}</b> • Difficulty unlocked: <b style="color:${DIFFC[S.maxDiff]}">${DIFF[S.maxDiff]}</b> • Abyss best: ${S.abyssBest.map((d, i) => `<span style="color:${DIFFC[i]}">${d}</span>`).join(' / ')}<br>
   <span class="dim">Playtime ${fmtTime(S.stats.time)} • ${fmt(S.stats.kills)} kills • ${fmt(S.stats.elites)} elites • ${S.stats.bosses} guardians • ${S.stats.legend} legendaries • best combo ${S.stats.maxCombo} • ${S.stats.deaths} deaths</span></div>
   <div class="btn" onclick="respec()">Reset all skill points (${respecCost() ? fmt(respecCost()) + 'g' : 'free below Lv 10'})</div>
-  ${S.boonPend ? `<div class="btn" style="border-color:#ffe9a0;color:#ffe9a0" onclick="closeMenu();offerBoon()">✨ Receive Warden's Boon (${S.boonPend})</div>` : ''}
-  <div class="btn" onclick="talkNPC('sage')">💬 Talk</div><div class="btn" onclick="openMenu('achieve')">🏆 Feats</div><div class="btn" onclick="openMenu('wiki')">❓ Wiki</div><div class="btn" onclick="closeMenu()">Leave</div>`;
+  ${S.boonPend ? `<div class="btn" style="border-color:#ffe9a0;color:#ffe9a0" onclick="closeMenu();offerBoon()">${ico('sparkle')} Receive Warden's Boon (${S.boonPend})</div>` : ''}
+  <div class="btn" onclick="talkNPC('sage')">${ico('chat')} Talk</div><div class="btn" onclick="openMenu('achieve')">${ico('trophy')} Feats</div><div class="btn" onclick="openMenu('wiki')">${ico('help')} Wiki</div><div class="btn" onclick="closeMenu()">Leave</div>`;
 };
 MENUS.portal = () => {
   const d = S.diff;
-  let h = `<h2>🌀 The Waystone</h2><div>Difficulty: ${DIFF.map((n, i) => i <= S.maxDiff ? `<span class="btn ${i === d ? 'on' : ''}" style="color:${DIFFC[i]}" onclick="S.diff=${i};renderMenu()">${n}</span>` : `<span class="btn dis">🔒 ${n}</span>`).join('')}</div>
+  let h = `<h2>${ico('vortex')} The Waystone</h2><div>Difficulty: ${DIFF.map((n, i) => i <= S.maxDiff ? `<span class="btn ${i === d ? 'on' : ''}" style="color:${DIFFC[i]}" onclick="S.diff=${i};renderMenu()">${n}</span>` : `<span class="btn dis">${ico('lock')} ${n}</span>`).join('')}</div>
   <div class="dim">Higher difficulties: much stronger foes, better loot, levels required +25 per tier. Mythic items drop on Nightmare+.</div>
-  ${S.last && S.last.diff === d ? `<div class="btn" style="border-color:#7aff7a" onclick="travel(${S.last.r},${S.last.f},${S.last.d || 0})">▶ Resume: ${S.last.r === ABYSS_R ? 'The Abyss, depth ' + S.last.d : REG[S.last.r].n + ' — floor ' + (S.last.f + 1)}</div>` : ''}<div class="regcards">`;
+  ${S.last && S.last.diff === d ? `<div class="btn" style="border-color:#7aff7a" onclick="travel(${S.last.r},${S.last.f},${S.last.d || 0})">${ico('play')} Resume: ${S.last.r === ABYSS_R ? 'The Abyss, depth ' + S.last.d : REG[S.last.r].n + ' — floor ' + (S.last.f + 1)}</div>` : ''}<div class="regcards">`;
   for (let r = 0; r < NREG; r++) {
     const R = REG[r], unl = r === 0 || S.done[d][r - 1], lv = reqLvl(r, d), lvOk = S.lvl >= lv, pr = S.prog[d][r], done = S.done[d][r];
     h += `<div class="card ${unl && lvOk ? '' : 'lock'} ${done ? 'done' : ''}"><b style="font-family:Georgia;font-size:16px;color:${R.torch}">${r + 1}. ${R.n}</b> ${done ? '<span class="gold">✦</span>' : ''} <span class="dim">Lv ${lv}+ • ${BOSS[R.boss].n}</span><br>`;
-    if (!unl) h += `<span class="dim">🔒 Defeat the previous region's guardian</span>`;
-    else if (!lvOk) h += `<span style="color:#ff8a6a">🔒 Reach level ${lv} (you are ${S.lvl}) — replay floors & do bounties!</span>`;
-    else for (let f = 0; f <= (done ? BOSS_F : pr); f++) h += `<span class="btn" style="padding:4px 9px" onclick="travel(${r},${f})">${f === BOSS_F ? '👑' : f + 1}</span>`;
+    if (!unl) h += `<span class="dim">${ico('lock')} Defeat the previous region's guardian</span>`;
+    else if (!lvOk) h += `<span style="color:#ff8a6a">${ico('lock')} Reach level ${lv} (you are ${S.lvl}) — replay floors & do bounties!</span>`;
+    else for (let f = 0; f <= (done ? BOSS_F : pr); f++) h += `<span class="btn" style="padding:4px 9px" onclick="travel(${r},${f})">${f === BOSS_F ? ico('crown') : f + 1}</span>`;
     h += `</div>`;
   }
   h += '</div>';
   if (S.done[d][NREG - 1]) {
     const best = S.abyssBest[d]; const cps = [1]; for (let c = 6; c <= best; c += 5) cps.push(c);
     h += `<div class="card" style="border-color:#ff5a8a"><b style="font-family:Georgia;font-size:16px;color:#ff7aa0">The Abyss</b> <span class="dim">Endless descent. Every 5th depth holds a guardian. Best: ${best}</span><br>${cps.map(c => `<span class="btn" onclick="travel(${ABYSS_R},0,${c})">Depth ${c}</span>`).join('')}</div>`;
-  } else h += `<div class="card lock"><b>The Abyss</b> <span class="dim">🔒 Defeat The Unmaker on this difficulty</span></div>`;
+  } else h += `<div class="card lock"><b>The Abyss</b> <span class="dim">${ico('lock')} Defeat The Unmaker on this difficulty</span></div>`;
   return h + `<span class="btn" onclick="closeMenu()">Leave</span>`;
 };
 function travel(r, f, depth) { closeMenu(); sfx('stairs'); enterFloor(r, f, depth); }
@@ -367,7 +367,7 @@ MENUS.title = () => {
   return `<div class="title"><h1 class="big">EMBERVALE</h1><div class="sub">~ The Fading Flame ~</div>
   ${s ? `<div class="btn bigb" onclick="continueGame()">Continue<br><span class="dim">Lv ${s.lvl} ${CLS[s.cls] ? CLS[s.cls].n : ''} • ${fmtTime((s.stats && s.stats.time) || 0)}</span></div>` : ''}
   <div class="btn bigb" onclick="${s ? "openMenu('confirm')" : "openMenu('class')"}">New Game</div>
-  <div class="btn bigb" onclick="G.prevMenu='title';openMenu('wiki')">❓ Wiki & How to Play</div>
+  <div class="btn bigb" onclick="G.prevMenu='title';openMenu('wiki')">${ico('help')} Wiki & How to Play</div>
   <div class="btn bigb" onclick="openSettingsFromTitle()">Settings</div>
   <div class="dim" style="margin-top:18px;text-shadow:0 1px 3px #000">A single-player 3D action adventure • 12 regions • endless Abyss • Progress saves automatically</div></div>`;
 };
@@ -375,11 +375,11 @@ function openSettingsFromTitle() { if (!S) { const s = loadGame(); S = s ? fixSa
 MENUS.confirm = () => `<div class="title"><h2>Start a new game?</h2><p class="lore">This will <b style="color:#ff6a5a">erase</b> your current save.</p><div class="btn" onclick="openMenu('class')">Yes, start over</div><div class="btn" onclick="openMenu('title')">Cancel</div></div>`;
 MENUS.class = () => `<div class="title"><h2 style="font-size:34px">Choose Your Path</h2><div class="dim" style="text-shadow:0 1px 3px #000">Your class sets your look, starting weapons and skill. Any class can use any weapon and learn any skill.</div><br><div class="cls">
   ${Object.keys(CLS).map(k => `<div class="card" style="background:rgba(14,12,22,.85)" onclick="newGame('${k}')"><div style="font-size:52px">${CLS[k].ic}</div><h3 style="color:${CLS[k].col}">${CLS[k].n}</h3><div class="dim">${CLS[k].d}</div></div>`).join('')}</div>
-  <div class="card" style="display:inline-block;margin-top:12px;background:rgba(14,12,22,.85)">🌿 Relaxed mode <span class="btn ${G.relaxNew ? 'on' : ''}" onclick="G.relaxNew=!G.relaxNew;renderMenu()">${G.relaxNew ? 'On' : 'Off'}</span><div class="dim">35% less damage taken, no gold lost on death. Change any time in Settings.</div></div>
+  <div class="card" style="display:inline-block;margin-top:12px;background:rgba(14,12,22,.85)">${ico('leaf')} Relaxed mode <span class="btn ${G.relaxNew ? 'on' : ''}" onclick="G.relaxNew=!G.relaxNew;renderMenu()">${G.relaxNew ? 'On' : 'Off'}</span><div class="dim">35% less damage taken, no gold lost on death. Change any time in Settings.</div></div>
   <br><span class="btn" onclick="openMenu('slots')">Back</span></div>`;
 MENUS.intro = () => `<div class="title"><h2>The Fading Flame</h2><p class="lore">For a thousand years the Ember burned in the heart of Embervale, and its twelve Wardens kept the dark at bay.<br><br>Then the Wardens turned. The Ember shattered into twelve shards, each now clutched by a corrupted guardian deep within the wilds.<br><br>Only Haven, the last village, still glows. You are its final hope.<br><br><b>Recover the twelve shards. Rekindle the Ember.</b></p>
-  <table class="keys" style="margin:auto"><tr><td>WASD</td><td>Move</td></tr><tr><td>Left Click</td><td>Attack</td></tr><tr><td>Space</td><td>Dodge (perfect dodges slow time!)</td></tr><tr><td>Q E R F</td><td>Skills</td></tr><tr><td>V</td><td>Ember Surge (when the 🔥 gauge is full)</td></tr><tr><td>1</td><td>Potion</td></tr><tr><td>I / K</td><td>Inventory / Skills</td></tr></table>
-  <div class="dim">Walk up to the <b>Waystone 🌀</b> (north of the fountain) to begin your journey.</div><div class="btn bigb" onclick="closeMenu()">Begin</div></div>`;
+  <table class="keys" style="margin:auto"><tr><td>WASD</td><td>Move</td></tr><tr><td>Left Click</td><td>Attack</td></tr><tr><td>Space</td><td>Dodge (perfect dodges slow time!)</td></tr><tr><td>Q E R F</td><td>Skills</td></tr><tr><td>V</td><td>Ember Surge (when the ${ico('fire')} gauge is full)</td></tr><tr><td>1</td><td>Potion</td></tr><tr><td>I / K</td><td>Inventory / Skills</td></tr></table>
+  <div class="dim">Walk up to the <b>Waystone ${ico('vortex')}</b> (north of the fountain) to begin your journey.</div><div class="btn bigb" onclick="closeMenu()">Begin</div></div>`;
 function newGame(cls) {
   initAudio(); IID = 1; const opts = S && S.opts ? S.opts : null; S = newSave(cls); if (opts) S.opts = opts;
   const c = CLS[cls];
@@ -401,7 +401,7 @@ function titleScene() {
 // ---------- dialog (story) ----------
 let DLG = null;
 function startDialog(lines, onEnd) { DLG = { lines, i: 0, c: 0, onEnd }; mouse.down = false; openMenu('dialog'); }
-function dlgSpeaker(k) { if (k === 'boss') return { n: G.boss ? G.boss.d.n : 'Guardian', ic: '💀', col: '#ff6a5a' }; if (k === 'warden') return { ...SPK.warden, n: RSTORY[G.region] ? RSTORY[G.region].w : SPK.warden.n }; return SPK[k] || SPK.elowen; }
+function dlgSpeaker(k) { if (k === 'boss') return { n: G.boss ? G.boss.d.n : 'Guardian', ic: ico('skull'), col: '#ff6a5a' }; if (k === 'warden') return { ...SPK.warden, n: RSTORY[G.region] ? RSTORY[G.region].w : SPK.warden.n }; return SPK[k] || SPK.elowen; }
 MENUS.dialog = () => {
   if (!DLG) return ''; const [k, txt] = DLG.lines[DLG.i], sp = dlgSpeaker(k);
   return `<div class="dlgbox" onclick="dlgNext()"><div class="dport" style="border-color:${sp.col};box-shadow:0 0 20px ${sp.col}66">${sp.ic}</div><div class="dbody"><div class="dname" style="color:${sp.col}">${sp.n}</div><div class="dtext" id="dtext"></div><div class="dhint">${DLG.i + 1}/${DLG.lines.length} — Click / Space to continue • Esc to skip</div></div></div>`;
@@ -419,14 +419,14 @@ function dlgSkip() { if (DLG) DLG.i = DLG.lines.length; dlgEnd(); }
 function dlgEnd() { const f = DLG && DLG.onEnd; DLG = null; closeMenu(); if (f) f(); }
 // ---------- journal ----------
 MENUS.journal = () => {
-  let h = tabs('journal') + `<h2>📖 Journal</h2><div class="dim">The story so far, and the Lost Pages you have found (${S.pages.length}/${PAGES.length}).</div><div class="invwrap"><div style="flex:1;min-width:420px;max-width:560px">`;
+  let h = tabs('journal') + `<h2>${ico('book')} Journal</h2><div class="dim">The story so far, and the Lost Pages you have found (${S.pages.length}/${PAGES.length}).</div><div class="invwrap"><div style="flex:1;min-width:420px;max-width:560px">`;
   h += `<h3>The Fading Flame</h3>`;
   if (S.story.intro) h += `<div class="card"><b>Prologue</b><div class="dim">${STORY_INTRO.map(l => l[1]).join(' ')}</div></div>`;
   RSTORY.forEach((r, i) => {
     if (!S.story['post' + i] && !S.story['arrive' + i]) return;
     h += `<div class="card ${S.story['post' + i] ? 'done' : ''}"><b style="color:${REG[i].torch}">Chapter ${i + 1}: ${REG[i].n}</b> <span class="dim">— ${r.w}</span><div class="dim">${r.arrive.map(l => l[1]).join(' ')}</div>${S.story['post' + i] ? `<div style="font-size:13px;margin-top:4px">${r.post.map(l => `<b style="color:${dlgSpeakerJ(l[0], i).col}">${dlgSpeakerJ(l[0], i).n}:</b> ${l[1]}`).join('<br>')}</div>` : '<div class="dim"><i>The guardian still waits...</i></div>'}</div>`;
   });
-  const mems = RMEM.map((m, i) => S.story['mem' + i] ? `<div class="card" style="font-size:13px"><b style="color:#ffe9a0">✨ Memory of ${RSTORY[i].w}</b><div style="font-style:italic">${m.map(l => l[1]).join(' ')}</div></div>` : '').join('');
+  const mems = RMEM.map((m, i) => S.story['mem' + i] ? `<div class="card" style="font-size:13px"><b style="color:#ffe9a0">${ico('sparkle')} Memory of ${RSTORY[i].w}</b><div style="font-style:italic">${m.map(l => l[1]).join(' ')}</div></div>` : '').join('');
   if (mems) h += `<h3>Ember Memories</h3>` + mems;
   for (const d in ABYSS_STORY) if (S.story['abyss' + d]) h += `<div class="card"><b style="color:#ff7aa0">The Abyss — Depth ${d}</b><div style="font-size:13px">${ABYSS_STORY[d].map(l => `<b style="color:${SPK[l[0]].col}">${SPK[l[0]].n}:</b> ${l[1]}`).join('<br>')}</div></div>`;
   if (S.story.trueend) h += `<div class="card done"><b style="color:#ffd27a">Epilogue: Flame and Shadow</b><div style="font-size:13px">${TRUE_END.map(l => l[1]).join(' ')}</div></div>`;
@@ -442,9 +442,9 @@ function replayIntro() { closeMenu(); startDialog(STORY_INTRO); }
 
 // ---------- NPC talk / boons / stash ----------
 function talkNPC(kind) { const stage = Math.min(3, Math.floor(S.done[0].filter(Boolean).length / 3)); startDialog(NPC_TALK[kind][stage], () => openMenu(kind)); }
-MENUS.boon = () => `<div class="title"><h2 style="color:#ffe9a0">✨ The Warden's Boon</h2><p class="lore">The freed Warden's spirit lingers, offering you a piece of their power. Choose one blessing — it lasts forever.</p><div class="cls">${(G.boonOpts || []).map(k => { const B = BOONS.find(b => b.k === k); return `<div class="card" style="background:rgba(30,26,16,.9);border-color:#a08a40" onclick="takeBoon('${k}')"><div style="font-size:46px">${B.ic}</div><h3 style="color:#ffe9a0">${B.n}</h3><div>${B.d}</div><div class="dim">Owned: ${S.boons.filter(x => x === k).length}</div></div>`; }).join('')}</div><div class="dim" style="margin-top:8px">Boons received so far: ${S.boons.length}</div></div>`;
+MENUS.boon = () => `<div class="title"><h2 style="color:#ffe9a0">${ico('sparkle')} The Warden's Boon</h2><p class="lore">The freed Warden's spirit lingers, offering you a piece of their power. Choose one blessing — it lasts forever.</p><div class="cls">${(G.boonOpts || []).map(k => { const B = BOONS.find(b => b.k === k); return `<div class="card" style="background:rgba(30,26,16,.9);border-color:#a08a40" onclick="takeBoon('${k}')"><div style="font-size:46px">${B.ic}</div><h3 style="color:#ffe9a0">${B.n}</h3><div>${B.d}</div><div class="dim">Owned: ${S.boons.filter(x => x === k).length}</div></div>`; }).join('')}</div><div class="dim" style="margin-top:8px">Boons received so far: ${S.boons.length}</div></div>`;
 MENUS.stash = () => {
-  let h = `<h2>🧰 Stash <span class="dim">${S.stash.length}/${S.stashMax}</span></h2><div class="dim">Items in the stash are kept safe. Click an item to move it between your bag and the stash.</div><h3>Stash</h3><div class="grid">`;
+  let h = `<h2>${ico('toolbox')} Stash <span class="dim">${S.stash.length}/${S.stashMax}</span></h2><div class="dim">Items in the stash are kept safe. Click an item to move it between your bag and the stash.</div><h3>Stash</h3><div class="grid">`;
   for (const it of S.stash) h += cell(it, 'fromStash'); for (let i = S.stash.length; i < S.stashMax; i++) h += '<div class="cell empty"></div>';
   h += `</div><h3>Bag <span class="dim">${S.inv.length}/${S.invMax}</span></h3><div class="grid">`;
   for (const it of S.inv) h += cell(it, 'toStash');
@@ -489,7 +489,7 @@ function beastCard(t, isBoss) {
   const where = regs.length ? regs.map(i => REG[i].n).join(', ') : t === 'mimic' ? 'Any chest' : t === 'gimp' ? 'Rare, any floor' : 'Anywhere';
   const ai = isBoss ? 'boss' : d.ai;
   return `<div class="card bc ${known ? '' : 'lock'}">${pimg('e', t, known)}<div style="flex:1"><b style="font-size:15px;color:${known ? (isBoss ? '#ff8a6a' : '#ffe2a8') : '#888'}">${known ? d.n : '???'}</b>${isBoss ? ' <span class="dim">Guardian</span>' : ''}
-    <div class="dim">📍 ${where}</div>
+    <div class="dim">${ico('pin')} ${where}</div>
     ${known ? `<div style="font-size:12px;margin:3px 0">${isBoss ? BOSS_LORE[t] : EN_LORE[t] || ''}</div><div style="font-size:12px;color:#9ad0ff">${AID[ai]}</div>
     <div style="font-size:11px">Life ${stars(d.hp / (isBoss ? 450 : 28), 5)} Damage ${stars(d.dmg / (isBoss ? 3.6 : 3.4), 5)} Speed ${stars((d.spd || 0) / 38, 5)}</div>
     <div style="font-size:12px">Slain: <b>${fmt(k)}</b> ${hb ? `<span class="up">• +${hb * 100}% damage vs this foe</span>` : ''}</div>
@@ -500,7 +500,7 @@ MENUS.bestiary = () => {
   const all = [...new Set(REG.flatMap(R => R.en))].concat(['mimic', 'gimp']);
   const seen = all.filter(t => S.best[t]).length + Object.keys(BOSS).filter(t => S.best[t]).length, tot = all.length + Object.keys(BOSS).length;
   const slain = Object.values(S.best).reduce((a, b) => a + b.k, 0);
-  let h = tabs('bestiary') + `<h2>🐺 Bestiary <span class="dim">${seen}/${tot} discovered • ${fmt(slain)} slain</span></h2><div class="dim">Every creature you face is recorded here. Slay 25 / 100 / 500 of a kind for Hunter's Knowledge (+5% / +10% / +15% damage against it).</div>`;
+  let h = tabs('bestiary') + `<h2>${ico('wolf')} Bestiary <span class="dim">${seen}/${tot} discovered • ${fmt(slain)} slain</span></h2><div class="dim">Every creature you face is recorded here. Slay 25 / 100 / 500 of a kind for Hunter's Knowledge (+5% / +10% / +15% damage against it).</div>`;
   const shown = new Set();
   REG.forEach((R, i) => {
     const list = R.en.filter(t => !shown.has(t)); list.forEach(t => shown.add(t)); const ul = [...new Set(list)];
@@ -513,7 +513,7 @@ MENUS.bestiary = () => {
 // ---------- arsenal ----------
 MENUS.arsenal = () => {
   const F = S.found; const wf = Object.keys(WT).filter(t => F.w[t]).length, uf = Object.keys(UNQ).filter(u => F.u[u]).length, af = Object.keys(ARTI).filter(a => F.art[a]).length;
-  let h = tabs('arsenal') + `<h2>⚔️ Arsenal <span class="dim">${wf}/${Object.keys(WT).length} weapon types • ${uf}/${Object.keys(UNQ).length} powers • ${af}/${Object.keys(ARTI).length} artifacts</span></h2><div class="dim">Every weapon, armor piece, legendary power and artifact you have found.</div>`;
+  let h = tabs('arsenal') + `<h2>${ico('swords')} Arsenal <span class="dim">${wf}/${Object.keys(WT).length} weapon types • ${uf}/${Object.keys(UNQ).length} powers • ${af}/${Object.keys(ARTI).length} artifacts</span></h2><div class="dim">Every weapon, armor piece, legendary power and artifact you have found.</div>`;
   h += `<h3>Weapons</h3><div class="bgrid">` + Object.keys(WT).map(t => { const w = WT[t], n = F.w[t] || 0, br = F.r[t]; return `<div class="card bc ${n ? '' : 'lock'}">${pimg('w', t, n)}<div style="flex:1"><b style="font-size:15px">${w.ic} ${w.n}</b> ${br !== undefined && br >= 0 ? `<span style="color:${RAR[br].c};font-size:12px">best: ${RAR[br].n}</span>` : ''}<div style="font-size:12px;color:#9ad0ff">${wDesc(w)}</div><div style="font-size:12px">Base damage ${w.dmg}${w.cnt ? ' ×' + w.cnt : ''} • ${(1 / w.cd).toFixed(2)} attacks/s${w.crit ? ` • +${w.crit * 100}% crit` : ''}</div><div class="dim">Found: ${n}</div>${wmBar(t)}</div></div>`; }).join('') + '</div>';
   h += `<h3>Armor</h3><div class="bgrid">` + Object.keys(AT).map(t => { const a = AT[t], n = F.a[t] || 0, br = F.r[t]; return `<div class="card bc ${n ? '' : 'lock'}"><div class="pimg" style="font-size:48px;display:flex;align-items:center;justify-content:center">${a.ic}</div><div style="flex:1"><b style="font-size:15px">${a.n}</b> ${br !== undefined && br >= 0 ? `<span style="color:${RAR[br].c};font-size:12px">best: ${RAR[br].n}</span>` : ''}<div style="font-size:12px">Base: ${Object.keys(a.base).map(k => statLine(k, a.base[k])).join(', ')}</div><div class="dim">Found: ${n}</div></div></div>`; }).join('') + '</div>';
   h += `<h3>Legendary Powers</h3><div class="bgrid">` + Object.keys(UNQ).map(u => { const n = F.u[u] || 0; return `<div class="card ${n ? '' : 'lock'}" style="font-size:13px"><b style="color:${n ? '#ffb05a' : '#888'}">★ ${n ? UNQ[u].n : '???'}</b> <span class="dim">${UNQ_W.includes(u) ? 'weapon' : 'armor/jewelry'}</span><div>${n ? UNQ[u].d : 'Find a Legendary item with this power to reveal it.'}</div>${n ? `<div class="dim">Found ${n}×</div>` : ''}</div>`; }).join('') + '</div>';
@@ -544,13 +544,13 @@ function wikiEntries() {
   for (const sk of SK.filter(x => x.a)) void sk;
   return E;
 }
-const WIKI_SECS = [['basics', '🏠 Basics'], ['combat', '⚔️ Combat'], ['controls', '⌨️ Controls'], ['stats', '📊 Stats'], ['items', '💎 Items'], ['weapons', '🗡 Gear'], ['artifacts', '✦ Artifacts'], ['skills', '✨ Skills'], ['regions', '🗺 World'], ['world', '🌟 Features']];
-MENUS.wiki = () => `${S ? tabs('wiki') : ''}<h2>❓ Embervale Wiki <input id="wikiq" placeholder="Search everything..." value="${WIKI_Q.replace(/"/g, '')}" oninput="WIKI_Q=this.value;wikiRender()" style="margin-left:14px;font-size:14px;padding:5px 10px;border-radius:7px;border:1px solid #8a6a30;background:#120e18;color:#ffe2a8;width:260px"></h2>
+const WIKI_SECS = [['basics', ico('home') + ' Basics'], ['combat', ico('swords') + ' Combat'], ['controls', ico('keyboard') + ' Controls'], ['stats', ico('chart') + ' Stats'], ['items', ico('gem') + ' Items'], ['weapons', ico('dagger') + ' Gear'], ['artifacts', '✦ Artifacts'], ['skills', ico('sparkle') + ' Skills'], ['regions', ico('map') + ' World'], ['world', ico('star') + ' Features']];
+MENUS.wiki = () => `${S ? tabs('wiki') : ''}<h2>${ico('help')} Embervale Wiki <input id="wikiq" placeholder="Search everything..." value="${WIKI_Q.replace(/"/g, '')}" oninput="WIKI_Q=this.value;wikiRender()" style="margin-left:14px;font-size:14px;padding:5px 10px;border-radius:7px;border:1px solid #8a6a30;background:#120e18;color:#ffe2a8;width:260px"></h2>
   <div class="tabs" style="flex-wrap:wrap">${WIKI_SECS.map(s => `<div class="tab ${WIKI_TAB === s[0] && !WIKI_Q ? 'on' : ''}" onclick="WIKI_TAB='${s[0]}';WIKI_Q='';renderMenu()">${s[1]}</div>`).join('')}${S ? '' : '<div style="flex:1"></div><div class="tab" onclick="backMenu()">✕</div>'}</div>
   <div id="wikires" style="min-width:760px"></div>`;
 function wikiRender() {
   const el = $('wikires'); if (!el) return; const q = WIKI_Q.trim().toLowerCase();
-  const list = wikiEntries().filter(e => q ? (e.t + ' ' + e.b).toLowerCase().includes(q) : e.sec === WIKI_TAB);
+  const list = wikiEntries().filter(e => q ? plain(e.t + ' ' + e.b).toLowerCase().includes(q) : e.sec === WIKI_TAB);
   el.innerHTML = (list.length ? list.map(e => `<div class="card" style="font-size:14px"><b style="color:#ffcf6b">${e.t}</b>${q ? ` <span class="dim">— ${WIKI_SECS.find(s => s[0] === e.sec)[1]}</span>` : ''}<div style="margin-top:2px;line-height:1.45">${e.b}</div></div>`).join('') : '<div class="dim">No results.</div>') +
-    (!q && WIKI_TAB === 'world' ? `<div class="card"><span class="btn" onclick="openMenu('bestiary')">🐺 Open Bestiary</span><span class="btn" onclick="openMenu('arsenal')">⚔️ Open Arsenal</span><span class="btn" onclick="openMenu('journal')">📖 Open Journal</span></div>` : '');
+    (!q && WIKI_TAB === 'world' ? `<div class="card"><span class="btn" onclick="openMenu('bestiary')">${ico('wolf')} Open Bestiary</span><span class="btn" onclick="openMenu('arsenal')">${ico('swords')} Open Arsenal</span><span class="btn" onclick="openMenu('journal')">${ico('book')} Open Journal</span></div>` : '');
 }

@@ -50,7 +50,7 @@ function startFreeze(R) { G.frozen = 5; const img = FRZ.querySelector('img'); if
   FRZ.querySelector('.fzs').innerHTML = `${G.abyss ? `Abyss Depth ${G.depth}` : `${REG[G.region].n} — Floor ${G.floor + 1}`} • ${G.ens.filter(e => !e.dead && e.counted).length} foes remain • ${fmt(P.hp)} / ${fmt(ST.maxHp)} life`;
   FRZ.style.display = 'flex'; FRZ.classList.remove('out'); resumeTick(); }
 function resumeTick() { const n = FRZ.querySelector('.fzn'), v = Math.max(1, Math.ceil(G.frozen)); if (n.textContent !== String(v)) { n.textContent = v; n.classList.remove('pop'); void n.offsetWidth; n.classList.add('pop'); if (typeof sfx === 'function') sfx('click'); } }
-function endFreeze() { G.frozen = 0; FRZ.classList.add('out'); setTimeout(() => { FRZ.style.display = 'none'; }, 450); P.inv = 1.5; toast('▶ Back in action!', '#9ad0ff'); sfx('shrine'); }
+function endFreeze() { G.frozen = 0; FRZ.classList.add('out'); setTimeout(() => { FRZ.style.display = 'none'; }, 450); P.inv = 1.5; toast('→ Back in action!', '#9ad0ff'); sfx('shrine'); }
 addEventListener('keydown', e => { if (G.frozen > 0 && (e.key === 'Enter')) { G.frozen = .01; } });
 { const _cgR = continueGame; continueGame = function () {
   let R = null; try { const s = loadGame(); R = s && s.resume && s.resume.v === 1 ? s.resume : null; } catch (e) { }

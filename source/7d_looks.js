@@ -5,7 +5,7 @@ const LOOK_WGT = ['light', 'medium', 'heavy'];
 function myLook() {
   const w = S.eq.weapon, ar = {};
   for (const sl of WGT_SLOTS) { const it = S.eq[sl]; if (it) ar[sl] = { slot: sl, wgt: wgtOf(it), id: it.id | 0, r: it.r | 0 }; }
-  return { t: 'look', id: NET.id, w: w ? { t: w.t, r: w.r | 0, inf: w.inf || null, mast: wmLvl(w.t) >= W_GLOW ? 1 : 0 } : null, ar, aura: (S.cos && S.cos.aura) || 'none', pet: (S.cos && S.cos.pet) || null, title: (S.cos && S.cos.title && titleName()) || '' };
+  return { t: 'look', id: NET.id, w: w ? { t: w.t, r: w.r | 0, inf: w.inf || null, mast: wmLvl(w.t) >= W_GLOW ? 1 : 0 } : null, ar, aura: (S.cos && S.cos.aura) || 'none', pet: (S.cos && S.cos.pet) || null, title: (S.cos && S.cos.title && plain(titleName())) || '' };
 }
 // never trust a peer's look: only known weapon types, rarities, infusions, auras and pets get through
 const own = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
