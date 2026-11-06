@@ -56,3 +56,18 @@ addEventListener('load', () => setTimeout(preloadIcons, 500));
 function plain(s) { return String(s == null ? '' : s).replace(/<svg[\s\S]*?<\/svg>|<img[^>]*>|<span class="gi-item[^"]*"[^>]*>[\s\S]*?<\/span>/g, '').replace(/\s{2,}/g, ' ').trim(); }
 /** recover the icon key from ico() html (e.g. a data table's `ic` field) — for drawIco on canvas */
 function icoKeyOf(html) { const m = /#i-([\w-]+)|icons\/([\w-]+)\.svg/.exec(String(html || '')); return m ? (m[1] || m[2]) : ''; }
+/** a flat icon painted with a coloured gradient (light top → col → dark base) instead of the text colour */
+const _icoGrads = new Set();
+function _hexMix(hex, t) { // t>0 toward white, t<0 toward black
+  const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)));
+  return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+function icoC(k, col, cls = '') {
+  const id = 'gg' + col.slice(1);
+  if (!_icoGrads.has(id)) {
+    _icoGrads.add(id);
+    const defs = document.querySelector('#icosprite defs'); // the inlined sprite
+    if (defs) defs.insertAdjacentHTML('beforeend', `<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${_hexMix(col, .55)}"/><stop offset=".5" stop-color="${col}"/><stop offset="1" stop-color="${_hexMix(col, -.45)}"/></linearGradient>`);
+  }
+  return ico(k, 'gc ' + cls, `fill:url(#${id})`);
+}
