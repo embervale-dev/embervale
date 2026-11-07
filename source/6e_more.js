@@ -267,7 +267,7 @@ ACH.push(
 );
 // ---------- credit ----------
 const CREDIT = document.createElement('div');
-CREDIT.innerHTML = 'Made by GrimL0ck &amp; neonxsl<br><span style="font-size:9px">Icons based on game-icons.net (Lorc, Delapouite &amp; contributors, CC BY 3.0)</span>'; CREDIT.style.textAlign = 'right';
+CREDIT.innerHTML = 'Made by GrimL0ck &amp; neonxsl<br><span style="font-size:9px">Icons based on game-icons.net (Lorc, Delapouite &amp; contributors, CC BY 3.0)<br>Music from OpenGameArt.org: Matthew Pablo, The Cynic Project, Hitctrl &amp; others (CC0 / CC BY, see assets/music/CREDITS.md)</span>'; CREDIT.style.textAlign = 'right';
 CREDIT.style.cssText = 'position:fixed;right:12px;bottom:8px;z-index:11;font:italic 11px Trebuchet MS,Segoe UI,sans-serif;color:rgba(232,220,192,.45);font-variant-numeric:lining-nums;text-shadow:0 1px 2px #000;pointer-events:none;letter-spacing:.5px;transition:opacity .4s';
 document.body.appendChild(CREDIT);
 setInterval(() => { CREDIT.style.opacity = (G.mode === 'title' || (G.inTown && G.mode === 'play' && !G.hideHud)) ? 1 : 0; }, 250);
