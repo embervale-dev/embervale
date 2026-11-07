@@ -21,12 +21,13 @@ function bcast(m, except) { for (const [id, c] of NET.conns) if (id !== except) 
 function toHost(m) { const c = [...NET.conns.values()][0]; send(c, m); }
 function netPost(text) { NET.chat.push(text); if (NET.chat.length > 40) NET.chat.shift(); if (G.menu === 'mp') renderMenu(); }
 // ---------- hosting & joining ----------
-async function netHost() { try { NET.status = 'connecting'; renderMenu(); await loadPeerJS(); const code = Array.from({ length: 5 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join('');
+function netTeardown() { try { NET.peer && NET.peer.destroy(); } catch (e) { } NET.peer = null; NET.conns.clear(); NET.players.clear(); if (NET.lookWait) NET.lookWait.clear(); if (typeof clearRemoteMeshes === 'function') clearRemoteMeshes(); }
+async function netHost() { netTeardown(); try { NET.status = 'connecting'; renderMenu(); await loadPeerJS(); const code = Array.from({ length: 5 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join('');
   const p = new Peer(PEER_PREFIX + code, { debug: 0, config: NET_ICE }); NET.peer = p; NET.host = true; NET.code = code;
   p.on('open', id => { NET.id = id; NET.status = 'host'; netPost(`${ico('globe')} Room <b>${code}</b> is open — share the code with friends`); sfx('shrine'); renderMenu(); });
   p.on('connection', c => { if (NET.conns.size >= NET_MAX - 1) { c.on('open', () => { send(c, { t: 'full' }); setTimeout(() => c.close(), 300); }); return; } wireConn(c); });
   p.on('error', e => netFail(e)); } catch (e) { netFail(e); } }
-async function netJoin(code) { code = String(code || '').trim().toUpperCase(); if (code.length < 4) { toast('Enter the room code your friend shared', '#ff8a8a'); return; }
+async function netJoin(code) { netTeardown(); code = String(code || '').trim().toUpperCase(); if (code.length < 4) { toast('Enter the room code your friend shared', '#ff8a8a'); return; }
   try { NET.status = 'connecting'; renderMenu(); await loadPeerJS(); const p = new Peer(undefined, { debug: 0, config: NET_ICE }); NET.peer = p; NET.host = false; NET.code = code;
     p.on('open', id => { NET.id = id; const c = p.connect(PEER_PREFIX + code, { reliable: true, serialization: 'json' }); wireConn(c); setTimeout(() => { if (NET.status === 'connecting') netFail(new Error('No room with that code (or the host is offline).')); }, 12000); });
     p.on('error', e => netFail(e)); } catch (e) { netFail(e); } }
@@ -35,7 +36,7 @@ function netLeave() { bcast({ t: 'bye', id: NET.id }); try { NET.peer && NET.pee
 function wireConn(c) {
   c.on('open', () => { NET.conns.set(c.peer, c); if (!NET.host) { NET.status = 'guest'; send(c, { t: 'hello', id: NET.id, name: netName() }); netPost(ico('globe') + ' Connected to the room'); sfx('shrine'); } renderMenu(); });
   c.on('data', m => netRecv(c, m));
-  c.on('close', () => { if (G.duel && G.duel.opp === c.peer) endDuel(); NET.conns.delete(c.peer); const p = NET.players.get(c.peer); NET.players.delete(c.peer); if (p) netPost(`${ico('wave')} ${esc(p.name)} left`); if (NET.host) bcast({ t: 'bye', id: c.peer }); else if (c.peer.startsWith(PEER_PREFIX)) { netPost(ico('globe') + ' The host closed the room'); NET.status = 'off'; NET.coopGuest = false; if (G.duel) endDuel(null); } removeRemote(c.peer); renderMenu(); });
+  c.on('close', () => { if (G.duel && G.duel.opp === c.peer) endDuel(); NET.conns.delete(c.peer); const p = NET.players.get(c.peer); NET.players.delete(c.peer); if (p) netPost(`${ico('wave')} ${esc(p.name)} left`); if (NET.host) bcast({ t: 'bye', id: c.peer }); else if (c.peer.startsWith(PEER_PREFIX)) { netPost(ico('globe') + ' The host closed the room'); NET.status = 'off'; NET.coopGuest = false; if (G.duel) endDuel(null);  setTimeout(netTeardown, 0); } removeRemote(c.peer); renderMenu(); });
 }
 // ---------- messages ----------
 function netRecv(c, m) {
@@ -70,7 +71,7 @@ function myState() { return { t: 'st', id: NET.id, name: netName(), lvl: S.lvl, 
   if (now - NET.lastSend > 50) { NET.lastSend = now; const st = myState(); if (NET.host) bcast(st); else toHost(st); }
   if (NET.host && now - NET.lastEns > 100 && netArea().startsWith('coop') && G.mode === 'play') { NET.lastEns = now; sendEns(); }
   for (const [id, p] of NET.players) { p.rx += (p.tx - p.rx) * Math.min(1, dt * 12); p.ry += (p.ty - p.ry) * Math.min(1, dt * 12); if (now - (p.seen || 0) > 15000) { NET.players.delete(id); removeRemote(id); } }
-  if (G.duel) duelTick(dt); if (NET.pendingFloor && !G.menu) recvFloor(NET.pendingFloor); }; }
+  if (G.duel) duelTick(dt); if (NET.pendingFloor && !G.menu && !(typeof MPS !== 'undefined' && MPS.held)) recvFloor(NET.pendingFloor); }; }
 // ---------- remote player models ----------
 const REM = new Map();
 function removeRemote(id) { const r = REM.get(id); if (r) { r.g.parent && r.g.parent.remove(r.g); REM.delete(id); } }

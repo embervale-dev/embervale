@@ -86,7 +86,7 @@ let TMP_SL = 'armor';
   if (P.swapT > 0) h += `<div class="buff wart" title="Swap Strike: +20% damage" style="border-color:#ffd27a">${ico('loop')}<span>${Math.ceil(P.swapT)}</span></div>`;
   if (P.swT > 0) h += `<div class="buff wart" title="Second Wind: 40% less damage taken" style="border-color:#a0e0ff">${ico('wind')}<span>${Math.ceil(P.swT)}</span></div>`;
   if (ST.disc === 'heavy' && !(P.bulT > 0)) h += `<div class="buff wart" title="Bulwark ready: the next hit deals 60% less damage" style="border-color:#a0b0d0">${ico('shield')}<span>${ico('check')}</span></div>`;
-  if (h) el.insertAdjacentHTML('beforeend', h); }; }
+  WART_BUF += h; }; }
 // ---------- armor shows on your character ----------
 function buildArmorLook(pl = R3.pl, eq = S.eq) {   // also used for other players' models (multiplayer)
   if (!pl) return; if (pl.armorG) { pl.armorG.forEach(o => o.parent && o.parent.remove(o)); } pl.armorG = [];

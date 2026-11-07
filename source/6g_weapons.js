@@ -1,4 +1,5 @@
 // ================= WEAPONS: signature arts, mastery, infusions, ratings, richer models =================
+let WART_BUF = ''; // extra buff icons collected each frame and written once (see 7g_polish2.js)
 let ART_MUL = 1, IN_ATK = 0, ART = { n: 0, last: -9, heavy: 0, reso: 0, fist: 0, glaiveHits: 0 };
 const _pdW = pdmg; pdmg = function () { return _pdW() * ART_MUL; };
 function wArt() { return ST.wt; }
@@ -96,7 +97,7 @@ updateHUD = function (dt) {
   if (ST.wt === 'flail' && P.mom) B(ico('vortex'), P.mom, '#9a9aa8', `Momentum: +${4 * P.mom}% attack speed`);
   if (ST.wt === 'rapier' && P.ripo) B(ico('riposte'), P.ripo, '#e8eef8', 'Riposte: guaranteed crits');
   if (ST.wt === 'katana' && G.t - ART.last >= 1 && !G.inTown) B(ico('quickdraw'), '!', '#f0f4ff', 'Quickdraw ready: next swing crits for +50%');
-  const old = el.querySelectorAll('.wart'); old.forEach(x => x.remove()); if (h) el.insertAdjacentHTML('beforeend', h);
+  WART_BUF += h;
 };
 // ---------- infusions at the forge ----------
 function infCost() { return { ore: 12, sh: 60, g: Math.round(80 * Math.pow(1.12, Math.min(maxPw(), 120))) }; }

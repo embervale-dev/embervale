@@ -225,7 +225,7 @@ function claimSJ(id) {
   }
   saveGame(); renderMenu();
 }
-function auraCol(k) { if (k.startsWith('season')) return SEASONS[(+k.slice(6)) % 12][1]; return AURAS[k] ? AURAS[k][1] : ''; }
+function auraCol(k) { if (typeof k !== 'string') return null; if (k.startsWith('season')) return SEASONS[(+k.slice(6)) % 12][1]; return AURAS[k] ? AURAS[k][1] : ''; }
 function auraName(k) { if (k.startsWith('season')) return seasonInfo(+k.slice(6)).n + ' Aura'; return AURAS[k] ? AURAS[k][0] : k; }
 
 // ---------- session hooks ----------

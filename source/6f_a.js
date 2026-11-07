@@ -32,7 +32,7 @@ function doCraft() {
   if (!canCraft()) { toast('Missing materials or bag space', '#ff8a8a'); sfx('error'); return; }
   const c = craftCost(); S.shards -= c.sh; S.ore -= c.ore; S.ess = (S.ess || 0) - c.ess; S.gold -= c.g;
   const it = genItem(maxPw() + 1, { slot: CR.slot === 'weapon' ? 'weapon' : CR.slot, t: CR.slot === 'weapon' ? CR.t : undefined, r: CR.r });
-  const A = AFF[CR.aff]; if (A) { let v = rnd(A.min, A.max) * (1 + .12 * it.r) * 1.15; if (A.sc) v *= Math.pow(A.sc, it.il); const nv = { k: CR.aff, v: v >= 100 ? Math.round(v) : Math.round(v * 10) / 10 }; const i = it.aff.findIndex(a => a.k === CR.aff); if (i >= 0) it.aff[i] = nv; else if (it.aff.length) it.aff[0] = nv; else it.aff.push(nv); }
+  const A = AFF[CR.aff]; if (A) { let v = rnd(A.min, A.max) * (1 + .12 * it.r) * 1.15; if (A.sc) v *= Math.pow(A.sc, it.il); const nv = { k: CR.aff, v: v >= 100 ? Math.round(v) : Math.round(v * 10) / 10, q: .8 + Math.random() * .2 }; const i = it.aff.findIndex(a => a.k === CR.aff); if (i >= 0) it.aff[i] = nv; else if (it.aff.length) it.aff[0] = nv; else it.aff.push(nv); }
   if (CR.r === 4 && CR.u) it.u = CR.u; it.name = itemName(it); it.isNew = true; it.crafted = 1;
   S.inv.push(it); noteFound(it); S.stats.crafted = (S.stats.crafted || 0) + 1; sfx('lvl'); burst(P.x, P.y, '#ffb04a', 30, 200, .7, 3, 1);
   toast(`${ico('craft')} Crafted <span style="color:${RAR[it.r].c}">${it.name}</span>!`); saveGame(); renderMenu();

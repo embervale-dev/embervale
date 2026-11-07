@@ -51,7 +51,7 @@ function itemTip(it, cmp) {
   let h = `<div class="tn" style="color:${c}">${icon(it)} ${it.name}${it.plus ? ` <span style="color:#ffe9a0">+${it.plus}</span>` : ''}</div>`;
   h += `<div class="dim">${RAR[it.r].n} ${baseName(it)} • Item Level ${it.il}</div><hr>`;
   if (it.slot === 'weapon') { const w = WT[it.t]; h += `<div>Damage: <b>${fmt(s.wdmg)}</b>${w.cnt ? ` × ${w.cnt}` : ''}</div><div>Attacks/sec: ${(1 / w.cd).toFixed(2)} • DPS ${fmt(wDps(it))}</div><div class="dim">${wDesc(w)}</div>`; }
-  else for (const k in AT[it.t].base) h += `<div>${statLine(k, s[k] - (it.aff.filter(a => a.k === k).reduce((q, a) => q + a.v * (1 + .05 * it.plus), 0)))}</div>`;
+  else for (const k in AT[it.t].base) h += `<div>${statLine(k, s[k] - (it.aff.filter(a => a.k === k).reduce((q, a) => q + a.v, 0)))}</div>`;
   for (const a of it.aff) h += `<div style="color:#9ad0ff">${statLine(a.k, a.v * (1 + .05 * it.plus))}</div>`;
   if (it.u) h += `<div class="uq">★ ${UNQ[it.u].d}</div>`;
   if (it.u2) h += `<div class="uq">★ ${UNQ[it.u2].d}</div>`;

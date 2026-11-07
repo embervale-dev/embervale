@@ -4,6 +4,8 @@
 // 3) In a room, menus don't freeze the world (otherwise a host in a menu froze every monster for everyone).
 const MPS = { seen: new WeakSet(), fx: [], bgLast: 0 };
 const MP_ONLINE = () => NET.status === 'host' || NET.status === 'guest';
+const MP_TOGETHER = () => { if (!MP_ONLINE()) return false; const a = netArea(); if (a === 'solo' || a === 'menu') return false; for (const p of NET.players.values()) if (p.area === a) return true; return false; };
+let MENU_GEN = 0; { const _om = openMenu, _cm = closeMenu; openMenu = function (n) { MENU_GEN++; return _om(n); }; closeMenu = function () { MENU_GEN++; return _cm(); }; }
 const ANG_KEYS = new Set(['pitch', 'spin']);
 const angLerp = (a, b, k) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k;
 const PP_KINDS = ['arrow', 'bolt', 'knife', 'spark', 'orb', 'fire', 'page', 'wave', 'ball', 'boom'];
@@ -40,14 +42,14 @@ function updGhosts(dt) { if (!G.gpp.length) return; for (const b of G.gpp) { b.l
 // ---------- no pausing while online ----------
 // With a menu open the world keeps running; you just can't move or attack until you close it.
 { const _uP = update; update = function (dt) {
-  if (!MP_ONLINE() || !S || G.mode !== 'play' || !G.menu || G.menu === 'title') return _uP(dt);
-  const menu = G.menu, ks = Object.assign({}, keys), md = mouse.down;
-  for (const k in keys) keys[k] = false; mouse.down = false; pressed = {}; G.menu = null;
-  try { _uP(dt); } finally { Object.assign(keys, ks); mouse.down = md; pressed = {}; if (G.menu === null) G.menu = menu; }
+  if (!MP_TOGETHER() || !S || G.mode !== 'play' || !G.menu || G.menu === 'title') return _uP(dt);
+  const menu = G.menu, ks = Object.assign({}, keys), md = mouse.down, gen = MENU_GEN;
+  for (const k in keys) keys[k] = false; mouse.down = false; pressed = {}; G.menu = null; MPS.held = true;
+  try { _uP(dt); } finally { MPS.held = false; Object.assign(keys, ks); mouse.down = md; pressed = {}; if (G.menu === null && MENU_GEN === gen) G.menu = menu; }
   if (G.menu === 'dialog' && typeof dlgTick === 'function') dlgTick(dt);
 }; }
 // a hidden tab gets no animation frames — keep the world (and your connection) ticking in the background
 setInterval(() => { const now = performance.now(), el = Math.min(1, (now - (MPS.bgLast || now)) / 1000); MPS.bgLast = now;
-  if (!document.hidden || !MP_ONLINE() || !S || G.mode !== 'play') return;
+  if (!document.hidden || !MP_TOGETHER() || !S || G.mode !== 'play') return;
   try { for (let t = el; t > 0; t -= .05) update(Math.min(.05, t)); } catch (e) { console.warn('bg tick', e); } }, 100);
-{ const _paS = MENUS.pause; MENUS.pause = () => { const h = _paS(); return MP_ONLINE() ? `<div class="dim" style="text-align:center;color:#9ad0ff;margin-bottom:6px">${ico('globe')} Online — the game keeps running while this menu is open</div>` + h : h; }; }
+{ const _paS = MENUS.pause; MENUS.pause = () => { const h = _paS(); return MP_TOGETHER() ? `<div class="dim" style="text-align:center;color:#9ad0ff;margin-bottom:6px">${ico('globe')} Online with your party — the game keeps running while this menu is open</div>` + h : h; }; }

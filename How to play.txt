@@ -36,6 +36,11 @@ MULTIPLAYER (online)
   - Co-op: when the host enters a dungeon floor, everyone joins it.
     Monsters chase the closest player and everyone gets their own loot.
   - PvP: the host can start a duel with a player — first to 3 wins.
+  - Fair play: friends only follow you to floors they have unlocked
+    themselves (level, previous region, difficulty).
+  - Party bonus (+10% XP & gold per ally), revive downed friends by
+    standing next to them, Enter to chat (quick messages too),
+    Alt+Click to ping a spot. Party frames show everyone's life.
 
 MORE STALLS AS YOU LEVEL
   Alchemist (6), Enchanter (14), Beastmaster (16), Cartographer (18),
@@ -50,4 +55,6 @@ SAVES
   or move it to another computer, and "Import save" to load it.
   "Reset all progress" on the title screen wipes everything.
 
-Sharing with friends: just send them "index.html"
+Sharing with friends: send them "Embervale-offline.html" — the single file with
+every icon built in (made by source/build.sh). Or send the whole embervale folder.
+The offline file has no music; the music needs the assets/music folder or the website.
