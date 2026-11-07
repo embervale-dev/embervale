@@ -73,6 +73,10 @@
       mchk('wantTheme in slots', typeof MUS_SLOTS !== 'undefined' && MUS_SLOTS.includes(wantTheme()));
       let mErr = null; try { for (let i = 0; i < 5; i++) musicTick(); } catch (e) { mErr = e; } mchk('music missing files no throw', !mErr);
       mchk('no synth scores', typeof MUS_PIECES === 'undefined' && typeof THEMES === 'undefined');
+      // local-file play (file://) drives <audio>.volume directly: volume x .55 x fade level x combat lift, capped at 1
+      const near = (a, b) => Math.abs(a - b) < 1e-6;
+      mchk('direct volume', typeof musElVol === 'function' && near(musElVol(.3, 1, false), .165) && near(musElVol(.3, .5, true), .3 * .55 * .5 * 1.15) && musElVol(1, 1, true) <= 1 && musElVol(.3, 0, true) === 0);
+      mchk('direct mode only on file://', typeof musDirect === 'function' && musDirect() === (location.protocol === 'file:'));
     }
     for (const e of G.ens) if (!e.prop && Math.random() < .5) { e.hp = 0; killEnemy(e); }
     G.hitstop = .05; for (let i = 0; i < 10; i++) update(1 / 60); log.push('theme=' + th + ' hitstop cleared=' + !(G.hitstop > 0));

@@ -9,6 +9,10 @@
 const MUS_SLOTS = ['title', 'town', 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'abyss', 'boss', 'trial'];
 const MUS_FADE = 1.5, MUS_LIFT = 1.15;
 function musSrc(slot) { return 'assets/music/' + slot + '.m4a'; }
+// Opened as a local file (file://), browsers block routing <audio> into Web Audio, so there the
+// element's own volume is driven instead (no ducking). MUS.forceDirect overrides, for testing.
+function musDirect() { return MUS.forceDirect !== undefined ? MUS.forceDirect : location.protocol === 'file:'; }
+function musElVol(vol, level, lift) { return level <= 0 ? 0 : Math.min(1, vol * .55 * level * (lift ? MUS_LIFT : 1)); }
 
 function musInit() {
   MUS.gain = AC.createGain(); MUS.gain.gain.value = 0; MUS.gain.connect(AC.destination);
@@ -19,13 +23,14 @@ function musInit() {
 function musTrack(slot) {
   const old = MUS.tracks[slot];
   if (old && old.ok !== false) return old;
-  if (old) { try { old.el.pause(); old.el.removeAttribute('src'); old.src.disconnect(); } catch (e) { } }
-  const el = new Audio(), t = { el, g: AC.createGain(), ok: null, v: 0, from: 0, to: 0, t0: 0 };
-  el.crossOrigin = 'anonymous'; el.loop = true; el.preload = 'auto';
+  if (old) { try { old.el.pause(); old.el.removeAttribute('src'); if (old.src) old.src.disconnect(); if (old.g) old.g.disconnect(); } catch (e) { } }
+  const el = new Audio(), direct = musDirect(), t = { el, g: null, ok: null, v: 0, from: 0, to: 0, t0: 0 };
+  el.loop = true; el.preload = 'auto';
   el.addEventListener('error', () => { t.ok = false; });
   el.addEventListener('canplay', () => { if (t.ok === null) t.ok = true; });
-  el.src = musSrc(slot);
-  t.g.gain.value = 0; t.src = AC.createMediaElementSource(el); t.src.connect(t.g); t.g.connect(MUS.lift);
+  if (direct) { el.volume = 0; el.src = musSrc(slot); return MUS.tracks[slot] = t; }
+  el.crossOrigin = 'anonymous'; el.src = musSrc(slot);
+  t.g = AC.createGain(); t.g.gain.value = 0; t.src = AC.createMediaElementSource(el); t.src.connect(t.g); t.g.connect(MUS.lift);
   return MUS.tracks[slot] = t;
 }
 function musFadeTo(t, to, now) { t.from = t.v; t.to = to; t.t0 = now; }
@@ -47,14 +52,15 @@ musicTick = function () {
     const p = t.el.play(); if (p) p.catch(e => { if (e && e.name !== 'AbortError') t.ok = false; });
     if (first) MUS.gain.gain.setTargetAtTime(musicVol() * .55, now, .7);
   }
-  for (const s in MUS.tracks) {
-    const t = MUS.tracks[s];
-    if (t.v === t.to && (t.to > 0 || t.el.paused)) continue;
-    t.v = musLevel(t, now);
-    if (now - t.t0 >= MUS_FADE) t.v = t.to;
-    t.g.gain.setTargetAtTime(t.v, now, .03);
-    if (t.to === 0 && t.v === 0 && !t.el.paused) t.el.pause();
-  }
   const lift = !!MUS.combat;
   if (lift !== MUS.liftOn) { MUS.liftOn = lift; MUS.lift.gain.setTargetAtTime(lift ? MUS_LIFT : 1, now, .5); }
+  for (const s in MUS.tracks) {
+    const t = MUS.tracks[s];
+    if (t.g && t.v === t.to && (t.to > 0 || t.el.paused)) continue;
+    t.v = musLevel(t, now);
+    if (now - t.t0 >= MUS_FADE) t.v = t.to;
+    if (t.g) t.g.gain.setTargetAtTime(t.v, now, .03);
+    else t.el.volume = musElVol(musicVol(), t.v, MUS.liftOn);   // direct mode follows the volume slider every tick
+    if (t.to === 0 && t.v === 0 && !t.el.paused) t.el.pause();
+  }
 };

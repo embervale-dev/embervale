@@ -26,6 +26,6 @@ This first runs `art/build.js` (needs Node), which generates the icons from the 
 ## Credits
 Icons are built from [game-icons.net](https://game-icons.net) silhouettes by Lorc, Delapouite & contributors, licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), then coloured and detailed for Embervale.
 
-Music is from [OpenGameArt.org](https://opengameart.org) by Matthew Pablo, The Cynic Project (cynicmusic), Hitctrl, RandomMind, Alexandr Zhelanov, CleytonKauffman, Patrick Maney, BossLevelVGM, Tausdei and Mega Pixel Music Lab, under CC0 and CC-BY 3.0/4.0. The full per-track list with links is in [`assets/music/CREDITS.md`](assets/music/CREDITS.md). The game streams these from `assets/music/`, so run it from a web server (or the live site) rather than opening `index.html` as a local file.
+Music is from [OpenGameArt.org](https://opengameart.org) by Matthew Pablo, The Cynic Project (cynicmusic), Hitctrl, RandomMind, Alexandr Zhelanov, CleytonKauffman, Patrick Maney, BossLevelVGM, Tausdei and Mega Pixel Music Lab, under CC0 and CC-BY 3.0/4.0. The full per-track list with links is in [`assets/music/CREDITS.md`](assets/music/CREDITS.md). The game streams them from `assets/music/`, so keep that folder next to `index.html`.
 
 Made by GrimL0ck & neonxsl.
