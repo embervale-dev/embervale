@@ -92,12 +92,21 @@ cv.addEventListener('mousedown', e => { if (!e.altKey || e.button !== 0 || NET.s
   if (P.down > 0) { X.textAlign = 'center'; X.font = 'bold 26px Georgia,serif'; X.lineWidth = 5; X.strokeStyle = '#000'; const t = `DOWNED — ${Math.ceil(P.down)}s`; X.strokeText(t, VW / 2, VH * .32); X.fillStyle = '#ff7a5a'; X.fillText(t, VW / 2, VH * .32); X.font = '14px "Trebuchet MS",sans-serif'; X.lineWidth = 3; X.strokeText('An ally can revive you by standing next to you', VW / 2, VH * .32 + 24); X.fillStyle = '#ece0c8'; X.fillText('An ally can revive you by standing next to you', VW / 2, VH * .32 + 24); }
 }; }
 // ---------- 7. party frames ----------
+// Ping shown on a row. Everything is measured to the host: the host sees each guest's round trip,
+// a guest sees its own round trip to the host (on its own row and the host's row), and another
+// guest's ping is estimated as both trips added (~), since guest messages are relayed by the host.
+function pingLabel(ms, est) {
+  if (ms === 'host') return '<i class="host">host</i>';
+  if (ms == null || !isNum(ms)) return '';   // not measured yet
+  const v = Math.round(ms);
+  return `<i class="${v > 250 ? 'bad' : v > 120 ? 'mid' : ''}">${est ? '~' : ''}${v < 1 ? '&lt;1' : v}ms</i>`;
+}
 const PF = document.createElement('div'); PF.id = 'partyf'; document.body.appendChild(PF); let pfKey = '';
 { const _uhQ = updateHUD; updateHUD = function (dt) { _uhQ(dt); const on = (NET.status === 'host' || NET.status === 'guest') && S && G.mode !== 'title' && !G.hideHud;
   PF.style.display = on ? '' : 'none'; if (!on) return; const area = netArea(), rows = [];
-  const row = (name, lvl, hp, mhp, where, down, ms, me, col) => { const f = Math.max(0, Math.min(1, hp / (mhp || 1))); return `<div class="pfr${me ? ' me' : ''}${down ? ' dn' : ''}"><div class="pfn"><b style="color:${col}">${esc(name)}</b> <span>Lv ${lvl}</span>${ms ? `<i class="${ms > 250 ? 'bad' : ms > 120 ? 'mid' : ''}">${ms}ms</i>` : ''}</div><div class="pfb"><div style="width:${(down ? 0 : f) * 100}%"></div></div><div class="pfw">${down ? 'DOWNED' : where}</div></div>`; };
-  rows.push(row(netName() + ' (you)', S.lvl, P.down > 0 ? 0 : P.hp, ST.maxHp, area.startsWith('coop') ? 'party floor' : G.inTown ? 'Haven' : G.duel ? 'duel' : 'adventuring', P.down > 0, NET.host ? 0 : Math.round(NET.rtt || 0), 1, (S.cos && S.cos.color) || CLS[S.cls].col));
-  for (const p of NET.players.values()) rows.push(row(p.name, p.lvl, p.hp, p.mhp, p.area === area && area !== 'solo' ? 'with you' : p.area === 'town' ? 'Haven' : p.area === 'duel' ? 'duel' : String(p.area).startsWith('coop') ? 'party floor' : 'adventuring', p.down, Math.round(p.rtt || p.ms || 0), 0, p.col));
+  const row = (name, lvl, hp, mhp, where, down, ms, me, col) => { const f = Math.max(0, Math.min(1, hp / (mhp || 1))); return `<div class="pfr${me ? ' me' : ''}${down ? ' dn' : ''}"><div class="pfn"><b style="color:${col}">${esc(name)}</b> <span>Lv ${lvl}</span>${ms}</div><div class="pfb"><div style="width:${(down ? 0 : f) * 100}%"></div></div><div class="pfw">${down ? 'DOWNED' : where}</div></div>`; };
+  rows.push(row(netName() + ' (you)', S.lvl, P.down > 0 ? 0 : P.hp, ST.maxHp, area.startsWith('coop') ? 'party floor' : G.inTown ? 'Haven' : G.duel ? 'duel' : 'adventuring', P.down > 0, NET.host ? pingLabel('host') : pingLabel(NET.rtt), 1, (S.cos && S.cos.color) || CLS[S.cls].col));
+  for (const p of NET.players.values()) rows.push(row(p.name, p.lvl, p.hp, p.mhp, p.area === area && area !== 'solo' ? 'with you' : p.area === 'town' ? 'Haven' : p.area === 'duel' ? 'duel' : String(p.area).startsWith('coop') ? 'party floor' : 'adventuring', p.down, NET.host ? pingLabel(p.rtt) : p.id === PEER_PREFIX + NET.code ? pingLabel(NET.rtt) : pingLabel(NET.rtt != null && p.ms ? NET.rtt + p.ms : null, true), 0, p.col));
   const n = Math.min(3, partyHere()), h = `<div class="pfh">${ico('globe')} Room <b>${esc(NET.code)}</b> <span>${NET.players.size + 1}/${NET_MAX}</span></div>${rows.join('')}${n ? `<div class="pfbonus">Party bonus +${10 * n}% XP & gold</div>` : ''}<div class="pfk">Enter / chat • Alt+Click ping</div>`;
   if (h !== pfKey) { pfKey = h; PF.innerHTML = h; } }; }
 // ---------- 8. better chat ----------
@@ -126,7 +135,7 @@ const mp2Style = document.createElement('style'); mp2Style.textContent = `
 #partyf .pfh{font-size:11px;color:#9ad0ff;margin-bottom:4px;text-shadow:0 1px 2px #000}#partyf .pfh span{opacity:.75;margin-left:4px}
 #partyf .pfr{background:rgba(12,10,20,.82);border:1px solid rgba(122,170,255,.35);border-radius:10px;padding:5px 8px;margin-bottom:4px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
 #partyf .pfr.me{border-color:rgba(214,168,82,.5)}#partyf .pfr.dn{border-color:#ff7a5a;animation:fxPulse 1s infinite}
-#partyf .pfn{display:flex;gap:5px;align-items:baseline;white-space:nowrap;overflow:hidden}#partyf .pfn span{color:#a39884;font-size:11px}#partyf .pfn i{margin-left:auto;font-style:normal;font-size:10px;color:#7aff7a}#partyf .pfn i.mid{color:#ffd27a}#partyf .pfn i.bad{color:#ff7a5a}
+#partyf .pfn{display:flex;gap:5px;align-items:baseline;white-space:nowrap;overflow:hidden}#partyf .pfn span{color:#a39884;font-size:11px}#partyf .pfn i{margin-left:auto;font-style:normal;font-size:10px;color:#7aff7a}#partyf .pfn i.mid{color:#ffd27a}#partyf .pfn i.bad{color:#ff7a5a}#partyf .pfn i.host{color:#9ab0d0;text-transform:uppercase;letter-spacing:.5px}
 #partyf .pfb{height:6px;border-radius:6px;background:rgba(0,0,0,.5);overflow:hidden;margin:3px 0 2px}#partyf .pfb div{height:100%;background:linear-gradient(90deg,#3ab04a,#7aff7a);border-radius:6px}
 #partyf .pfr.dn .pfb div{background:#ff5a4a}#partyf .pfw{font-size:10px;color:#a39884;text-transform:uppercase;letter-spacing:.6px}
 #partyf .pfbonus{font-size:11px;color:#7aff7a;margin:2px 0}#partyf .pfk{font-size:10px;color:#8a8070;margin-top:2px}
