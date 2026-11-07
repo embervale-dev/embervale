@@ -66,6 +66,14 @@
     openMenu('title'); log.push('title has reset=' + panel.innerHTML.includes('Reset all progress')); openMenu('slots'); log.push('slots export/import=' + panel.innerHTML.includes('Export') + '/' + panel.innerHTML.includes('Import')); openMenu('confirmReset'); log.push('confirm reset menu=' + panel.innerHTML.includes('erase everything')); closeMenu();
     // polish systems
     enterFloor(2, 1); for (let i = 0; i < 20; i++) update(1 / 60); const th = wantTheme(); try { musicTick(); } catch (e) { errs.push('music ' + e.message); }
+    { // streamed OpenGameArt music
+      const mchk = (n, c) => { if (!c) errs.push('music check failed: ' + n); };
+      mchk('music slots', typeof MUS_SLOTS !== 'undefined' && MUS_SLOTS.length === 17 && ['title', 'town', 'abyss', 'boss', 'trial'].concat([...Array(12)].map((_, i) => 'r' + i)).every(s => MUS_SLOTS.includes(s)));
+      mchk('music src', typeof musSrc === 'function' && musSrc('r3') === 'assets/music/r3.m4a');
+      mchk('wantTheme in slots', typeof MUS_SLOTS !== 'undefined' && MUS_SLOTS.includes(wantTheme()));
+      let mErr = null; try { for (let i = 0; i < 5; i++) musicTick(); } catch (e) { mErr = e; } mchk('music missing files no throw', !mErr);
+      mchk('no synth scores', typeof MUS_PIECES === 'undefined' && typeof THEMES === 'undefined');
+    }
     for (const e of G.ens) if (!e.prop && Math.random() < .5) { e.hp = 0; killEnemy(e); }
     G.hitstop = .05; for (let i = 0; i < 10; i++) update(1 / 60); log.push('theme=' + th + ' hitstop cleared=' + !(G.hitstop > 0));
     G.lastHitBy = 'Dune Scorpion'; P.inv = 0; P.dodgeT = 0; hurtPlayer(1e12, null); openMenu('dead'); log.push('dead recap=' + panel.innerHTML.includes('Slain by')); revive(); for (let i = 0; i < 80; i++) { update(1 / 60); } log.push('report menu=' + G.menu + ' died=' + (G.report && G.report.died)); if (G.menu) { renderMenu(); closeMenu(); }

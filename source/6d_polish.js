@@ -1,15 +1,6 @@
 // ================= POLISH: music, controller, game feel, reports, tooltips =================
-// ---------- procedural soundtrack ----------
-const DOR = [0, 2, 3, 5, 7, 9, 10], AEO = [0, 2, 3, 5, 7, 8, 10], LYD = [0, 2, 4, 6, 7, 9, 11], PHR = [0, 1, 3, 5, 7, 8, 10], MIX = [0, 2, 4, 5, 7, 9, 10], ION = [0, 2, 4, 5, 7, 9, 11];
-const THEMES = {
-  title: { root: 220, mode: AEO, bpm: 56, arp: .22, lp: 900 }, town: { root: 261.6, mode: ION, bpm: 66, arp: .32, lp: 1600, prog: [0, 5, 3, 4] },
-  r0: { root: 293.7, mode: DOR, bpm: 74, arp: .4, lp: 1500 }, r1: { root: 220, mode: AEO, bpm: 58, arp: .22, lp: 800 }, r2: { root: 329.6, mode: [0, 1, 4, 5, 7, 8, 10], bpm: 82, arp: .45, lp: 1400 },
-  r3: { root: 246.9, mode: PHR, bpm: 62, arp: .25, lp: 700 }, r4: { root: 370, mode: LYD, bpm: 68, arp: .5, lp: 2600 }, r5: { root: 392, mode: [0, 2, 4, 6, 8, 10], bpm: 70, arp: .42, lp: 1500 },
-  r6: { root: 311.1, mode: LYD, bpm: 64, arp: .45, lp: 1800 }, r7: { root: 261.6, mode: PHR, bpm: 90, arp: .3, lp: 1100, drums: 1 }, r8: { root: 293.7, mode: MIX, bpm: 100, arp: .55, lp: 1700, drums: 2 },
-  r9: { root: 440, mode: LYD, bpm: 72, arp: .45, lp: 2600 }, r10: { root: 329.6, mode: LYD, bpm: 78, arp: .55, lp: 2400 }, r11: { root: 277.2, mode: [0, 1, 3, 4, 6, 8, 9], bpm: 60, arp: .25, lp: 650 },
-  abyss: { root: 233, mode: PHR, bpm: 70, arp: .3, lp: 800, drums: 1 }, boss: { root: 220, mode: AEO, bpm: 126, arp: .6, lp: 1600, drums: 3 }, trial: { root: 246.9, mode: DOR, bpm: 112, arp: .55, lp: 1700, drums: 2 },
-};
-const MUS = { gain: null, theme: null, next: 0, step: 0, timer: null };
+// ---------- music state (playback lives in 6s_music.js) ----------
+const MUS = { gain: null, theme: null, pend: null };
 function musicVol() { return S && S.opts.mvol !== undefined ? S.opts.mvol : .3; }
 function setMusicVol(v) { if (S) S.opts.mvol = v; if (MUS.gain && AC) MUS.gain.gain.setTargetAtTime(v * .55, AC.currentTime, .1); }
 function wantTheme() {
@@ -20,34 +11,7 @@ function wantTheme() {
   if (G.abyss) return 'abyss';
   return 'r' + G.region;
 }
-function mnote(f, t, dur, type, vol, lp, attack = .01) {
-  const o = AC.createOscillator(), g = AC.createGain(), fl = AC.createBiquadFilter();
-  o.type = type; o.frequency.value = f; fl.type = 'lowpass'; fl.frequency.value = lp;
-  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + attack); g.gain.exponentialRampToValueAtTime(.0005, t + dur);
-  o.connect(fl); fl.connect(g); g.connect(MUS.gain); o.start(t); o.stop(t + dur + .05);
-}
-function mdrum(kind, t) {
-  if (kind === 'kick') { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(40, t + .18); g.gain.setValueAtTime(.35, t); g.gain.exponentialRampToValueAtTime(.001, t + .22); o.connect(g); g.connect(MUS.gain); o.start(t); o.stop(t + .25); return; }
-  if (!noiseBuf) return; const s = AC.createBufferSource(); s.buffer = noiseBuf; const f = AC.createBiquadFilter(); f.type = kind === 'hat' ? 'highpass' : 'bandpass'; f.frequency.value = kind === 'hat' ? 7000 : 1800;
-  const g = AC.createGain(), v = kind === 'hat' ? .05 : .12, d = kind === 'hat' ? .05 : .14; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d); s.connect(f); f.connect(g); g.connect(MUS.gain); s.start(t, Math.random() * .5); s.stop(t + d + .02);
-}
-function musicTick() {
-  if (!AC || AC.state !== 'running') return;
-  if (!MUS.gain) { MUS.gain = AC.createGain(); MUS.gain.gain.value = 0; MUS.gain.connect(AC.destination); MUS.next = AC.currentTime + .1; }
-  const want = wantTheme();
-  if (want !== MUS.theme) { MUS.gain.gain.cancelScheduledValues(AC.currentTime); MUS.gain.gain.setTargetAtTime(0, AC.currentTime, .25); if (!MUS.pend || MUS.pend.k !== want) MUS.pend = { k: want, at: AC.currentTime + .9 }; }
-  if (MUS.pend && AC.currentTime >= MUS.pend.at) { MUS.theme = MUS.pend.k; MUS.pend = null; MUS.step = 0; MUS.next = AC.currentTime + .05; MUS.gain.gain.setTargetAtTime(musicVol() * .55, AC.currentTime, .6); }
-  const T = THEMES[MUS.theme]; if (!T || MUS.pend) return;
-  const e8 = 30 / T.bpm, prog = T.prog || [0, 3, 4, 5], md = T.mode, sc = (deg, oct = 0) => T.root * Math.pow(2, (md[((deg % md.length) + md.length) % md.length] + 12 * (oct + Math.floor(deg / md.length))) / 12);
-  while (MUS.next < AC.currentTime + .25) {
-    const s = MUS.step, t = MUS.next, ch = prog[Math.floor(s / 16) % prog.length];
-    if (s % 16 === 0) for (const k of [0, 2, 4]) { mnote(sc(ch + k, -1), t, e8 * 16, 'triangle', .045, T.lp, 1.2); mnote(sc(ch + k, -1) * 1.004, t, e8 * 16, 'sine', .03, T.lp, 1.4); }
-    if (s % 8 === 0) mnote(sc(ch, -2), t, e8 * 7, 'sine', .09, 500, .05);
-    if (Math.random() < T.arp) mnote(sc(ch + pick([0, 2, 4, 7, 9]), Math.random() < .3 ? 1 : 0), t, e8 * 3, 'sine', .04, T.lp * 1.6, .005);
-    if (T.drums) { if (s % (T.drums >= 2 ? 2 : 4) === 0) mdrum('kick', t); if (T.drums >= 2 && s % 2 === 1) mdrum('hat', t); if (T.drums >= 3 && s % 4 === 2) mdrum('snare', t); }
-    MUS.step++; MUS.next += e8;
-  }
-}
+function musicTick() { }   // replaced by 6s_music.js
 setInterval(() => { try { musicTick(); } catch (e) { } }, 60);
 
 // ---------- screen fades between areas ----------
