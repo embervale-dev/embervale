@@ -865,6 +865,7 @@ function buildLevel() {
   R3.levelId = G.levelId;
 }
 function buildTown() {
+  if (typeof havenBuild === 'function') return havenBuild(); // detailed Haven (7i_town3d.js)
   const L = R3.lvl;
   // cobblestone plaza center + fountain
   const fx = 19.5, fz = 13.5;
