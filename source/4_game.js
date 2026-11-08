@@ -248,7 +248,7 @@ function updPlayer(dt) {
   if (pressed['1']) drinkPotion();
   if (pressed.v || pressed.mmb) unleashSurge();
   if (pressed.t && G.chan <= 0) { G.chan = 1.5; toast('Channeling town portal... (moving cancels)'); }
-  if (G.chan > 0) { if (ml) { G.chan = 0; } else { G.chan -= dt; if (G.chan <= 0) { sfx('stairs'); goTown(); return; } } }
+  if (G.chan > 0) { if (ml) { G.chan = 0; } else { G.chan -= dt; if (G.chan <= 0) { sfx('stairs'); if (typeof townPortal === 'function') townPortal(); else goTown(); return; } } }
   if (p.whirl > 0) {
     p.whirl -= dt; p.whirlT -= dt;
     if (p.whirlT <= 0) { p.whirlT = .16; aoe(p.x, p.y, 118, p.whirlD, { skill: 1, kb: 60 }); clearBullets(p.x, p.y, 118); sfx('swing'); }
@@ -858,7 +858,8 @@ function updPick(dt) {
       else if (p.k === 'hp') { healP(ST.maxHp * .1); sfx('potion'); p.dead = true; }
       else if (p.k === 'mp') { P.mp = Math.min(ST.maxMp, P.mp + ST.maxMp * .25); sfx('potion'); p.dead = true; }
       else if (p.k === 'item') {
-        if (S.opts.autoSalv && p.it.r < S.opts.autoSalv && !p.it.u) { noteFound(p.it); S.shards += SALV[p.it.r]; p.dead = true; sfx('gold'); feed(`<span class="dim">Auto-salvaged ${p.it.name}</span> <span class="shard">+${SALV[p.it.r]} ✦</span>`, '#888'); }
+        if (typeof pickSkip === 'function' && pickSkip(p.it)) { }
+        else if (typeof autoSalvOk === 'function' ? autoSalvOk(p.it) : (S.opts.autoSalv && p.it.r < S.opts.autoSalv && !p.it.u)) { noteFound(p.it); S.shards += SALV[p.it.r]; p.dead = true; sfx('gold'); feed(`<span class="dim">Auto-salvaged ${p.it.name}</span> <span class="shard">+${SALV[p.it.r]} ✦</span>`, '#888'); }
         else if (S.inv.length < S.invMax) {
           const it = p.it; S.inv.push(it); it.isNew = true; p.dead = true; sfx('item'); hint('item'); noteFound(it);
           if (it.r >= 4) S.stats.legend++; if (it.r >= 5) S.stats.mythic++; if (it.r >= 6) S.stats.celestial++;
