@@ -78,6 +78,6 @@ update = function (dt) {
   if (G.mode !== 'play' || G.menu || !S || !P || G.inTown || !S.cos.pet) return;
   G.petT = (G.petT || 0) - dt; if (G.petT > 0) return;
   const src = R3 && R3.petPos ? R3.petPos : P, t = nearestEnemy(src.x, src.y, 400); if (!t) { G.petT = .3; return; }
-  G.petT = 1.6 - petLvl(S.cos.pet) * .05; const a = Math.atan2(t.y - src.y, t.x - src.x), col = PETS[S.cos.pet].col;
-  G.pp.push({ x: src.x, y: src.y, vx: Math.cos(a) * 560, vy: Math.sin(a) * 560, r: 6, dmg: pdmg() * (.25 + .025 * petLvl(S.cos.pet)), pr: 0, hit: new Set(), life: 1, kind: 'spark', home: 5, splash: 0, skill: 1, col, out: 0, ret: false, spin: 0, child: 1 });
+  G.petT = 2.2 - petLvl(S.cos.pet) * .06; const a = Math.atan2(t.y - src.y, t.x - src.x), col = PETS[S.cos.pet].col;
+  G.pp.push({ x: src.x, y: src.y, vx: Math.cos(a) * 560, vy: Math.sin(a) * 560, r: 6, dmg: pdmg() * (.1 + .01 * petLvl(S.cos.pet)), pr: 0, hit: new Set(), life: 1, kind: 'spark', home: 5, splash: 0, skill: 1, col, out: 0, ret: false, spin: 0, child: 1 });
 };

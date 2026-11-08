@@ -847,7 +847,7 @@ function updPick(dt) {
     p.t += dt; const f = Math.pow(.02, dt); p.vx *= f; p.vy *= f;
     if (p.z > 0 || p.vz > 0) { p.z += p.vz * dt; p.vz -= 14 * dt; if (p.z < 0) { p.z = 0; p.vz = Math.abs(p.vz) > 2 ? -p.vz * .35 : 0; } }
     const d = dist(p, P);
-    if (p.k !== 'item' && d < 150 && p.t > .35) { const a = ang(p, P), s = 560; p.vx = Math.cos(a) * s; p.vy = Math.sin(a) * s; }
+    if (p.k !== 'item' && d < (typeof pickR === 'function' ? pickR() : 150) && p.t > .35) { const a = ang(p, P), s = 560; p.vx = Math.cos(a) * s; p.vy = Math.sin(a) * s; }
     const nx = p.x + p.vx * dt, ny = p.y + p.vy * dt; if (!solidAt(nx, ny)) { p.x = nx; p.y = ny; } else { p.vx = 0; p.vy = 0; }
     if (d < P.r + 14 && p.t > .35) {
       if (p.k === 'gold') { const v = Math.round(p.v); S.gold += v; quest('gold', 0, v); sfx('gold'); p.dead = true; G.goldAcc = (G.goldAcc || 0) + v; }

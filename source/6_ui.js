@@ -146,7 +146,7 @@ function autoEquip() {
 }
 function swapEq() { [S.eq.weapon, S.eq.weapon2] = [S.eq.weapon2, S.eq.weapon]; calcStats(); }
 function itemScore(it) { const s = itemStats(it); return (s.hp || 0) + (s.dr || 0) * 20 * Math.pow(1.11, it.il) + it.aff.length * 8 * Math.pow(1.11, it.il) + (it.u ? 40 * Math.pow(1.11, it.il) : 0); }
-const SALV = [1, 2, 4, 8, 16, 30, 60];
+const SALV = [1, 2, 4, 8, 16, 30, 60, 90, 130, 180, 250, 350];
 function salvage(it) { const i = S.inv.indexOf(it); if (i < 0) return; S.inv.splice(i, 1); S.shards += SALV[it.r]; if (it.r >= 3) S.ore += it.r - 2; sfx('gold'); }
 function salvageJunk(maxR) { let n = 0, sh = 0; for (const it of S.inv.slice()) if (it.r <= maxR && !it.locked) { sh += SALV[it.r]; salvage(it); n++; } toast(n ? `Salvaged ${n} items for ${sh} shards` : 'Nothing to salvage'); renderMenu(); }
 function sortInv() { S.inv.sort((a, b) => b.r - a.r || (a.slot > b.slot ? 1 : -1) || b.il - a.il); renderMenu(); }
