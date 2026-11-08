@@ -32,7 +32,7 @@ function dressRemote(r, L) {
   r.fx = null; if (L.w) { try { const wm = makeWeaponFull(L.w); hand.add(wm); r.fx = wm.userData.fx; } catch (e) { console.warn('remote weapon', e); } }
   try { buildArmorLook(r.h, L.ar); } catch (e) { console.warn('remote armour', e); }
   if (r.petK !== L.pet) { if (r.pet) r.pet.parent && r.pet.parent.remove(r.pet); r.pet = null; r.petK = L.pet;
-    if (L.pet && PETS[L.pet]) { const pm = makeEnemyModel({ sh: PETS[L.pet].sh, col: PETS[L.pet].col, pc: PETS[L.pet].col }); pm.g.userData.parts = pm; pm.g.scale.setScalar(.2); R3.scene.add(pm.g); r.pet = pm.g; r.petPos = null; } }
+    if (L.pet && PETS[L.pet]) { const pm = typeof makePetModel === 'function' ? makePetModel(L.pet) : makeEnemyModel({ sh: PETS[L.pet].sh, col: PETS[L.pet].col, pc: PETS[L.pet].col }); pm.g.userData.parts = pm; pm.g.scale.setScalar(.2); R3.scene.add(pm.g); r.pet = pm.g; r.petPos = null; } }
 }
 { const _rmL = removeRemote; removeRemote = function (id) { const r = REM.get(id); if (r && r.pet) r.pet.parent && r.pet.parent.remove(r.pet); _rmL(id); }; }
 { const _rL = render3D; render3D = function (dt) { _rL(dt); if (!R3 || NET.status === 'off') return;
@@ -40,7 +40,7 @@ function dressRemote(r, L) {
     if (r.lookKey !== p.lookKey) { r.lookKey = p.lookKey; dressRemote(r, p.look); }
     const vis = r.g.visible, x = p.rx, y = p.ry, face = p.face || 0;
     if (r.pet) { r.pet.visible = vis; if (vis) { const tx = x - Math.cos(face) * 34 + 18, ty = y - Math.sin(face) * 34 + 14; if (!r.petPos) r.petPos = { x: tx, y: ty }; const pp = r.petPos, d = Math.hypot(tx - pp.x, ty - pp.y), k = Math.min(1, dt * 4); pp.x += (tx - pp.x) * k; pp.y += (ty - pp.y) * k;
-      r.pet.position.set(pp.x * U, .25 + Math.abs(Math.sin(G.t * 5)) * .08 * (d > 8 ? 1 : .3), pp.y * U); r.pet.rotation.y = d > 4 ? -Math.atan2(ty - pp.y, tx - pp.x) : -face; const pt = r.pet.userData.parts; if (pt) { pt.legs.forEach((l, i) => l.rotation.z = Math.sin(G.t * 12 + i * Math.PI) * .5 * (d > 8 ? 1 : 0)); pt.wings.forEach(w => w.g.rotation.x = w.s * Math.sin(G.t * 16) * .7); } } }
+      r.pet.position.set(pp.x * U, .25 + Math.abs(Math.sin(G.t * 5)) * .08 * (d > 8 ? 1 : .3), pp.y * U); r.pet.rotation.y = d > 4 ? -Math.atan2(ty - pp.y, tx - pp.x) : -face; const pt = r.pet.userData.parts; if (pt) { pt.legs.forEach((l, i) => l.rotation.z = Math.sin(G.t * 12 + i * Math.PI) * .5 * (d > 8 ? 1 : 0)); pt.wings.forEach(w => w.g.rotation.x = w.s * Math.sin(G.t * 16) * .7); if (pt.tick) pt.tick(G.t, d); } } }
     if (!vis || G.mode !== 'play') continue;
     const ak = p.look.aura;   // aura sparks, same as your own
     if (ak && ak !== 'none' && Math.random() < .6) { let col = auraCol(ak); if (col === 'rainbow') col = '#' + new T3.Color().setHSL((G.t * .3) % 1, 1, .6).getHexString(); if (col) { const a = rnd(0, 6.283); G.parts.push({ x: x + Math.cos(a) * 18, y: y + Math.sin(a) * 18, z: rnd(.1, .4), vx: Math.cos(a) * 10, vy: Math.sin(a) * 10, vz: rnd(.6, 1.4), g: 0, life: .9, max: .9, col, size: 3, amb: 1 }); } }

@@ -28,7 +28,7 @@ function renderExtras(dt) {
   const pk = S.cos.pet;
   if (R3.petK !== pk) {
     if (R3.petM) R3.scene.remove(R3.petM); R3.petM = null; R3.petK = pk;
-    if (pk && PETS[pk]) { const p = makeEnemyModel({ sh: PETS[pk].sh, col: PETS[pk].col, pc: PETS[pk].col }); p.g.userData.parts = p; p.g.scale.setScalar(.2); R3.petM = p.g; R3.scene.add(p.g); R3.petPos = { x: P.x, y: P.y }; }
+    if (pk && PETS[pk]) { const p = typeof makePetModel === 'function' ? makePetModel(pk) : makeEnemyModel({ sh: PETS[pk].sh, col: PETS[pk].col, pc: PETS[pk].col }); p.g.userData.parts = p; p.g.scale.setScalar(.2); R3.petM = p.g; R3.scene.add(p.g); R3.petPos = { x: P.x, y: P.y }; }
   }
   if (R3.petM) {
     const pp = R3.petPos, tx = P.x - Math.cos(P.face) * 34 + 18, ty = P.y - Math.sin(P.face) * 34 + 14, d = Math.hypot(tx - pp.x, ty - pp.y);
@@ -36,7 +36,7 @@ function renderExtras(dt) {
     const g = R3.petM, pt = g.userData.parts; g.visible = G.mode !== 'dead';
     g.position.set(pp.x * U, .25 + Math.abs(Math.sin(G.t * 5)) * .08 * (d > 8 ? 1 : .3), pp.y * U);
     g.rotation.y = d > 4 ? -Math.atan2(ty - pp.y, tx - pp.x) : -P.face;
-    pt.legs.forEach((l, i) => l.rotation.z = Math.sin(G.t * 12 + i * Math.PI) * .5 * (d > 8 ? 1 : 0)); pt.wings.forEach(w => w.g.rotation.x = w.s * Math.sin(G.t * 16) * .7);
+    pt.legs.forEach((l, i) => l.rotation.z = Math.sin(G.t * 12 + i * Math.PI) * .5 * (d > 8 ? 1 : 0)); pt.wings.forEach(w => w.g.rotation.x = w.s * Math.sin(G.t * 16) * .7); if (pt.tick) pt.tick(G.t, d);
   }
   // aura
   const ak = S.cos.aura;
