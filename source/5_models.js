@@ -31,7 +31,7 @@ function initGeo() {
 }
 const MATC = {};
 function mat(hex, o = {}) {
-  const k = hex + '|' + (o.rough ?? '') + (o.metal ?? '') + (o.em ?? '') + (o.op ?? '') + (o.flat ? 'f' : '') + (o.emc || '');
+  const k = hex + '|' + (o.rough ?? '') + '|' + (o.metal ?? '') + '|' + (o.em ?? '') + '|' + (o.op ?? '') + '|' + (o.flat ? 'f' : '') + '|' + (o.emc || '');
   if (MATC[k]) return MATC[k];
   const m = new T3.MeshStandardMaterial({ color: hex, roughness: o.rough ?? .72, metalness: o.metal ?? .05, flatShading: !!o.flat });
   if (o.em) { m.emissive = new T3.Color(o.emc || hex); m.emissiveIntensity = o.em; }
