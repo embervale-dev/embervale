@@ -1,7 +1,7 @@
 // ================= NO-SCROLL LAYOUT: every menu fits the screen (section tabs → pagination → gentle fit) =================
 const FIT = { sec: {}, page: {} };
 const FIT_DEF = { portal: 'last' };
-const FIT_NOPAGE = ['map', 'inv', 'skills', 'paragon', 'craft', 'pause', 'stash', 'shop'];
+const FIT_NOPAGE = ['settings', 'log', 'map', 'inv', 'skills', 'paragon', 'craft', 'pause', 'stash', 'shop'];
 const FIT_SKIP = ['dialog', 'title', 'class', 'confirm', 'dead', 'intro', 'boon', 'victory', 'report'];
 function fitOver() { return panel.scrollHeight - panel.clientHeight > 2 || panel.scrollWidth - panel.clientWidth > 2; }
 function isFooter(n) { if (!n || n.nodeType !== 1) return false; if (n.classList.contains('btn') || n.classList.contains('pclose')) return true; const els = n.querySelectorAll('*'); return els.length > 0 && els.length <= 8 && [...n.children].every(c => c.classList.contains('btn')); }
