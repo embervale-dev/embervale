@@ -1,34 +1,202 @@
 // ================= ANIMATION SYSTEM: articulated rig + procedural animations =================
 // ---------- rig: hips > legs > knees, waist > chest > head & arms > hands ----------
 makeHumanoid = function (o) {
+  // shared sculpting kit (built once): parametric surfaces, merged vertex-coloured geometry, body profiles reused by the armour shells
+  const L = window.HUM3 || (window.HUM3 = (() => {
+    const C = new T3.Color(), PI2 = Math.PI * 2;
+    const sm = t => t * t * (3 - 2 * t), cl = (x, a, b) => Math.max(a, Math.min(b, x)), lr = (a, b, k) => a + (b - a) * k;
+    const crv = ks => x => { if (x <= ks[0][0]) return ks[0][1]; for (let i = 1; i < ks.length; i++) if (x <= ks[i][0]) { const a = ks[i - 1], b = ks[i]; return a[1] + (b[1] - a[1]) * sm((x - a[0]) / (b[0] - a[0])); } return ks[ks.length - 1][1]; };
+    // indexed grid surface f(u,v,out); closed wraps u without a seam; normals are flipped outward when needed
+    function grid(nu, nv, f, closed) {
+      const cols = closed ? nu : nu + 1, n = cols * (nv + 1), P = new Float32Array(n * 3), I = [], q = [0, 0, 0];
+      let k = 0; for (let j = 0; j <= nv; j++) for (let i = 0; i < cols; i++) { f(i / nu, j / nv, q); P[k++] = q[0]; P[k++] = q[1]; P[k++] = q[2]; }
+      for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const a = j * cols + i, b = j * cols + (closed ? (i + 1) % nu : i + 1), c = a + cols, d = b + cols; I.push(a, b, c, b, d, c); }
+      const g = new T3.BufferGeometry(); g.setAttribute('position', new T3.BufferAttribute(P, 3)); g.setIndex(I); g.computeVertexNormals();
+      const N = g.attributes.normal.array; let cx = 0, cy = 0, cz = 0; for (let i = 0; i < n; i++) { cx += P[i * 3]; cy += P[i * 3 + 1]; cz += P[i * 3 + 2]; } cx /= n; cy /= n; cz /= n;
+      let s = 0; for (let i = 0; i < n; i++) s += (P[i * 3] - cx) * N[i * 3] + (P[i * 3 + 1] - cy) * N[i * 3 + 1] + (P[i * 3 + 2] - cz) * N[i * 3 + 2];
+      if (s < 0) { for (let i = 0; i < I.length; i += 3) { const t = I[i + 1]; I[i + 1] = I[i + 2]; I[i + 2] = t; } g.setIndex(I); g.computeVertexNormals(); }
+      return g;
+    }
+    // ellipsoid (or a patch of one): th from the top, ph around Y with ph=0 facing +X (the front)
+    function ell(rx, ry, rz, p = {}) {
+      const th0 = p.th0 || 0, th1 = p.th1 ?? Math.PI, ph0 = p.ph0 || 0, ph1 = p.ph1 ?? PI2, closed = ph1 - ph0 > PI2 - 1e-4;
+      return grid(p.nu || 18, p.nv || 12, (u, v, q) => { const th = th0 + v * (th1 - th0), ph = ph0 + u * (ph1 - ph0), s = Math.sin(th);
+        q[0] = rx * s * Math.cos(ph); q[1] = ry * Math.cos(th); q[2] = rz * s * Math.sin(ph); if (p.d) p.d(q, th, ph); }, closed);
+    }
+    // tube along Y from y0 to y1, radius rf(t, ph), depth scale dx; optional angular range for curved plates
+    function tube(y0, y1, rf, p = {}) {
+      const ph0 = p.ph0 || 0, ph1 = p.ph1 ?? PI2, closed = ph1 - ph0 > PI2 - 1e-4, dx = p.dx || 1, R = typeof rf === 'number' ? () => rf : rf;
+      return grid(p.nu || 14, p.nv || 4, (u, v, q) => { const ph = ph0 + u * (ph1 - ph0), r = R(v, ph); q[0] = (p.x || 0) + Math.cos(ph) * r * dx; q[1] = lr(y0, y1, v); q[2] = Math.sin(ph) * r; if (p.d) p.d(q, v, ph); }, closed);
+    }
+    // rounded box with true rounded normals
+    function rbox(w, h, d, r, seg = 3) {
+      const g = new T3.BoxGeometry(w, h, d, seg, seg, seg), P = g.attributes.position, N = g.attributes.normal, ix = w / 2 - r, iy = h / 2 - r, iz = d / 2 - r;
+      for (let i = 0; i < P.count; i++) { const x = P.getX(i), y = P.getY(i), z = P.getZ(i), qx = cl(x, -ix, ix), qy = cl(y, -iy, iy), qz = cl(z, -iz, iz);
+        let nx = x - qx, ny = y - qy, nz = z - qz; const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l; P.setXYZ(i, qx + nx * r, qy + ny * r, qz + nz * r); N.setXYZ(i, nx, ny, nz); }
+      return g;
+    }
+    const _m = new T3.Matrix4(), _q = new T3.Quaternion(), _e = new T3.Euler(), _p = new T3.Vector3(), _s = new T3.Vector3();
+    function xf(g, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sy) { return g.clone().applyMatrix4(_m.compose(_p.set(x, y, z), _q.setFromEuler(_e.set(rx, ry, rz)), _s.set(sx, sy, sz))); }
+    // tapered curved horn/plume/tip from 5_models bentG, pointed along dir and curling toward bend
+    const _o = new T3.Object3D();
+    function bt(b, rt, rb, s, x, y, z, dir, bend) { _o.position.set(x, y, z); _o.scale.setScalar(s); orient(_o, dir, bend); _o.updateMatrix(); return bentG(b, rt, rb).clone().applyMatrix4(_o.matrix); }
+    // merge [geometry, hex, shade(x,y,z)?] parts into one vertex-coloured geometry
+    function merge(parts) {
+      let nv = 0, ni = 0; for (const [g] of parts) { nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
+      const P = new Float32Array(nv * 3), N = new Float32Array(nv * 3), Cc = new Float32Array(nv * 3), I = nv > 65000 ? new Uint32Array(ni) : new Uint16Array(ni);
+      let vo = 0, io = 0;
+      for (const [g, hx, sh] of parts) { const p = g.attributes.position, n = g.attributes.normal; C.set(hx);
+        for (let i = 0; i < p.count; i++) { const k = (vo + i) * 3, x = p.getX(i), y = p.getY(i), z = p.getZ(i), f = sh ? sh(x, y, z) : 1;
+          P[k] = x; P[k + 1] = y; P[k + 2] = z; N[k] = n.getX(i); N[k + 1] = n.getY(i); N[k + 2] = n.getZ(i); Cc[k] = C.r * f; Cc[k + 1] = C.g * f; Cc[k + 2] = C.b * f; }
+        if (g.index) for (let i = 0; i < g.index.count; i++) I[io++] = g.index.getX(i) + vo; else for (let i = 0; i < p.count; i++) I[io++] = vo + i;
+        vo += p.count; }
+      const g = new T3.BufferGeometry(); g.setAttribute('position', new T3.BufferAttribute(P, 3)); g.setAttribute('normal', new T3.BufferAttribute(N, 3)); g.setAttribute('color', new T3.BufferAttribute(Cc, 3)); g.setIndex(new T3.BufferAttribute(I, 1)); g.computeBoundingSphere(); return g;
+    }
+    // body profiles (chest-local Y): half width (Z) and half depth (X) of the torso
+    const TW = crv([[-.07, .162], [.03, .146], [.12, .154], [.22, .174], [.3, .184], [.36, .178], [.41, .15], [.46, .09], [.5, .058]]);
+    const TD = crv([[-.07, .118], [.03, .106], [.12, .11], [.22, .128], [.3, .136], [.36, .126], [.41, .104], [.46, .07], [.5, .05]]);
+    function torsoP(ph, y, off, q) { const c = Math.cos(ph), s = Math.sin(ph), f = Math.max(0, c);
+      const pec = .017 * f * f * Math.exp(-(((y - .29) / .065) ** 2)) * (1 - .55 * Math.exp(-((s / .2) ** 2)));
+      const blade = .01 * Math.max(0, -c) * Math.exp(-(((y - .3) / .07) ** 2)) * Math.min(1, Math.abs(s) * 3);
+      q[0] = c * (TD(y) + pec + blade + off); q[1] = y; q[2] = s * (TW(y) + off * .55); return q; }
+    // patch of the torso surface (offset shell); off may be a function (ph, y)
+    function tor(ph0, ph1, y0, y1, off, nu = 24, nv = 6) { const F = typeof off === 'number' ? () => off : off, closed = ph1 - ph0 > PI2 - 1e-4;
+      return grid(nu, nv, (u, v, q) => { const ph = ph0 + u * (ph1 - ph0), y = lr(y0, y1, v); torsoP(ph, y, F(ph, y), q); }, closed); }
+    // strap across the torso surface from (ph0,y0) to (ph1,y1)
+    function strap(ph0, y0, ph1, y1, w, off, n = 12) { return grid(n, 1, (u, v, q) => torsoP(lr(ph0, ph1, u), lr(y0, y1, u) + (v - .5) * w, off, q), false); }
+    // limb profiles: thigh (hip pivot, y .05 -> -.25), shin (knee pivot, y .03 -> -.17), upper arm and forearm (shoulder pivot)
+    const thighR = crv([[0, .086], [.3, .089], [.75, .07], [1, .06]]), shinR = crv([[0, .068], [.35, .067], [1, .053]]);
+    const uArmR = crv([[0, .066], [1, .057]]), fArmR = crv([[0, .054], [.3, .057], [.8, .049], [1, .05]]);
+    const vc = { vertexColors: true, roughness: .72, metalness: .04 };
+    const cloth = new T3.MeshStandardMaterial(vc), clothDS = new T3.MeshStandardMaterial({ ...vc, side: T3.DoubleSide });
+    const metal = new T3.MeshStandardMaterial({ vertexColors: true, roughness: .3, metalness: .6, side: T3.DoubleSide });
+    const metalW = new T3.MeshStandardMaterial({ vertexColors: true, roughness: .48, metalness: .5, side: T3.DoubleSide });
+    // one cached merged mesh per (part key, material)
+    function put(parent, key, m, parts, shadow = true) { const me = new T3.Mesh(gx('h3|' + key, () => merge(parts())), m); me.castShadow = shadow; me.receiveShadow = shadow; parent.add(me); return me; }
+    return { sm, cl, lr, crv, grid, ell, tube, rbox, xf, bt, merge, put, TW, TD, torsoP, tor, strap, thighR, shinR, uArmR, fArmR, cloth, clothDS, metal, metalW, PI2 };
+  })());
+  const { ell, tube, rbox, xf, bt, put, crv, tor, strap, torsoP, TD, thighR, shinR, uArmR, fArmR, PI2 } = L;
+  const PI = Math.PI;
   const g = new T3.Group(), root = new T3.Group(); g.add(root);
-  const body = mat(o.body, { rough: .6 }).clone(), dark = mat(shade3(o.body, .55)), trim = mat(shade3(o.body, 1.35), { rough: .5 });
-  const skin = mat(o.skin || '#f0c8a0', { rough: .55 }), boot = mat('#3a2a1e', { rough: .8 }), leather = mat('#5a3a22', { rough: .7 }), gold = mat('#d8b040', { metal: .85, rough: .3 });
+  const cls = { helm: 'war', hood: 'rng', wizard: 'mag' }[o.hatType] || 'civ';
+  const B = o.body, DK = shade3(B, .5), TR = shade3(B, 1.35), SK = o.skin || '#f0c8a0', BT = '#3a2a1e', LE = '#5a3a22', LD = '#3e2818', GD = '#d8b040', ST = '#c4c8d4';
+  const HR = o.hair || '#4a3020', HC = o.hat || shade3(B, .8), EY = '#1a1414', CP = o.cape;
+  const KB = '|' + [cls, B, SK, HR, HC, CP || '', o.hatType || ''].join('|');
+  const body = L.cloth.clone(), metalM = L.metal, Q = [0, 0, 0];
+  const grad = (y0, y1, a = .78) => (x, y) => a + (1 - a) * L.cl((y - y0) / (y1 - y0), 0, 1);
+  // ---- hips, legs with knee joints and shaped boots ----
   const hips = new T3.Group(); hips.position.y = .46; root.add(hips);
-  const leg = z => { const L = new T3.Group(); L.position.set(0, 0, z); hips.add(L); mk(GEO.caps, dark, .15, .17, .15, 0, -.12, 0, L); const K = new T3.Group(); K.position.y = -.23; L.add(K); mk(GEO.cylT, boot, .085, .17, .085, 0, -.08, 0, K); const ft = mk(GEO.box, boot, .2, .07, .14, .04, -.18, 0, K); return { L, K, ft }; };
+  const leg = z => { const Lg = new T3.Group(); Lg.position.set(0, 0, z); hips.add(Lg);
+    put(Lg, 'thigh' + KB, body, () => [[tube(.05, -.25, thighR, { nu: 12, nv: 6, dx: .95 }), DK, grad(-.25, .05, .82)]]);
+    const K = new T3.Group(); K.position.y = -.23; Lg.add(K);
+    put(K, 'shin' + KB, body, () => { const foot = rbox(.19, .075, .096, .033), fp = foot.attributes.position;
+      for (let i = 0; i < fp.count; i++) { const x = fp.getX(i); if (x > .02) { const k = 1 - (x - .02) * 1.6; fp.setZ(i, fp.getZ(i) * k); if (fp.getY(i) > 0) fp.setY(i, fp.getY(i) * (1 - (x - .02) * 3)); } }
+      return [[ell(.05, .05, .056, { nu: 10, nv: 6 }), DK], [xf(foot, .034, -.197, 0), BT], [rbox(.2, .022, .1, .01, 2), '#22160c', null], [tube(.03, -.17, shinR, { nu: 12, nv: 4 }), BT, grad(-.17, .03, .8)],
+        [tube(.04, -.012, crv([[0, .079], [1, .074]]), { nu: 12, nv: 2 }), LE]].map((p, i) => i === 2 ? [xf(p[0], .034, -.228, 0), p[1]] : p); });
+    return { L: Lg, K }; };
   const LL = leg(.1), LR = leg(-.1);
-  mk(GEO.cylT, body, .19, .14, .19, 0, .02, 0, hips);
+  put(hips, 'hips' + KB, body, () => { const fold = k => (t, ph) => 1 + k * t * Math.sin(ph * 9);
+    const p = [[tube(.08, -.11, crv([[0, .158], [.5, .168], [1, .14]]), { nu: 18, nv: 3, dx: .74 }), DK]];
+    if (cls === 'mag') { const f = (t, ph) => (.168 + .11 * t) * (1 + .045 * t * Math.sin(ph * 7)); p.push([tube(.055, -.43, f, { nu: 28, nv: 8, dx: .8 }), B, grad(-.43, .05, .7)], [tube(-.405, -.44, (t, ph) => f(.95, ph) + .006, { nu: 28, nv: 1, dx: .8 }), TR]); }
+    else { const f = (t, ph) => (.168 + .05 * t) * fold(.035)(t, ph); p.push([tube(.055, -.13, f, { nu: 27, nv: 4, dx: .77 }), cls === 'war' ? shade3(B, .8) : B, grad(-.13, .05, .72)], [tube(-.11, -.14, (t, ph) => f(1, ph) + .005, { nu: 27, nv: 1, dx: .77 }), TR]); }
+    return p; });
+  // ---- chest / torso ----
   const chest = new T3.Group(); chest.position.y = .5; root.add(chest);
-  const torso = mk(GEO.cylT, body, .23, .44, .2, 0, .2, 0, chest); torso.rotation.x = Math.PI;
-  mk(GEO.box, trim, .02, .36, .1, .2, .2, 0, chest, false);
-  mk(GEO.cyl, leather, .215, .06, .215, 0, .02, 0, chest); mk(GEO.box, gold, .03, .06, .07, .215, .02, 0, chest, false); mk(GEO.box, leather, .08, .1, .1, .12, -.04, .17, chest);
-  mk(GEO.tor, trim, .16, .16, .16, 0, .43, 0, chest).rotation.x = Math.PI / 2;
-  mk(GEO.cyl, skin, .06, .08, .06, 0, .48, 0, chest);
-  for (const z of [.25, -.25]) mk(GEO.hemi, trim, .11, .08, .11, 0, .4, z, chest);
+  const torso = put(chest, 'chest' + KB, body, () => {
+    const p = [[tor(0, PI2, -.07, .5, 0, 26, 14), B, grad(-.07, .5, .74)], [tor(0, PI2, -.025, .05, .013, 26, 2), cls === 'mag' ? TR : LE],
+      [new T3.CylinderGeometry(.056, .062, .18, 10, 1, true).translate(0, .47, 0), SK]];
+    const pouch = torsoP(.8, -.035, .035, [0, 0, 0]); p.push([xf(rbox(.06, .075, .07, .022), pouch[0], pouch[1], pouch[2], 0, -.8, 0), LE]);
+    if (cls === 'mag') { p.push([tor(-.2, .2, -.07, .44, .006, 4, 10), TR], [tube(.42, .54, crv([[0, .1], [1, .128]]), { nu: 16, nv: 2, ph0: .5, ph1: PI2 - .5 }), TR]); }
+    else if (cls === 'rng') { p.push([tor(0, PI2, .02, .43, .008, 26, 8), shade3(LE, 1.15), grad(.02, .43, .8)], [strap(1.2, .44, -1.35, .02, .045, .016), LD], [strap(1.2, .44, PI2 - 1.35, .02, .045, .016), LD]);
+      p.push([tube(.5, .3, (t, ph) => (.09 + .19 * t) * (1 + .05 * t * Math.sin(ph * 6)), { nu: 24, nv: 4, dx: .92 }), HC, grad(.3, .5, .8)]);
+      const qv = [[new T3.CylinderGeometry(.055, .048, .34, 10), LE], [new T3.TorusGeometry(.055, .01, 5, 12).rotateX(PI / 2).translate(0, .17, 0), LD]];
+      for (const z of [-.025, .002, .028]) qv.push([new T3.ConeGeometry(.02, .07, 4).translate(0, .21, z), '#f0ece0']);
+      for (const [q, c] of qv) p.push([xf(q, -.18, .27, .07, -.45, 0, 0), c]); }
+    else { p.push([new T3.TorusGeometry(.085, .022, 6, 18).rotateX(PI / 2).translate(0, .455, 0), TR]);
+      p.push([tor(-.32, .32, -.02, .42, .007, 6, 10), cls === 'war' ? TR : shade3(B, .85), grad(-.02, .42, .8)]); if (cls === 'civ') p.push([strap(-.09, .43, -.09, .3, .025, .014, 3), '#e8dcc0'], [strap(.09, .43, .09, .3, .025, .014, 3), '#e8dcc0']); }
+    return p; });
+  put(chest, 'chestM' + KB, metalM, () => { const bk = torsoP(0, .012, .016, [0, 0, 0]), p = [[rbox(.016, .05, .066, .008, 2).translate(bk[0], bk[1], 0), GD]];
+    if (CP) for (const s of [-1, 1]) { const c = torsoP(s * 1.1, .43, .014, [0, 0, 0]); p.push([new T3.SphereGeometry(.026, 8, 6).translate(c[0], c[1], c[2]), GD]); }
+    if (cls === 'war') p.push([tube(.39, .48, crv([[0, .105], [1, .076]]), { nu: 16, nv: 2, dx: .95 }), ST], [new T3.TorusGeometry(.077, .01, 5, 16).rotateX(PI / 2).translate(0, .48, 0), GD]);
+    if (cls === 'mag') for (const s of [-.2, .2]) p.push([tor(s - .02, s + .02, -.06, .44, .01, 1, 10), GD]);
+    return p; });
+  // ---- head: sculpted skull with jaw and chin, ears, brows, eyes, nose, mouth ----
   const head = new T3.Group(); head.position.y = .62; chest.add(head);
-  mk(GEO.sph, skin, .155, .165, .15, 0, 0, 0, head); mk(GEO.sphL, skin, .025, .03, .025, .16, -.02, 0, head, false);
-  for (const z of [.055, -.055]) { mk(GEO.sphL, mat('#ffffff', { rough: .2 }), .028, .03, .028, .135, .025, z, head, false); mk(GEO.sphL, mat('#1a1a1a'), .016, .02, .016, .155, .025, z, head, false); mk(GEO.box, mat(o.hair || '#4a3020'), .02, .012, .045, .14, .065, z, head, false); }
-  const hc = mat(o.hat || shade3(o.body, .8));
-  if (o.hatType === 'helm') { const m = mat('#a8a8b8', { metal: .85, rough: .3 }); mk(GEO.hemi, m, .18, .19, .18, 0, .01, 0, head); mk(GEO.box, mat('#c83a2a'), .24, .1, .03, -.02, .19, 0, head); mk(GEO.box, m, .035, .12, .19, .165, -.01, 0, head); for (const z of [.15, -.15]) mk(GEO.coneL, m, .03, .08, .03, 0, .13, z, head, false); }
-  else if (o.hatType === 'hood') { mk(GEO.hemi, hc, .2, .21, .2, -.01, 0, 0, head); mk(GEO.cylT, hc, .2, .14, .2, -.02, -.08, 0, head); const c = mk(GEO.cone, hc, .1, .24, .1, -.18, .1, 0, head); c.rotation.z = 1.2; }
-  else if (o.hatType === 'wizard') { mk(GEO.cyl, hc, .28, .03, .28, 0, .12, 0, head); const c = mk(GEO.cone, hc, .17, .5, .17, -.05, .37, 0, head); c.rotation.z = .25; mk(GEO.tor, gold, .17, .17, .1, 0, .15, 0, head).rotation.x = Math.PI / 2; mk(GEO.oct, mat('#ffe080', { em: 2 }), .045, .045, .045, .08, .26, 0, head, false); mk(GEO.box, mat('#e8e8e8'), .1, .14, .14, .1, -.14, 0, head); }
-  else if (o.hatType === 'hair') { mk(GEO.hemi, mat(o.hair || '#6a4a2a'), .17, .15, .17, -.015, .03, 0, head); mk(GEO.box, mat(o.hair || '#6a4a2a'), .08, .12, .26, -.12, -.04, 0, head); }
+  const hsh = [...HR].reduce((a, c) => a + c.charCodeAt(0), 0) % 3;
+  const face = put(head, 'face' + KB + hsh, body, () => {
+    const jaw = q => { const y = q[1]; if (y < 0) { const s = Math.min(1, -y / .165); q[2] *= 1 - .3 * s * s; q[0] *= q[0] < 0 ? 1 - .4 * s * s : 1 - .05 * s * s; } else if (q[0] < 0) q[0] *= 1 + .06 * y / .165; };
+    const p = [[ell(.148, .165, .138, { nu: 22, nv: 16, d: jaw }), SK]];
+    for (const s of [-1, 1]) {
+      p.push([xf(ell(.022, .04, .013, { nu: 8, nv: 6 }), -.008, -.008, s * .135, 0, s * .3, 0), SK]);
+      p.push([xf(ell(.011, .028, .021, { nu: 8, nv: 6 }), .127, .022, s * .052, 0, s * -.4, 0), '#f4f0ea'], [xf(ell(.01, .022, .014, { nu: 8, nv: 6 }), .134, .02, s * .05, 0, s * -.4, 0), EY]);
+      p.push([xf(rbox(.016, .016, .05, .007, 2), .14, .07, s * .05, s * -.3, s * -.4, 0), cls === 'mag' ? '#e8e8e8' : HR]);
+    }
+    p.push([xf(ell(.03, .036, .022, { nu: 8, nv: 6, d: q => { if (q[1] < 0) q[0] *= 1.2; } }), .132, -.024, 0, 0, 0, -.25), shade3(SK, .93)], [xf(rbox(.01, .012, .046, .005, 2), .124, -.084, 0), '#8a4a3a']);
+    if (cls === 'mag') { p.push([ell(.08, .15, .105, { nu: 14, nv: 10, d: q => { if (q[1] < 0) { const k = 1 + q[1] / .15 * .75; q[0] *= k; q[2] *= k; } } }).translate(.075, -.165, 0), '#e8e8e8', grad(-.3, -.05, .82)]);
+      for (const s of [-1, 1]) p.push([xf(ell(.022, .018, .05, { nu: 8, nv: 6 }), .14, -.058, s * .036, s * .5, 0, 0), '#f0f0f0'], [xf(ell(.05, .07, .035, { nu: 8, nv: 6 }), -.04, -.02, s * .13), '#e0e0e0']); }
+    if (o.hatType === 'hair') {
+      const hairD = (q, th, ph) => { const f = Math.cos(ph) * Math.sin(th), y = q[1], hl = L.lr(-.18, .085, L.sm(L.cl((f + .3) / 1.2, 0, 1))), k = L.sm(L.cl((y - hl) / .035, 0, 1));
+        const vol = (.905 + .095 * k) * (1 + k * (.05 * (.5 + .5 * Math.sin(ph * 5 + th * 4)) + (Math.cos(ph) < 0 ? .05 : 0) + (y > .1 ? .04 : 0)));
+        q[0] *= vol; q[1] = y * (y > 0 ? vol * 1.02 : vol); q[2] *= vol; };
+      p.push([ell(.158, .18, .148, { nu: 28, nv: 18, d: hairD }).translate(-.004, .006, 0), HR, grad(-.2, .2, .7)]);
+      p.push([xf(ell(.075, .035, .1, { nu: 12, nv: 6 }), .1, .135, .03, .3, 0, -.5), HR], [xf(ell(.06, .03, .07, { nu: 10, nv: 6 }), .11, .125, -.075, -.4, 0, -.6), HR]);
+      if (hsh === 1) p.push([ell(.12, .15, .13, { nu: 14, nv: 10 }).translate(-.07, -.1, 0), HR, grad(-.25, .05, .7)], [bt(1.2, .1, .28, .26, -.14, -.02, 0, [-.4, -1, 0], [-1, 0, 0]), HR]);
+      if (hsh === 2) for (let i = 0; i < 5; i++) { const a = (i - 2) * .55; p.push([bt(.8, .02, .4, .13, -.03 + .02 * Math.abs(i - 2), .15, Math.sin(a) * .09, [-.3 + .1 * Math.abs(i - 2), 1, Math.sin(a) * .9], [-1, 0, 0]), HR]); }
+    }
+    return p; });
+  // ---- headwear (kept separate so a worn helm can replace it) ----
+  const hat = [];
+  if (o.hatType === 'helm') {
+    hat.push(put(head, 'helmM' + KB, metalM, () => { const thm = ph => 1.42 + .5 * (1 - Math.cos(ph)) / 2, d = (q, th, ph) => {}; const p = [];
+      p.push([L.grid(22, 7, (u, v, q) => { const ph = u * PI2, th = v * thm(ph), s = Math.sin(th); q[0] = .182 * s * Math.cos(ph); q[1] = .198 * Math.cos(th) + .012; q[2] = .172 * s * Math.sin(ph); }, true), ST, grad(-.15, .2, .72)]);
+      p.push([L.grid(22, 1, (u, v, q) => { const ph = u * PI2, th = thm(ph) - .14 + v * .14, s = Math.sin(th), k = 1.05; q[0] = .182 * k * s * Math.cos(ph); q[1] = .198 * Math.cos(th) + .012; q[2] = .172 * k * s * Math.sin(ph); }, true), '#b89048']);
+      p.push([new T3.TorusGeometry(.19, .013, 5, 20, PI - 1).rotateZ(.5).scale(1, 1.06, 1).translate(0, .012, 0), '#b89048'], [rbox(.018, .11, .028, .007, 2).translate(.19, -.035, 0), ST]);
+      for (const s of [-1, 1]) p.push([ell(.19, .2, .182, { th0: 1.45, th1: 2.2, ph0: s > 0 ? .95 : -1.95, ph1: s > 0 ? 1.95 : -.95, nu: 6, nv: 4 }).translate(0, .012, 0), ST]);
+      for (let i = 0; i < 8; i++) { const ph = i / 8 * PI2, th = thm(ph) - .07, s = Math.sin(th); p.push([new T3.SphereGeometry(.009, 5, 4).translate(.182 * 1.07 * s * Math.cos(ph), .198 * Math.cos(th) + .012, .172 * 1.07 * s * Math.sin(ph)), GD]); }
+      return p; }));
+    hat.push(put(head, 'helmC' + KB, L.clothDS, () => [[bt(1.4, .03, .085, .32, -.02, .19, 0, [-.25, 1, 0], [-1, 0, 0]), '#c83a2a', grad(.2, .45, .75)]], false));
+  } else if (o.hatType === 'hood') {
+    hat.push(put(head, 'hood' + KB, L.clothDS, () => [
+      [L.grid(22, 12, (u, v, q) => { const th = v * 2.3, op = 1.02 * L.sm(L.cl((th - .5) / .6, 0, 1)), ph = op + u * (PI2 - 2 * op), s = Math.sin(th), k = 1 + .06 * Math.sin(th * 3) * Math.max(0, -Math.cos(ph)) + .03 * Math.sin(ph * 5) * v;
+        q[0] = .205 * s * Math.cos(ph) * k - .015; q[1] = .215 * Math.cos(th) + .005; q[2] = .198 * s * Math.sin(ph) * k; }, false), HC, grad(-.25, .2, .7)],
+      [xf(new T3.TorusGeometry(1, .11, 6, 26), .095, -.02, 0, 0, PI / 2, 0, .17, .2, .18), shade3(HC, .85)],
+      [bt(1.4, 0, .11, .3, -.17, .07, 0, [-1, -.15, 0], [0, -1, 0]), HC]]));
+  } else if (o.hatType === 'wizard') {
+    hat.push(put(head, 'wiz' + KB, L.clothDS, () => {
+      const brim = L.grid(28, 4, (u, v, q) => { const ph = u * PI2, r = .12 + .19 * v; q[0] = Math.cos(ph) * r; q[2] = Math.sin(ph) * r; q[1] = .12 - .035 * v * v + .012 * v * Math.sin(ph * 3); }, true);
+      const cone = L.grid(16, 10, (u, v, q) => { const ph = u * PI2, r = .175 * Math.pow(1 - v, 1.1) + .004, bk = -.17 * v * v - .08 * Math.max(0, v - .7) / .3; q[0] = Math.cos(ph) * r + bk; q[2] = Math.sin(ph) * r; q[1] = .115 + .5 * v - .1 * Math.max(0, v - .7) / .3 * Math.max(0, v - .7) / .3; }, true);
+      return [[brim, HC], [cone, HC, grad(.1, .6, .72)]]; }));
+    hat.push(put(head, 'wizM' + KB, metalM, () => [[new T3.TorusGeometry(.166, .02, 5, 22).rotateX(PI / 2).translate(-.003, .15, 0), GD]]));
+    const gem = mk(GEO.oct, mat('#ffe080', { em: 2 }), .04, .05, .03, .175, .15, 0, head, false); hat.push(gem);
+  }
+  // ---- cape: two curved panels with folds that drape around the back ----
   let cape = null;
-  if (o.cape) { cape = new T3.Group(); cape.position.set(-.17, .42, 0); chest.add(cape); const cm = mat(o.cape, { rough: .8 }); mk(GEO.box, cm, .03, .36, .38, -.02, -.18, 0, cape); const low = new T3.Group(); low.position.set(-.02, -.36, 0); cape.add(low); mk(GEO.box, cm, .03, .3, .36, 0, -.15, 0, low); mk(GEO.box, mat(shade3(o.cape, 1.4)), .035, .03, .37, 0, -.3, 0, low, false); cape.userData.low = low; }
-  const arm = z => { const a = new T3.Group(); a.rotation.order = 'YZX'; a.position.set(0, .38, z); chest.add(a); mk(GEO.caps, body, .1, .2, .1, 0, -.15, 0, a); mk(GEO.cylT, leather, .055, .1, .055, 0, -.3, 0, a); mk(GEO.sphL, skin, .055, .055, .055, 0, -.37, 0, a); const h = new T3.Group(); h.position.set(0, -.38, 0); h.rotation.z = -Math.PI / 2; a.add(h); return { a, h }; };
-  const R = arm(-.27), L = arm(.27);
+  if (CP) {
+    cape = new T3.Group(); cape.position.set(-.17, .42, 0); chest.add(cape);
+    const panel = (y1, rx0, rx1, rz0, rz1, f0, f1, cx) => L.grid(16, 6, (u, v, q) => { const a = PI / 2 + .45 + u * (PI - .9), fo = 1 + L.lr(f0, f1, v) * Math.sin(a * 11);
+      q[0] = cx + Math.cos(a) * L.lr(rx0, rx1, v) * fo; q[2] = Math.sin(a) * L.lr(rz0, rz1, v) * fo; q[1] = y1 * v; }, false);
+    put(cape, 'capeU' + KB, L.clothDS, () => [[panel(-.37, .16, .19, .25, .29, .005, .045, .17), CP, grad(-.37, 0, .85)]]);
+    const low = new T3.Group(); low.position.set(-.02, -.36, 0); cape.add(low);
+    put(low, 'capeL' + KB, L.clothDS, () => { const f = (y1) => L.grid(16, 1, (u, v, q) => { const a = PI / 2 + .45 + u * (PI - .9), fo = 1 + .075 * Math.sin(a * 11), w = .97 + v * .03;
+      q[0] = .19 + Math.cos(a) * .228 * fo * 1.01; q[2] = Math.sin(a) * .328 * fo * 1.01; q[1] = -.27 - .035 * v; }, false);
+      return [[panel(-.3, .19, .228, .29, .328, .045, .075, .19), CP, grad(-.3, 0, .72)], [f(), shade3(CP, 1.5)]]; });
+    cape.userData.low = low;
+  }
+  // ---- arms (weapon hand keeps the same pivot and orientation; the fist is part of the arm so swapping weapons never removes it) ----
+  const arm = z => {
+    const a = new T3.Group(); a.rotation.order = 'YZX'; a.position.set(0, .38, z); chest.add(a);
+    put(a, 'arm' + KB, body, () => { const glove = cls === 'war' ? '#4a3426' : SK, p = [[ell(.074, .08, .074, { nu: 14, nv: 9 }).translate(0, -.03, 0), B], [tube(-.03, -.215, uArmR, { nu: 12, nv: 3 }), B, grad(-.215, -.03, .82)],
+      [new T3.TorusGeometry(.058, .012, 5, 14).rotateX(PI / 2).translate(0, -.205, 0), TR], [tube(-.2, -.37, fArmR, { nu: 12, nv: 4 }), cls === 'war' || cls === 'rng' ? LE : SK],
+      [rbox(.08, .088, .074, .028).translate(.004, -.366, 0), glove], [xf(ell(.021, .032, .019, { nu: 8, nv: 6 }), .043, -.347, 0, 0, 0, .4), glove]];
+      if (cls === 'mag') p.push([tube(-.19, -.32, crv([[0, .062], [1, .09]]), { nu: 16, nv: 2 }), B], [new T3.TorusGeometry(.09, .011, 5, 16).rotateX(PI / 2).translate(0, -.32, 0), TR]);
+      if (cls === 'rng') p.push([new T3.TorusGeometry(.057, .009, 5, 12).rotateX(PI / 2).translate(0, -.25, 0), LD], [new T3.TorusGeometry(.05, .009, 5, 12).rotateX(PI / 2).translate(0, -.32, 0), LD]);
+      return p; });
+    if (cls === 'war') put(a, 'armM' + KB, metalM, () => [[ell(.096, .078, .096, { th1: 1.35, nu: 14, nv: 5 }), ST], [new T3.TorusGeometry(.094, .01, 5, 16).rotateX(PI / 2).translate(0, .017, 0), GD]]);
+    const h = new T3.Group(); h.position.set(0, -.38, 0); h.rotation.z = -Math.PI / 2; a.add(h); return { a, h };
+  };
+  const R = arm(-.27), Lf = arm(.27);
   mk(GEO.circ, basic('#000000', { op: .32 }), .3, 1, .3, 0, .012, 0, g, false);
-  return { g, root, hips, chest, head, legL: LL.L, legR: LR.L, kneeL: LL.K, kneeR: LR.K, armR: R.a, hand: R.h, armL: L.a, handL: L.h, torso, body, cape };
+  return { g, root, hips, chest, head, legL: LL.L, legR: LR.L, kneeL: LL.K, kneeR: LR.K, armR: R.a, hand: R.h, armL: Lf.a, handL: Lf.h, torso, body, cape, hat, face, hatType: o.hatType };
 };
 
 // ---------- helpers ----------

@@ -88,19 +88,141 @@ let TMP_SL = 'armor';
   if (ST.disc === 'heavy' && !(P.bulT > 0)) h += `<div class="buff wart" title="Bulwark ready: the next hit deals 60% less damage" style="border-color:#a0b0d0">${ico('shield')}<span>${ico('check')}</span></div>`;
   WART_BUF += h; }; }
 // ---------- armor shows on your character ----------
+// Sculpted shells that follow the body profiles from makeHumanoid (window.HUM3). Each piece is one cached merged
+// geometry per (slot, weight, rarity, part); better rarities get richer trim, extra pauldron lames, new helm shapes and glow.
+const ARM3_KIT = (() => {
+  const PI = Math.PI, hx = (a, b, k) => '#' + new T3.Color(a).lerp(new T3.Color(b), k).getHexString(), GOLD = '#e0b850';
+  function pal(r, w) {
+    const RC = RAR[r].c;
+    if (w === 'heavy') { const a = r <= 2 ? ['#868a92', '#a6acb6', '#c6ced9'][r] : r < 5 ? hx('#aab0ba', RC, .22) : hx('#5c606a', RC, .38);
+      return { a, t: r === 0 ? '#5e6066' : r === 1 ? '#727884' : r === 2 ? '#b89048' : hx(GOLD, RC, .3), d: '#141418' }; }
+    if (w === 'medium') { const a = r < 2 ? '#6a4628' : hx('#5a3a20', RC, .2);
+      return { a, d: shade3(a, .62), m: '#8e939c', t: r < 2 ? '#9a9ea6' : r === 2 ? '#b89048' : hx(GOLD, RC, .3) }; }
+    const a = r === 0 ? '#a89878' : hx(shade3(RC, .72), '#b8b0a0', .25);
+    return { a, d: shade3(a, .62), t: r <= 1 ? shade3(a, .7) : hx(GOLD, RC, .3) };
+  }
+  const ring = (r, t, y, x = 0) => new T3.TorusGeometry(r, t, 5, 18).rotateX(PI / 2).translate(x, y, 0);
+  const stripes = (n, lo = .78) => (x, y) => lo + (1 - lo) * ((Math.floor((y + 2) * n) & 1));
+  // pieces: { n, pv (chest|hips|head|arm|leg|knee), m (metal|cloth|glow), f () => merge parts }
+  function pieces(sl, w, r, ht) {
+    const L = window.HUM3, { ell, tube, rbox, xf, bt, crv, tor, strap, torsoP, TD, thighR, shinR } = L, c = pal(r, w), out = [], glow = r >= 3, PI2 = L.PI2;
+    const grad = (y0, y1, a = .78) => (x, y) => a + (1 - a) * L.cl((y - y0) / (y1 - y0), 0, 1);
+    const add = (n, pv, m, f) => out.push({ n, pv, m, f });
+    const tp = (ph, y, off) => torsoP(ph, y, off, [0, 0, 0]);
+    const keel = (ph, y) => .024 + .012 * Math.pow(Math.max(0, Math.cos(ph)), 14);
+    if (sl === 'armor') {
+      if (w === 'heavy') {
+        add('cuir', 'chest', 'metal', () => { const p = [[tor(0, PI2, .15, .43, keel, 28, 8), c.a, grad(.12, .43, .7)], [tor(0, PI2, .405, .43, .036, 28, 1), c.t], [tor(0, PI2, .145, .162, .034, 28, 1), c.t],
+          [tube(.385, .475, crv([[0, .105], [1, .078]]), { nu: 18, nv: 2, dx: .93 }), c.a], [ring(.078, .011, .475), c.t]];
+          for (let k = 0; k < 3; k++) { const yt = .165 - .052 * k, yb = yt - .062, o0 = .027 + .005 * k; p.push([tor(0, PI2, yb, yt, (ph, y) => o0 + .008 * (yt - y) / .062, 28, 2), shade3(c.a, .92 - .04 * k)]); if (k === 2 || r >= 2) p.push([tor(0, PI2, yb, yb + .011, o0 + .01, 28, 1), c.t]); }
+          if (r >= 4) for (const s of [-1, 1]) p.push([strap(s * .62, .405, s * .13, .2, .018, .036, 8), c.t]);
+          return p; });
+        add('tass', 'hips', 'metal', () => { const p = [], plate = (a, h) => (y0, y1, off) => L.grid(5, 4, (u, v, q) => { const ph = a - h + u * 2 * h, y = L.lr(y0, y1, v), rr = .19 + .065 * (.05 - y) / .2 + off; q[0] = Math.cos(ph) * rr * .8; q[1] = y; q[2] = Math.sin(ph) * rr; }, false);
+          for (const [a, h] of [[.5, .36], [-.5, .36], [1.45, .4], [-1.45, .4], [PI, .7]]) { const f = plate(a, h); p.push([f(.05, -.15, 0), c.a, grad(-.15, .05, .75)], [f(-.135, -.152, .008), c.t]); }
+          return p; });
+        add('paul', 'arm', 'metal', () => { const s13 = Math.sin(1.3), p = [[ell(.118, .1, .118, { th1: 1.3, nu: 18, nv: 6 }).translate(0, .005, 0), c.a, grad(-.02, .11, .75)], [ring(.118 * s13, .011, .1 * Math.cos(1.3) + .005), c.t]];
+          const n = 1 + (r >= 2) + (r >= 4); for (let k = 1; k <= n; k++) { const yt = .03 - .04 * (k - 1), yb = yt - .05, r0 = .108 + .008 * k, r1 = .12 + .01 * k; p.push([tube(yt, yb, crv([[0, r0], [1, r1]]), { nu: 18, nv: 1 }), shade3(c.a, 1 - .07 * k)], [ring(r1, .009, yb), c.t]); }
+          if (r >= 4) p.push([new T3.TorusGeometry(.088, .013, 5, 14, PI).translate(0, .02, 0), c.t]);
+          return p; });
+        if (glow) add('cuirG', 'chest', 'glow', () => { const q = tp(0, .3, .05), p = [[xf(new T3.OctahedronGeometry(1, 0), q[0], .3, 0, 0, 0, 0, .012, .04 + .004 * r, .03), '#fff']];
+          if (r >= 5) p.push([tor(0, PI2, .147, .158, .04, 28, 1), '#fff'], [ring(.08, .008, .48), '#fff']);
+          return p; });
+        if (r >= 5) add('paulG', 'arm', 'glow', () => [[xf(new T3.OctahedronGeometry(1, 0), .118, .04, 0, 0, 0, 0, .012, .028, .02), '#fff']]);
+      } else if (w === 'medium') {
+        add('brig', 'chest', 'cloth', () => { const p = [[tor(0, PI2, .03, .42, .017, 26, 8), c.a, grad(.03, .42, .72)], [tor(0, PI2, .4, .425, .024, 26, 1), c.d], [tor(0, PI2, -.03, .05, .024, 26, 2), c.d],
+          [strap(1.15, .43, -1.3, .06, .04, .025), c.d]]; return p; });
+        add('brigM', 'chest', 'metal', () => { const p = [[rbox(.018, .05, .066, .008, 2).translate(tp(0, .01, .03)[0], .01, 0), c.t]];
+          for (const y of [.13, .2, .27, .34]) for (const ph of [-.75, -.45, .45, .75]) { const q = tp(ph, y, .02); p.push([new T3.SphereGeometry(.009, 5, 4).translate(q[0], q[1], q[2]), c.t]); }
+          return p; });
+        add('mail', 'hips', 'cloth', () => [[tube(.04, -.165, (t, ph) => (.18 + .055 * t) * (1 + .02 * t * Math.sin(ph * 9)), { nu: 26, nv: 10, dx: .79 }), c.m, stripes(60)]]);
+        add('mpaul', 'arm', 'cloth', () => [[ell(.108, .092, .108, { th1: 1.3, nu: 16, nv: 5 }).translate(0, .005, 0), c.a, grad(-.02, .1, .75)], [tube(.03, -.025, crv([[0, .108], [1, .118]]), { nu: 16, nv: 1 }), c.d]]);
+        add('mpaulM', 'arm', 'metal', () => [[ring(.118, .008, -.025), c.t], [ring(.105, .007, .03), c.t]]);
+        if (glow) add('brigG', 'chest', 'glow', () => { const q = tp(0, .27, .03); return [[xf(new T3.OctahedronGeometry(1, 0), q[0], q[1], 0, 0, 0, 0, .012, .03, .026), '#fff']]; });
+      } else {
+        add('vest', 'chest', 'cloth', () => { const p = [[tor(0, PI2, .02, .43, .013, 26, 8), c.a, (x, y, z) => (.8 + .2 * Math.abs(Math.sin(Math.atan2(z, x) * 6))) * (.8 + .2 * L.cl((y - .02) / .41, 0, 1))],
+          [strap(1.2, .45, -1.3, .04, .055, .022), c.t], [new T3.TorusGeometry(.09, .03, 6, 18).rotateX(PI / 2).translate(0, .45, 0), c.t]];
+          if (r >= 2) p.push([tor(0, PI2, .02, .045, .02, 26, 1), c.t]); return p; });
+        add('tab', 'hips', 'cloth', () => { const f = (y0, y1, off) => L.grid(5, 4, (u, v, q) => { const ph = -.42 + u * .84, y = L.lr(y0, y1, v), rr = .2 + .05 * v + off; q[0] = Math.cos(ph) * rr * .82; q[1] = y; q[2] = Math.sin(ph) * rr; }, false);
+          return [[f(.05, -.2, 0), c.a, grad(-.2, .05, .8)], [f(-.18, -.205, .006), c.t]]; });
+        add('lpad', 'arm', 'cloth', () => [[ell(.094, .08, .094, { th1: 1.25, nu: 14, nv: 4 }).translate(0, 0, 0), c.a], [ring(.094 * Math.sin(1.25), .01, .08 * Math.cos(1.25)), c.t]]);
+        if (glow) add('vestG', 'chest', 'glow', () => { const q = tp(.12, .3, .035); return [[xf(new T3.OctahedronGeometry(1, 0), q[0], q[1], q[2], 0, 0, 0, .012, .028, .024), '#fff']]; });
+      }
+    } else if (sl === 'gloves') {
+      if (w === 'heavy') {
+        add('vamb', 'arm', 'metal', () => [[tube(-.215, -.35, crv([[0, .066], [1, .058]]), { nu: 14, nv: 2 }), c.a, grad(-.34, -.2, .75)], [ring(.066, .009, -.217), c.t], [ell(.04, .046, .05, { nu: 10, nv: 6 }).translate(-.036, -.205, 0), c.a],
+          [rbox(.09, .096, .084, .03).translate(.004, -.368, 0), c.a], [tube(-.31, -.345, crv([[0, .062], [1, .078]]), { nu: 14, nv: 1 }), shade3(c.a, .9)], [ring(.078, .008, -.345), c.t],
+          [rbox(.094, .012, .086, .005, 2).translate(.004, -.395, 0), c.t]]);
+        if (glow) add('vambG', 'arm', 'glow', () => [[xf(new T3.OctahedronGeometry(1, 0), .05, -.36, 0, 0, 0, 0, .008, .018, .016), '#fff']]);
+      } else if (w === 'medium') {
+        add('brac', 'arm', 'cloth', () => [[tube(-.215, -.35, crv([[0, .064], [1, .056]]), { nu: 14, nv: 2 }), c.a], [rbox(.086, .092, .08, .028).translate(.004, -.367, 0), c.d]]);
+        add('bracM', 'arm', 'metal', () => [[ring(.065, .008, -.24), c.t], [ring(.058, .008, -.32), c.t], [rbox(.026, .05, .072, .01, 2).translate(.042, -.382, 0), c.m]]);
+      } else add('wrap', 'arm', 'cloth', () => [[tube(-.24, -.35, crv([[0, .06], [1, .054]]), { nu: 14, nv: 8 }), c.a, stripes(110, .8)], [ring(.06, .01, -.24), c.t]]);
+    } else if (sl === 'boots') {
+      if (w === 'heavy') {
+        add('grev', 'knee', 'metal', () => [[tube(.015, -.165, shinR, { nu: 14, nv: 4, dx: 1.08 }).scale(1.12, 1, 1.12), c.a, grad(-.17, .02, .75)],
+          [rbox(.014, .16, .018, .006, 2).translate(.078, -.075, 0), c.t], [ell(.05, .056, .062, { nu: 12, nv: 7 }).translate(.05, .005, 0), c.a], [ell(.03, .03, .072, { nu: 10, nv: 5 }).translate(.045, -.04, 0), c.t],
+          [rbox(.215, .076, .108, .034).translate(.036, -.196, 0), shade3(c.a, .9)], [rbox(.012, .066, .104, .005, 2).translate(.075, -.192, 0), c.t], [rbox(.012, .06, .1, .005, 2).translate(.11, -.195, 0), c.t]]);
+        add('cuis', 'leg', 'metal', () => [[L.grid(8, 4, (u, v, q) => { const ph = -1.35 + u * 2.7, t = .2 + .6 * v, rr = thighR(t) + .016; q[0] = Math.cos(ph) * rr * .97; q[1] = L.lr(.05, -.25, t); q[2] = Math.sin(ph) * rr; }, false), c.a, grad(-.2, .02, .78)],
+          [L.grid(8, 1, (u, v, q) => { const ph = -1.35 + u * 2.7, t = .8 - .05 * v, rr = thighR(t) + .022; q[0] = Math.cos(ph) * rr * .97; q[1] = L.lr(.05, -.25, t); q[2] = Math.sin(ph) * rr; }, false), c.t]]);
+      } else if (w === 'medium') {
+        add('mboot', 'knee', 'cloth', () => [[tube(.02, -.17, crv([[0, .076], [1, .062]]), { nu: 14, nv: 2 }), c.a, grad(-.17, .02, .75)], [tube(.075, .015, crv([[0, .092], [1, .082]]), { nu: 14, nv: 1 }), c.d],
+          [rbox(.2, .08, .102, .034).translate(.035, -.196, 0), c.d]]);
+        add('mbootM', 'knee', 'metal', () => [[ell(.034, .04, .046, { nu: 10, nv: 6 }).translate(.066, .045, 0), c.m], [ring(.071, .007, -.09), c.t], [ring(.067, .007, -.13), c.t]]);
+      } else add('lboot', 'knee', 'cloth', () => [[tube(.0, -.15, crv([[0, .074], [1, .062]]), { nu: 14, nv: 10 }), c.a, stripes(90, .82)], [new T3.TorusGeometry(.078, .014, 5, 14).rotateX(PI / 2).translate(0, .0, 0), c.t], [rbox(.198, .08, .1, .034).translate(.035, -.196, 0), '#5a4030']]);
+    } else if (sl === 'helm') {
+      if (w === 'heavy') {
+        const great = r >= 2;
+        add('helm', 'head', 'metal', () => { const p = [];
+          if (!great) { const thm = ph => 1.46 + .45 * (1 - Math.cos(ph)) / 2;
+            p.push([L.grid(22, 7, (u, v, q) => { const ph = u * PI2, th = v * thm(ph), s = Math.sin(th); q[0] = .188 * s * Math.cos(ph); q[1] = .205 * Math.cos(th) + .015; q[2] = .178 * s * Math.sin(ph); }, true), c.a, grad(-.15, .22, .72)]);
+            p.push([L.grid(22, 1, (u, v, q) => { const ph = u * PI2, th = thm(ph) - .13 + v * .13, s = Math.sin(th); q[0] = .198 * s * Math.cos(ph); q[1] = .205 * Math.cos(th) + .015; q[2] = .187 * s * Math.sin(ph); }, true), c.t]);
+            p.push([rbox(.02, .12, .03, .008, 2).translate(.196, -.035, 0), c.a], [new T3.TorusGeometry(.198, .012, 5, 18, PI - 1).rotateZ(.5).scale(1, 1.04, 1).translate(0, .015, 0), c.t]);
+            if (r >= 1) for (const s of [-1, 1]) p.push([ell(.196, .207, .188, { th0: 1.45, th1: 2.25, ph0: s > 0 ? .95 : -1.95, ph1: s > 0 ? 1.95 : -.95, nu: 6, nv: 4 }).translate(0, .015, 0), c.a]);
+          } else {
+            p.push([tube(-.185, .05, crv([[0, .172], [.25, .166], [1, .18]]), { nu: 22, nv: 5, dx: 1.06 }), c.a, grad(-.2, .1, .72)], [ell(.18 * 1.06, .14, .18, { th1: PI / 2, nu: 22, nv: 6 }).translate(0, .05, 0), c.a, grad(.0, .2, .85)],
+              [xf(new T3.TorusGeometry(.18, .011, 5, 22), 0, .05, 0, PI / 2, 0, 0, 1.06, 1, 1), c.t], [xf(new T3.TorusGeometry(.172, .011, 5, 22), 0, -.182, 0, PI / 2, 0, 0, 1.06, 1, 1), c.t],
+              [new T3.TorusGeometry(.184, .012, 5, 20, PI).scale(1.04, .78, 1).translate(0, .05, 0), c.t], [rbox(.018, .19, .024, .007, 2).translate(.188, -.06, 0), c.t]);
+            if (!glow) p.push([rbox(.02, .02, .16, .007, 2).translate(.186, .02, 0), c.d]);
+            for (const s of [-1, 1]) for (let i = 0; i < 3; i++) p.push([new T3.SphereGeometry(.007, 4, 3).translate(.172, -.075 - .03 * i, s * .07), c.d]);
+            if (r >= 5) { p.push([ell(.16, .08, .012, { nu: 16, nv: 6 }).translate(-.02, .19, 0), c.t]);
+              for (const s of [-1, 1]) for (let i = 0; i < 3; i++) p.push([xf(ell(.1 - .015 * i, .022, .007, { nu: 8, nv: 4 }), -.07, .08 + .035 * i, s * .19, s * .25, 0, .5 + .25 * i), c.t]); }
+          }
+          return p; });
+        if (r === 4) add('horn', 'head', 'cloth', () => [-1, 1].map(s => [bt(2.2, .02, .16, .26, .02, .07, s * .17, [.1, .45, s], [.5, 1, 0]), '#e8dcc0', grad(.05, .3, .75)]));
+        if (glow) add('helmG', 'head', 'glow', () => { const p = [[rbox(.02, .02, .16, .007, 2).translate(.186, .02, 0), '#fff']]; if (r >= 6) p.push([new T3.TorusGeometry(.12, .009, 6, 28).rotateX(PI / 2).translate(-.02, .3, 0), '#fff']); return p; });
+      } else if (w === 'medium') {
+        add('half', 'head', 'metal', () => [[ell(.184, .2, .175, { th1: 1.4, nu: 20, nv: 6 }).translate(0, .015, 0), c.t === '#9a9ea6' ? '#9a9ea6' : hx('#9a9ea6', c.t, .4), grad(-.02, .22, .72)],
+          [L.grid(20, 1, (u, v, q) => { const ph = u * PI2, th = 1.3 + .1 * v, s = Math.sin(th); q[0] = .192 * s * Math.cos(ph); q[1] = .2 * Math.cos(th) + .015; q[2] = .183 * s * Math.sin(ph); }, true), c.t]]);
+        add('avent', 'head', 'cloth', () => [[L.grid(18, 8, (u, v, q) => { const ph = .95 + u * (PI2 - 1.9), y = L.lr(.04, -.21, v), rr = .182 + .04 * v; q[0] = Math.cos(ph) * rr; q[1] = y; q[2] = Math.sin(ph) * rr; }, false), c.m, stripes(70)]]);
+        if (glow) add('halfG', 'head', 'glow', () => [[xf(new T3.OctahedronGeometry(1, 0), .192, .07, 0, 0, 0, 0, .01, .026, .02), '#fff']]);
+      } else {
+        // light helm keeps the class hat and adds a rarity plume and gem
+        const gp = { helm: [.2, .03, 0], hood: [.125, -.16, 0], wizard: [.178, .15, .04], hair: [.17, .1, 0] }[ht] || [.17, .1, 0];
+        if (ht === 'hair') add('circ', 'head', 'metal', () => [[xf(new T3.TorusGeometry(.158, .009, 5, 24), 0, .085, 0, PI / 2 - .12, 0, 0), c.t]]);
+        if (r >= 1) add('plume', 'head', 'cloth', () => [[bt(1.3, .02, .12, .24, -.02, ht === 'wizard' ? .17 : .16, ht === 'hood' ? .19 : .16, [-.7, 1, .35], [-1, 0, 0]), c.t, grad(.15, .4, .7)]]);
+        if (r >= 2) add('lgem', 'head', 'glow', () => [[xf(new T3.OctahedronGeometry(1, 0), gp[0], gp[1], gp[2], 0, 0, 0, .01, .024, .02), '#fff']]);
+      }
+    }
+    return out;
+  }
+  const hidesHat = (sl, w) => sl === 'helm' && (w === 'heavy' || w === 'medium');
+  return { pieces, hidesHat };
+})();
 function buildArmorLook(pl = R3.pl, eq = S.eq) {   // also used for other players' models (multiplayer)
   if (!pl) return; if (pl.armorG) { pl.armorG.forEach(o => o.parent && o.parent.remove(o)); } pl.armorG = [];
-  const ch = eq.armor, w = wgtOf(ch), hm = eq.helm, gl = eq.gloves, bt = eq.boots;
-  const tint = it => it ? (it.r >= 3 ? mat(shade3(RAR[it.r].c, .8), { metal: .7, rough: .3, em: .15 + .05 * (it.r - 3) }) : null) : null;
-  if (w === 'heavy' || w === 'medium') for (const arm of [pl.armL, pl.armR]) {
-    const m = tint(ch) || (w === 'heavy' ? mat('#8a8a98', { metal: .8, rough: .3 }) : mat('#6a4a2a', { rough: .7 }));
-    const p = mk(GEO.hemi, m, w === 'heavy' ? .17 : .14, w === 'heavy' ? .12 : .09, w === 'heavy' ? .17 : .14, 0, .02, 0, arm); pl.armorG.push(p);
-    if (w === 'heavy') { const r = mk(GEO.torThin, mat('#d8b040', { metal: .9, rough: .25 }), .17, .17, .17, 0, .02, 0, arm, false); r.rotation.x = Math.PI / 2; pl.armorG.push(r); }
+  if (!window.HUM3) makeHumanoid({ body: '#888888' });
+  const L = window.HUM3; let hide = false;
+  for (const sl of ['armor', 'helm', 'gloves', 'boots']) {
+    const it = eq && eq[sl]; if (!it) continue; const w = wgtOf(it) || 'medium', r = Math.max(0, Math.min(RAR.length - 1, it.r | 0));
+    if (ARM3_KIT.hidesHat(sl, w)) hide = true;
+    for (const pc of ARM3_KIT.pieces(sl, w, r, pl.hatType)) {
+      const geo = gx('a3|' + sl + '|' + w + '|' + r + '|' + (pl.hatType || '') + '|' + pc.n, () => L.merge(pc.f()));
+      const m = pc.m === 'glow' ? mat(RAR[r].c, { em: 1.1 + .25 * Math.max(0, r - 3), rough: .4 }) : pc.m === 'cloth' ? L.clothDS : (r >= 2 ? L.metal : L.metalW);
+      const pvs = pc.pv === 'arm' ? [pl.armL, pl.armR] : pc.pv === 'leg' ? [pl.legL, pl.legR] : pc.pv === 'knee' ? [pl.kneeL, pl.kneeR] : [pl[pc.pv]];
+      for (const p of pvs) { if (!p) continue; const me = new T3.Mesh(geo, m); me.castShadow = pc.m !== 'glow'; p.add(me); pl.armorG.push(me); }
+    }
   }
-  if (w === 'light' && pl.torso) { const s = mk(GEO.tor, tint(ch) || mat('#5a7a5a', { rough: .8 }), .16, .16, .1, 0, .3, 0, pl.torso, false); s.rotation.x = Math.PI / 2; pl.armorG.push(s); }
-  if (wgtOf(gl) === 'heavy' || (gl && gl.r >= 3)) for (const arm of [pl.armL, pl.armR]) { const c = mk(GEO.cyl, tint(gl) || mat('#8a8a98', { metal: .8 }), .07, .1, .07, 0, -.3, 0, arm); pl.armorG.push(c); }
-  if (bt && (wgtOf(bt) === 'heavy' || bt.r >= 3)) for (const leg of [pl.legL, pl.legR]) { const c = mk(GEO.cyl, tint(bt) || mat('#8a8a98', { metal: .8 }), .1, .1, .1, 0, -.3, 0, leg); pl.armorG.push(c); }
-  if (hm && hm.r >= 3 && pl.torso) { const g = mk(GEO.oct, mat(RAR[hm.r].c, { em: 1.6, flat: true }), .04, .05, .04, .12, .62, 0, pl.torso, false); pl.armorG.push(g); }
+  if (pl.hat) pl.hat.forEach(m => { m.visible = !hide; });
 }
 { const _rpG = render3D; render3D = function (dt) { if (R3 && R3.pl && S && S.eq) { const key = ['armor', 'helm', 'gloves', 'boots'].map(sl => { const it = S.eq[sl]; return it ? it.id + ':' + it.r : '-'; }).join('|'); if (R3.alKey !== key || R3.alPl !== R3.pl) { R3.alKey = key; R3.alPl = R3.pl; try { buildArmorLook(); } catch (e) { } } } _rpG(dt); }; }
 // ---------- feats & wiki ----------
