@@ -75,6 +75,7 @@ const twSub = (F, x, z, ry = 0, y = 0) => new T3.Matrix4().multiplyMatrices(F, t
 const twPt = (F, x, y, z) => new T3.Vector3(x, y, z).applyMatrix4(F);
 
 function buildTownV3() {
+  TWN.col = []; const COL = (x, z, r) => TWN.col.push({ x: x * TILE, y: z * TILE, r: r * TILE });
   const Lv = R3.lvl, { K, put, flush } = townKit();
   let sd = 1234567; const rr = () => { sd |= 0; sd = sd + 0x6D2B79F5 | 0; let t = Math.imul(sd ^ sd >>> 15, 1 | sd); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const pk = a => a[Math.floor(rr() * a.length)], sh = shade3, J = (a, b) => a + rr() * (b - a);
@@ -289,14 +290,14 @@ function buildTownV3() {
   };
   path(fx, fz - 4.55, fx, 7.0, 1.9); path(fx, fz + 4.55, fx, 25, 1.9); path(fx - 4.55, fz, 3.1, fz, 1.6); path(fx + 4.55, fz, 34.9, fz, 1.6);
   for (const [a, ry] of [[Math.PI * .25, Math.PI * 1.25], [Math.PI * .75, Math.PI * 1.75], [Math.PI * 1.25, Math.PI * .25], [Math.PI * 1.75, Math.PI * .75]]) {
-    const x = fx + Math.cos(a) * 3.35, z = fz + Math.sin(a) * 3.35; bench(x, z, -a - Math.PI / 2);
-    const px = fx + Math.cos(a + .42) * 3.5, pz = fz + Math.sin(a + .42) * 3.5;
+    const x = fx + Math.cos(a) * 3.35, z = fz + Math.sin(a) * 3.35; bench(x, z, -a - Math.PI / 2); COL(x + Math.cos(a + 1.5708) * .3, z + Math.sin(a + 1.5708) * .3, .32); COL(x - Math.cos(a + 1.5708) * .3, z - Math.sin(a + 1.5708) * .3, .32);
+    const px = fx + Math.cos(a + .42) * 3.5, pz = fz + Math.sin(a + .42) * 3.5; COL(px, pz, .36);
     put(K.oct, null, px, .17, pz, .32, .34, .32, '#8a8276'); put(K.cy, null, px, .36, pz, .27, .04, .27, '#3a2818');
     for (let i = 0; i < 6; i++) put(K.sph, null, px + J(-.18, .18), J(.4, .5), pz + J(-.18, .18), .07, .07, .07, i < 3 ? pk(GREENS) : pk(FLOW));
   }
   // ---------- the Ember fountain ----------
   {
-    const st = '#8e8474', st2 = '#a39888';
+    const st = '#8e8474', st2 = '#a39888'; COL(fx, fz, 1.9);
     put(K.oct, null, fx, .07, fz, 2.05, .14, 2.05, sh(st, .9)); put(K.oct, null, fx, .38, fz, 1.75, .48, 1.75, st);
     for (let k = 0; k < 8; k++) {
       const pa = Math.PI / 8 + k * Math.PI / 4, va = k * Math.PI / 4;
@@ -328,12 +329,12 @@ function buildTownV3() {
     });
   }
   // ---------- lamps, trees, greenery ----------
-  for (const [x, z, d] of [[13, 10, 1], [26, 10, -1], [13, 17.5, 1], [26, 17.5, -1], [19.5 + 1.3, 22, 1], [5.4, 11.9, 1], [33.6, 11.9, -1]]) lamp(x, z, d);
-  for (const [x, z, s] of [[4.3, 13.1, .85], [34.6, 13.1, .9], [16.1, 4.2, .9], [22.9, 4.2, .95], [4.3, 23.6, .85], [34.7, 23.6, .85], [4.5, 19.2, .95], [34.5, 19.2, .9]]) tree(x, z, s);
+  for (const [x, z, d] of [[13, 10, 1], [26, 10, -1], [13, 17.5, 1], [26, 17.5, -1], [19.5 + 1.3, 22, 1], [5.4, 11.9, 1], [33.6, 11.9, -1]]) { lamp(x, z, d); COL(x, z, .16); }
+  for (const [x, z, s] of [[4.3, 13.1, .85], [34.6, 13.1, .9], [16.1, 4.2, .9], [22.9, 4.2, .95], [4.3, 23.6, .85], [34.7, 23.6, .85], [4.5, 19.2, .95], [34.5, 19.2, .9]]) { tree(x, z, s); COL(x, z, .3 * s); }
   for (const [x, z] of [[5.6, 6.4], [33.3, 6.6], [10.4, 4.0], [28.6, 4.0], [5.4, 17.6], [33.6, 17.6], [11.3, 23.9], [27.7, 23.9], [3.8, 15.5], [35.1, 9.5], [3.8, 8.6]]) bush(null, x, z, J(.9, 1.2));
   for (let i = 0; i < 70; i++) { const x = J(3.3, 34.7), z = J(3.3, 24.8); if (Math.hypot(x - fx, z - fz) < 4.8 || (Math.abs(x - fx) < 1.2) || Math.abs(z - fz) < 1.1) continue; if (G.npcs.some(n => Math.abs(n.x * U - x) < 1.3 && Math.abs(n.y * U - z) < 1.1)) continue; tuft(x, z); }
   // a hand cart and woodpile for life around the edges
-  { const F = twFr(4.6, 10.0, .5); put(K.b, F, 0, .45, 0, .8, .08, 1.1, '#8a6438'); for (const s of [-1, 1]) put(K.b, F, s * .4, .58, 0, .04, .22, 1.1, '#7a5430'); put(K.b, F, 0, .58, .55, .8, .22, .04, '#7a5430'); for (const s of [-1, 1]) { put(K.mt, F, s * .45, .28, -.05, .27, .27, .27, '#5a3a22', Math.PI / 2, 0, 0); put(K.c, F, s * .45, .28, -.05, .04, .06, .04, '#3a2a1a', 0, 0, Math.PI / 2); } for (const s of [-1, 1]) put(K.c, F, s * .3, .4, -1.0, .03, 1.0, .03, '#7a5430', 0, Math.PI / 2 - .25); sack(F, -.15, .1, .9); sack(F, .2, -.2, .85, '#b8a070'); crate(F, .1, .25, .55, .3, .5); }
+  { COL(4.6, 10.0, .6); const F = twFr(4.6, 10.0, .5); put(K.b, F, 0, .45, 0, .8, .08, 1.1, '#8a6438'); for (const s of [-1, 1]) put(K.b, F, s * .4, .58, 0, .04, .22, 1.1, '#7a5430'); put(K.b, F, 0, .58, .55, .8, .22, .04, '#7a5430'); for (const s of [-1, 1]) { put(K.mt, F, s * .45, .28, -.05, .27, .27, .27, '#5a3a22', Math.PI / 2, 0, 0); put(K.c, F, s * .45, .28, -.05, .04, .06, .04, '#3a2a1a', 0, 0, Math.PI / 2); } for (const s of [-1, 1]) put(K.c, F, s * .3, .4, -1.0, .03, 1.0, .03, '#7a5430', 0, Math.PI / 2 - .25); sack(F, -.15, .1, .9); sack(F, .2, -.2, .85, '#b8a070'); crate(F, .1, .25, .55, .3, .5); }
 
   // ---------- stalls ----------
   const CREAM = '#efe3c4';
@@ -501,4 +502,14 @@ function buildTownV3() {
 function havenBuild() {
   for (const im of TWN.ims) { try { im.dispose(); } catch (e) {} } TWN.ims = [];
   buildTownV3();
+}
+
+// ---------- town prop collision: push the player out of the fountain, benches, planters, lamps and trees ----------
+{ const _uTC = update;
+  update = function (dt) {
+    _uTC(dt);
+    if (!P || !G.inTown || !TWN.col || !TWN.col.length) return;
+    for (const c of TWN.col) { const dx = P.x - c.x, dy = P.y - c.y, rr = c.r + P.r * .6, d = Math.hypot(dx, dy);
+      if (d < rr) { const k = d > .01 ? rr / d : 0; if (k) { P.x = c.x + dx * k; P.y = c.y + dy * k; } else P.y = c.y + rr; } }
+  };
 }

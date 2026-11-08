@@ -47,7 +47,7 @@ function init3D() {
   try {
     composer = new THREEX.EffectComposer(renderer);
     composer.addPass(new THREEX.RenderPass(scene, cam));
-    bloom = new THREEX.UnrealBloomPass(new T3.Vector2(VW, VH), .5, .4, .9); composer.addPass(bloom);
+    bloom = new THREEX.UnrealBloomPass(new T3.Vector2(VW, VH), .25, .3, .95); composer.addPass(bloom);
     composer.addPass(new THREEX.OutputPass());
   } catch (e) { composer = null; }
   R3 = {
@@ -1074,7 +1074,7 @@ function render3D(dt) {
   }
   if (r.exitM) { if (!G.exit) { r.fx.remove(r.exitM); r.exitM = null; } else r.exitM.userData.tick(); }
   drawFx3D();
-  if (r.composer && r.q !== 'low') { r.bloom.strength = .6 + (buff('surge') ? .25 : 0); r.composer.render(); } else r.renderer.render(r.scene, r.cam);
+  if (r.composer && r.q !== 'low') { r.bloom.strength = .25 + (buff('surge') ? .15 : 0); r.composer.render(); } else r.renderer.render(r.scene, r.cam);
 }
 function drawFx3D() {
   const r = R3, PL = r.pools;
