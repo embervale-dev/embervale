@@ -103,6 +103,9 @@ function myPing() {
   let w = null; for (const p of NET.players.values()) if (p.rtt != null && isNum(p.rtt)) w = Math.max(w ?? 0, p.rtt);
   return w;
 }
+function rowPing(ms) { if (ms == null || !isNum(ms)) return ''; const v = Math.round(ms); return `<i class="${v > 250 ? 'bad' : v > 120 ? 'mid' : ''}">${v < 1 ? '&lt;1' : v}ms</i>`; }
+// host: measured round trip to each guest • guest: the host's row is your own trip, other guests report theirs
+function peerPing(p) { if (NET.host) return p.rtt; return String(p.id || '').startsWith(PEER_PREFIX) ? NET.rtt : p.ms; }
 function pingText(ms) { if (ms == null || !isNum(ms)) return ''; const v = Math.round(ms); return 'Ping ' + (v < 1 ? '<1' : v) + ' ms'; }
 const PF = document.createElement('div'); PF.id = 'partyf'; document.body.appendChild(PF); let pfKey = '';
 { const _uhQ = updateHUD; updateHUD = function (dt) { _uhQ(dt); const on = (NET.status === 'host' || NET.status === 'guest') && S && G.mode !== 'title' && !G.hideHud;
@@ -110,7 +113,7 @@ const PF = document.createElement('div'); PF.id = 'partyf'; document.body.append
   PF.style.display = on ? '' : 'none'; if (!on) return; const area = netArea(), rows = [];
   const row = (name, lvl, hp, mhp, where, down, ms, me, col) => { const f = Math.max(0, Math.min(1, hp / (mhp || 1))); return `<div class="pfr${me ? ' me' : ''}${down ? ' dn' : ''}"><div class="pfn"><b style="color:${col}">${esc(name)}</b> <span>Lv ${lvl}</span>${ms}</div><div class="pfb"><div style="width:${(down ? 0 : f) * 100}%"></div></div><div class="pfw">${down ? 'DOWNED' : where}</div></div>`; };
   rows.push(row(netName() + ' (you)', S.lvl, P.down > 0 ? 0 : P.hp, ST.maxHp, area.startsWith('coop') ? 'party floor' : G.inTown ? 'Haven' : G.duel ? 'duel' : 'adventuring', P.down > 0, '', 1, (S.cos && S.cos.color) || CLS[S.cls].col));
-  for (const p of NET.players.values()) rows.push(row(p.name, p.lvl, p.hp, p.mhp, p.area === area && area !== 'solo' ? 'with you' : p.area === 'town' ? 'Haven' : p.area === 'duel' ? 'duel' : String(p.area).startsWith('coop') ? 'party floor' : 'adventuring', p.down, '', 0, p.col));
+  for (const p of NET.players.values()) rows.push(row(p.name, p.lvl, p.hp, p.mhp, p.area === area && area !== 'solo' ? 'with you' : p.area === 'town' ? 'Haven' : p.area === 'duel' ? 'duel' : String(p.area).startsWith('coop') ? 'party floor' : 'adventuring', p.down, rowPing(peerPing(p)), 0, p.col));
   const n = Math.min(3, partyHere()), h = `<div class="pfh">${ico('globe')} Room <b>${esc(NET.code)}</b> <span>${NET.players.size + 1}/${NET_MAX}</span></div>${rows.join('')}${n ? `<div class="pfbonus">Party bonus +${10 * n}% XP & gold</div>` : ''}<div class="pfk">Enter / chat • Alt+Click ping</div>`;
   if (h !== pfKey) { pfKey = h; PF.innerHTML = h; } }; }
 // ---------- 8. better chat ----------

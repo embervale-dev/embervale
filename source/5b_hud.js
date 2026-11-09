@@ -97,10 +97,11 @@ function updateHUD(dt) {
     for (const e of G.ens) { if (e.dead || e.prop) continue; const d = Math.hypot(e.x - W.x, e.y - W.y) - e.r; if (d < bd) { bd = d; t = e; } }
     if (t) {
       tg.style.display = 'block'; const b = S.best[t.type] || { k: 0 }, hb = hunterBonus(t.type);
-      setH(tg.children[0], 'tn', `${t.elite ? `<span style="color:${ELITES[t.elite]}">${eliteName(t)}</span> ` : ''}${t.d.n}`);
-      setS(tg.children[1].children[0], 'tb', 'width', (clamp(t.hp / t.maxHp, 0, 1) * 100).toFixed(1) + '%');
+      const rv = t.type === 'rplayer' && t.rmhp, thp = rv ? t.rhp : t.hp, tmx = rv ? t.rmhp : t.maxHp;
+      setH(tg.children[0], 'tn', rv ? esc(t.rname || 'Rival') : `${t.elite ? `<span style="color:${ELITES[t.elite]}">${eliteName(t)}</span> ` : ''}${t.d.n}`);
+      setS(tg.children[1].children[0], 'tb', 'width', (clamp(thp / tmx, 0, 1) * 100).toFixed(1) + '%');
       const st = [t.burn > 0 ? ico('fire') : '', t.psn > 0 ? ico('poison') : '', t.frz > 0 ? ico('snow') : '', t.shk > 0 ? ico('bolt') : '', t.stun > 0 ? ico('stun') : ''].join('');
-      setH(tg.children[2], 'ti', `${fmt(t.hp)} / ${fmt(t.maxHp)} ${st} <span class="dim">• slain ${b.k}${hb ? ` • +${hb * 100}% dmg` : ''}</span>`);
+      setH(tg.children[2], 'ti', rv ? `${fmt(thp)} / ${fmt(tmx)} ${st}` : `${fmt(t.hp)} / ${fmt(t.maxHp)} ${st} <span class="dim">• slain ${b.k}${hb ? ` • +${hb * 100}% dmg` : ''}</span>`);
     } else tg.style.display = 'none';
   } else tg.style.display = 'none';
   // vignettes
