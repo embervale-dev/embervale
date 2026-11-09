@@ -53,7 +53,8 @@ function kbTranslate() {
   const rows = KB_ACT.map(([id, n]) => `<span style="display:inline-block;margin:2px 8px 2px 0">${n} <span class="btn kbb ${G.rebind === id ? 'on' : ''}" onclick="kbStart('${id}')">${G.rebind === id ? 'press a key…' : kbName(kbKey(id))}</span></span>`).join('');
   return h.replace('<div class="btn bigb" onclick="backMenu()">Back</div>', `<div class="card">${ico('keyboard')} <b>Controls</b> <span class="dim">Click a button, then press the new key (Esc cancels). Movement (WASD / arrows) and menu keys can't be reassigned.</span><div>${rows}</div><span class="btn" onclick="kbReset()">Reset to defaults</span></div><div class="btn bigb" onclick="backMenu()">Back</div>`); }; }
 let kbShown = '';
-function kbHudLabels() { const sig = ['s0', 's1', 's2', 's3'].map(kbKey).join('|'); if (sig === kbShown) return; kbShown = sig; for (let i = 0; i < 4; i++) { const el = document.querySelector(`#sl${i} .key`); if (el) el.textContent = kbName(kbKey('s' + i)); } }
+function kbHudLabels() { const sig = ['s0', 's1', 's2', 's3', 'pot', 'surge', 'swap'].map(kbKey).join('|'); if (sig === kbShown && document.querySelector('#slp .key')?.dataset.kb === sig) return; kbShown = sig; for (let i = 0; i < 4; i++) { const el = document.querySelector(`#sl${i} .key`); if (el) el.textContent = kbName(kbKey('s' + i)); }
+  const set = (id, t) => { const el = document.querySelector(`#${id} .key`); if (el) { el.textContent = t; el.dataset.kb = sig; } }; set('slv', kbName(kbKey('surge'))); set('slw', kbKey('swap') === 'x' ? 'Tab' : kbName(kbKey('swap'))); set('slp', kbName(kbKey('pot'))); }
 
 // ---------- Haven requests (villager side quests) ----------
 function sqState() { if (!S.sq) S.sq = { act: {}, done: {}, items: {} }; return S.sq; }

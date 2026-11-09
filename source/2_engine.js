@@ -31,14 +31,21 @@ addEventListener('resize', resize);
 // ---------- input ----------
 const keys = {}, mouse = { x: 0, y: 0, down: false };
 let pressed = {};
+// physical key → stable name: Shift+1 is still "1", Option/AltGr+Q is still "q", so held modifiers never shift your keys
+const KEY_DOWN_AS = {};
+function normKey(e) { const c = e.code || '', k = (e.key || '').toLowerCase(); let m;
+  if ((m = /^Digit(\d)$/.exec(c)) || (m = /^Numpad(\d)$/.exec(c))) return m[1];
+  if (/^[a-z]$/.test(k) || k.length > 1) return k === 'dead' && (m = /^Key([A-Z])$/.exec(c)) ? m[1].toLowerCase() : k;
+  if ((m = /^Key([A-Z])$/.exec(c))) return m[1].toLowerCase();
+  return k; }
 addEventListener('keydown', e => {
-  const k = e.key.toLowerCase();
+  const k = normKey(e); if (e.code) KEY_DOWN_AS[e.code] = k;
   if (!keys[k]) pressed[k] = true;
   keys[k] = true;
   if (k === 'tab' || k === ' ' || k.startsWith('arrow')) e.preventDefault();
   if (!e.repeat) onKey(k, e);
 });
-addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+addEventListener('keyup', e => { keys[normKey(e)] = false; keys[(e.key || '').toLowerCase()] = false; if (e.code && KEY_DOWN_AS[e.code]) { keys[KEY_DOWN_AS[e.code]] = false; delete KEY_DOWN_AS[e.code]; } });
 addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 let camZoom = 1;
 addEventListener('wheel', e => { if (G && G.menu) return; camZoom = clamp(camZoom * (e.deltaY > 0 ? 1.08 : .926), .65, 1.5); }, { passive: true });

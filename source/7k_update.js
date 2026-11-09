@@ -1,6 +1,6 @@
 // ================= UPDATE: fair Arena, brutal Abyss (both tuned to YOUR strength), decluttered bigger menus, camera zoom, feat tracker, bounty upgrade =================
 // ---------- your real strength (used to tune the Arena and the Abyss) ----------
-function myDps() { if (!ST || !ST.wt) return 1; const w = WT[ST.wt] || WT.sword; return Math.max(1, pdmg() * (1 + Math.min(60, ST.critC) / 100 * ST.critD / 100) * atkRate() / w.cd); }
+function myDps() { if (!ST || !ST.wt) return 1; const w = WT[ST.wt] || WT.sword; const multi = w.k === 'fan' ? Math.max(1, (w.cnt || 1) * .85) : w.k === 'boom' ? 2.2 : 1; return Math.max(1, pdmg() * multi * (1 + Math.min(60, ST.critC) / 100 * ST.critD / 100) * atkRate() / w.cd); }
 function myLife() { return Math.max(1, (ST && ST.maxHp) || 100); }
 // ---------- ENDLESS ARENA: never out-scales you — each foe is capped by your own damage and life ----------
 // wave 1: a foe dies in about half a second and hits for ~3% of your life; each wave adds a little.
