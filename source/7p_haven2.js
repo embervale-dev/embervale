@@ -24,7 +24,9 @@ function hv2Leave() { G.teahouse = false; goTown(); placePlayer(32, 16); const g
 // ---------- 3D: town props (teahouse front, doorkeeper, cabbage cart) and the interior ----------
 { const _btH = buildTown; buildTown = function () {
   if (G.teahouse) { hv2Interior(); return; }
-  const keep = G.npcs; G.npcs = keep.filter(n => !n.hv2); try { _btH(); } finally { G.npcs = keep; }
+  // hide our own NPCs while Haven builds, then add them back to whatever list the build ends with
+  // (other files register stall keepers into G.npcs during the build, so the old list must not be restored)
+  const mine = G.npcs.filter(n => n.hv2); G.npcs = G.npcs.filter(n => !n.hv2); try { _btH(); } finally { G.npcs = G.npcs.filter(n => !n.hv2).concat(mine); }
   try { hv2TownProps(); } catch (e) { console.warn('haven props', e); }
 }; }
 function hv2Fig(o, x, z, face) { const h = makeHumanoid(o); h.g.position.set(x, 0, z); h.g.rotation.y = face; R3.lvl.add(h.g); const t0 = x * 3.7;
