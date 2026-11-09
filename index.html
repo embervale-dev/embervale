@@ -16644,7 +16644,8 @@ function m3_pvBuild() {
 function m3_pvLoop() {
   const P3 = m3_pv; P3.raf = 0; if (!['inv', 'wardrobe'].includes(G.menu) || !P3.cv || !P3.cv.isConnected) return;
   const w = P3.cv.clientWidth, hh = P3.cv.clientHeight; if (w && hh) {
-    const d = Math.min(2, devicePixelRatio || 1); if (P3.cv.width !== Math.round(w * d) || P3.cv.height !== Math.round(hh * d)) { P3.r.setPixelRatio(d); P3.r.setSize(w, hh, false); P3.cam.aspect = w / hh; P3.cam.updateProjectionMatrix(); }
+    const now = performance.now(); if (now - (P3.lastR || 0) < 33 && !P3.drag) { P3.raf = requestAnimationFrame(m3_pvLoop); return; } P3.lastR = now;   // ~30 fps is plenty for a turntable
+    const d = Math.min(1.5, devicePixelRatio || 1); if (P3.cv.width !== Math.round(w * d) || P3.cv.height !== Math.round(hh * d)) { P3.r.setPixelRatio(d); P3.r.setSize(w, hh, false); P3.cam.aspect = w / hh; P3.cam.updateProjectionMatrix(); }
     const t = performance.now() / 1000; if (!P3.drag) P3.yaw *= .96;   // drifts back to facing you after a drag
     P3.h.g.rotation.y = -Math.PI / 2 + .35 * Math.sin(t * .5) + P3.yaw;   // models face +X; this turns them toward the camera
     if (typeof applyPose === 'function' && P3.h.hips) { const q = blankPose(); q.rootY = Math.sin(t * 2) * .006; q.headYaw = Math.sin(t * .7) * .15; applyPose(P3.h, q); }
@@ -16889,6 +16890,11 @@ html body#px #panel.ui3fix{height:var(--ui3h,80vh)!important;max-height:none!imp
 `; document.head.appendChild(st); }
 // popups whose content has a fixed max-width (boss choice, death screen, ...) keep that content centred
 { const st = document.createElement('style'); st.id = 'm3-center'; st.textContent = `html body#px #panel:is(.ui3s,.ui3m,.ui3f) > :is(div,section)[style*="width"]{margin-left:auto!important;margin-right:auto!important}`; document.head.appendChild(st); }
+
+// ---------- performance: while a big menu window covers the screen, the world behind it redraws at ~15 fps ----------
+{ const _r3M = render3D, _doM = drawOverlay; let last = 0, skip = false;
+  render3D = function (dt) { skip = false; if (G.menu && panel.classList.contains('ui3f') && G.menu !== 'map') { const now = performance.now(); if (now - last < 66) { skip = true; return; } last = now; } return _r3M(dt); };
+  drawOverlay = function () { if (skip) return; return _doM.apply(this, arguments); }; }
 // ================= MAIN LOOP =================
 let lastT = performance.now(), errShown = false;
 function frame(now) {
