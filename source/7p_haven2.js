@@ -80,33 +80,83 @@ function hv2TownProps() {
   R3.anim.push(() => { const b = HV2.broken > G.t; cab.visible = !b; g.rotation.z = b ? .18 : 0; });
 }
 function hv2Interior() {
-  const L = R3.lvl, wood = mat('#6a4428'), dark = mat('#3a2416'), floor = mat('#7a5232', { rough: .8 });
-  mk(GEO.box, floor, 12, .02, 9, 19, .011, 13.5, L, false);
-  // tea bar along the top wall, shelves of tins behind it
-  mk(GEO.box, wood, 4.2, .9, .6, 21.5, .45, 9.9, L); mk(GEO.box, mat('#8a5c34'), 4.3, .06, .7, 21.5, .92, 9.9, L);
-  for (let i = 0; i < 10; i++) mk(GEO.cyl, mat(['#3a6a5a', '#8a3a2a', '#c8a050'][i % 3], { metal: .4, rough: .4 }), .09, .2, .09, 19.8 + i * .38, 1.1, 9.35, L);
-  mk(GEO.cyl, mat('#4a4a50', { metal: .8, rough: .3 }), .16, .22, .16, 20.6, 1.06, 10, L); mk(GEO.sph, mat('#e8e0d0'), .05, .04, .05, 21.2, 1.0, 10.05, L);
-  // the tile table: low table, board top with the classic quartered pattern, cushions
-  mk(GEO.cyl, dark, .9, .4, .9, 17.5, .2, 12.5, L);
+  const L = R3.lvl, A = (o, ...r) => { const m = mk(...r); return m; };
+  const oak = mat('#7a5232', { rough: .8 }), oak2 = mat('#6a4628', { rough: .8 }), dark = mat('#3a2416', { rough: .8 }), lac = mat('#5a1a14', { rough: .45 }),
+    paper = mat('#efe4c8', { rough: .95, em: .18, emc: '#ffcf8a' }), tat = mat('#b8a46a', { rough: .95 }), stone = mat('#7a7468', { rough: .9 }),
+    brass = mat('#b08a3a', { metal: .8, rough: .35 }), iron = mat('#2e2c30', { metal: .7, rough: .5 }), clay = mat('#8a4a2a', { rough: .6 }), cel = mat('#9ab8a0', { rough: .3 }),
+    cream = mat('#e8dcc0', { rough: .5 }), green = mat('#3f6a3a', { rough: .7 }), bamboo = mat('#9aa85a', { rough: .6 }), cush = mat('#7a2a30', { rough: .95 }), cush2 = mat('#3a4a6a', { rough: .95 });
+  const X0 = 13, X1 = 25, Z0 = 9, Z1 = 18;
+  // floor: planks with a little colour variation, tatami mats under the tables, a runner from the door
+  const planks = []; for (let z = Z0; z < Z1; z += .3) { const h = hash(z * 10 | 0, 7); planks.push({ x: (X0 + X1) / 2, y: .012, z: z + .15, sx: X1 - X0, sy: .02, sz: .285, c: ['#7a5232', '#73502f', '#80583a', '#6e4a2c'][h & 3] }); }
+  addInst(planks, GEO.box, new T3.MeshStandardMaterial({ color: '#ffffff', roughness: .85 }), false).userData.ownMat = true;
+  for (const [tx, tz] of [[17.5, 12.5], [15.2, 15.3], [22.2, 15.0]]) { mk(GEO.box, tat, 2.0, .02, 1.6, tx, .03, tz, L, false); for (const s of [-1, 1]) mk(GEO.box, mat('#3a3020'), 2.0, .022, .04, tx, .031, tz + s * .78, L, false); }
+  mk(GEO.box, mat('#6a2a24', { rough: .95 }), 1.0, .025, 4.2, 18.5, .035, 15.9, L, false); for (const s of [-1, 1]) mk(GEO.box, mat('#c8a050', { rough: .9 }), .06, .027, 4.2, 18.5 + s * .44, .036, 15.9, L, false);
+  // walls: wooden posts, a dark wainscot, and glowing paper screens with a lattice (back and sides)
+  const wall = (x0, z0, x1, z1) => { const len = Math.hypot(x1 - x0, z1 - z0), ang = Math.atan2(z1 - z0, x1 - x0), n = Math.max(1, Math.round(len / 1.5)), g = new T3.Group(); g.position.set(x0, 0, z0); g.rotation.y = -ang; L.add(g);
+    mk(GEO.box, dark, len, .55, .06, len / 2, .275, 0, g); mk(GEO.box, oak2, len, .06, .1, len / 2, .58, 0, g); mk(GEO.box, oak2, len, .1, .12, len / 2, 2.05, 0, g);
+    for (let i = 0; i <= n; i++) mk(GEO.box, oak, .12, 2.1, .12, i * len / n, 1.05, 0, g);
+    for (let i = 0; i < n; i++) { const cx = (i + .5) * len / n, w = len / n - .14; mk(GEO.box, paper, w, 1.38, .02, cx, 1.31, .01, g, false);
+      for (let k = 1; k < 4; k++) mk(GEO.box, oak2, .025, 1.38, .035, cx - w / 2 + k * w / 4, 1.31, .02, g, false);
+      for (let k = 1; k < 4; k++) mk(GEO.box, oak2, w, .025, .035, cx, .62 + k * 1.38 / 4, .02, g, false); } return g; };
+  wall(X0 + .05, Z0 + .05, X1 - .05, Z0 + .05); wall(X0 + .05, Z1 - .05, X0 + .05, Z0 + .05); wall(X1 - .05, Z0 + .05, X1 - .05, Z1 - .05);
+  // the tea bar along the back wall: lacquered counter, shelves of tins and pots, a brazier with a steaming kettle
+  mk(GEO.box, lac, 4.6, .82, .55, 21.9, .41, 10.05, L); mk(GEO.box, oak, 4.75, .07, .66, 21.9, .85, 10.05, L); mk(GEO.box, brass, 4.6, .03, .02, 21.9, .7, 10.33, L, false);
+  for (const sy of [1.25, 1.75]) { mk(GEO.box, oak, 4.2, .05, .28, 21.9, sy, 9.25, L); for (let i = 0; i < 9; i++) { const k = (i * 7 + (sy > 1.5 ? 3 : 0)) % 5;
+    if (k < 3) mk(GEO.cyl, mat(['#3a6a5a', '#8a3a2a', '#c8a050'][k], { metal: .3, rough: .4 }), .075, .2, .075, 20.1 + i * .45, sy + .125, 9.25, L); else { mk(GEO.sph, k === 3 ? clay : cel, .1, .085, .1, 20.1 + i * .45, sy + .1, 9.25, L); mk(GEO.cyl, k === 3 ? clay : cel, .03, .05, .03, 20.1 + i * .45, sy + .2, 9.25, L); } } }
+  mk(GEO.cyl, iron, .2, .18, .2, 23.6, .97, 10.05, L); const coal = mk(GEO.cyl, mat('#ff6a20', { em: 2.4 }), .16, .02, .16, 23.6, 1.07, 10.05, L, false); R3.flames.push(coal);
+  mk(GEO.sph, iron, .16, .13, .16, 23.6, 1.2, 10.05, L); mk(GEO.cyl, iron, .03, .14, .03, 23.78, 1.24, 10.05, L).rotation.z = -.9; mk(GEO.tor, iron, .09, .09, .09, 23.6, 1.36, 10.05, L, false);
+  for (let i = 0; i < 4; i++) { mk(GEO.cyl, cream, .05, .06, .04, 20.4 + i * .3, .91, 10.2, L); } mk(GEO.sph, cel, .11, .09, .11, 21.8, .95, 10.15, L); mk(GEO.cyl, cel, .03, .06, .03, 21.8, 1.05, 10.15, L);
+  R3.torches.push({ x: 23.6, y: 1.3, z: 10.4, col: '#ff8a3a' });
+  // the tile table: low lacquered table, the board on top, cushions, a bowl of tiles and two cups
+  mk(GEO.cyl, lac, .92, .08, .92, 17.5, .4, 12.5, L); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; mk(GEO.box, dark, .08, .36, .08, 17.5 + Math.cos(a) * .6, .18, 12.5 + Math.sin(a) * .6, L); }
   const bt = document.createElement('canvas'); bt.width = bt.height = 256; const x = bt.getContext('2d');
   x.fillStyle = '#b48a5c'; x.beginPath(); x.arc(128, 128, 126, 0, 6.3); x.fill();
-  for (let q = 0; q < 4; q++) { x.save(); x.translate(128, 128); x.rotate(q * Math.PI / 2); x.fillStyle = 'rgba(140,50,36,.18)'; x.beginPath(); x.moveTo(0, 0); x.lineTo(118, -118 * .42); x.lineTo(118 * .42, -118); x.closePath(); x.fill(); x.restore(); }
-  x.strokeStyle = 'rgba(40,20,10,.5)'; x.lineWidth = 1; for (let i = 1; i < 9; i++) { x.beginPath(); x.moveTo(i * 28.4, 0); x.lineTo(i * 28.4, 256); x.stroke(); x.beginPath(); x.moveTo(0, i * 28.4); x.lineTo(256, i * 28.4); x.stroke(); }
-  const tex = new T3.CanvasTexture(bt); tex.colorSpace = T3.SRGBColorSpace; const bm = new T3.MeshStandardMaterial({ map: tex, roughness: .6 });
-  const top = mk(GEO.circ, bm, .82, 1, .82, 17.5, .415, 12.5, L, false); top.userData.ownMat = true;
-  for (const [cx, cz] of [[16.3, 12.5], [18.7, 12.5]]) mk(GEO.cyl, mat('#8a2a3a', { rough: .9 }), .34, .1, .34, cx, .05, cz, L);
-  // lanterns, plants, the door out
-  for (const [lx, lz] of [[14.2, 10], [23.8, 14], [14.2, 16.5], [23.8, 16.5]]) hv2Lantern(lx, 1.7, lz, '#ffb060');
-  for (const [px, pz] of [[13.8, 13.5], [24.2, 11.5]]) { mk(GEO.cyl, mat('#6a3a2a'), .25, .4, .25, px, .2, pz, L); mk(GEO.ico, mat('#3a7a3a', { flat: true }), .45, .55, .45, px, .8, pz, L); }
-  mk(GEO.box, mat('#1a0f08'), 1.2, 1.5, .1, 18.5, .75, 17.95, L, false);
-  for (const s of [-1, 1]) mk(GEO.box, mat('#9a2a20'), .14, 1.7, .14, 18.5 + s * .65, .85, 17.9, L);
-  hv2Fig({ body: '#c8742a', hatType: 'hair', hair: '#d8d4cc', skin: '#e0b48a', cape: '#5a3a1a' }, 22.5, 10.8, Math.PI / 2);
-  R3.sun.intensity = .35; R3.hemi.intensity = .55; R3.scene.fog = new T3.Fog('#120c08', 12, 30); R3.scene.background = new T3.Color('#120c08');
+  for (let q = 0; q < 4; q++) { x.save(); x.translate(128, 128); x.rotate(q * Math.PI / 2); x.fillStyle = 'rgba(140,50,36,.2)'; x.beginPath(); x.moveTo(0, 0); x.lineTo(118, -118 * .42); x.lineTo(118 * .42, -118); x.closePath(); x.fill(); x.restore(); }
+  x.save(); x.beginPath(); x.arc(128, 128, 118, 0, 6.3); x.clip(); x.strokeStyle = 'rgba(50,30,16,.5)'; x.lineWidth = 1.2; for (let i = 1; i < 9; i++) { x.beginPath(); x.moveTo(i * 28.4, 0); x.lineTo(i * 28.4, 256); x.stroke(); x.beginPath(); x.moveTo(0, i * 28.4); x.lineTo(256, i * 28.4); x.stroke(); } x.restore();
+  x.strokeStyle = '#3a2416'; x.lineWidth = 6; x.beginPath(); x.arc(128, 128, 123, 0, 6.3); x.stroke();
+  const tex = new T3.CanvasTexture(bt); tex.colorSpace = T3.SRGBColorSpace; const bm = new T3.MeshStandardMaterial({ map: tex, roughness: .6 }); bm.userData = {};
+  const top = mk(GEO.circ, bm, .8, 1, .8, 17.5, .445, 12.5, L, false); top.userData.ownMat = true;
+  for (const [cx, cz, cm] of [[16.25, 12.5, cush], [18.75, 12.5, cush2]]) { mk(GEO.box, cm, .62, .1, .62, cx, .06, cz, L); mk(GEO.box, cm, .58, .03, .58, cx, .12, cz, L); }
+  mk(GEO.cyl, oak2, .14, .06, .14, 18.15, .47, 12.0, L); for (let i = 0; i < 4; i++) mk(GEO.cyl, i % 2 ? mat('#d9c29a') : mat('#5a3c26'), .035, .012, .035, 18.12 + (i % 2) * .05, .51 + i * .01, 11.98 + (i > 1 ? .04 : 0), L, false);
+  for (const s of [-1, 1]) mk(GEO.cyl, cream, .04, .05, .04, 17.5 + s * .62, .47, 12.95, L);
+  // guest tables with tea sets
+  for (const [tx, tz] of [[15.2, 15.3], [22.2, 15.0]]) { mk(GEO.box, oak, 1.1, .06, .7, tx, .35, tz, L); for (const [lx, lz] of [[-.48, -.28], [.48, -.28], [-.48, .28], [.48, .28]]) mk(GEO.box, dark, .06, .32, .06, tx + lx, .16, tz + lz, L);
+    mk(GEO.sph, clay, .12, .1, .12, tx, .48, tz, L); mk(GEO.cyl, clay, .025, .08, .025, tx + .13, .5, tz, L).rotation.z = -1; mk(GEO.cyl, clay, .04, .03, .04, tx, .58, tz, L);
+    for (const s of [-1, 1]) { mk(GEO.cyl, cream, .04, .05, .04, tx + s * .3, .41, tz + .12, L); mk(GEO.box, s > 0 ? cush : cush2, .55, .1, .55, tx + s * .2, .06, tz + .72 * (s > 0 ? 1 : -1) * .0 + (s > 0 ? .75 : -.75), L); } }
+  // corner pieces: a small shrine with incense, a water basin, bamboo, a bonsai, a folding screen
+  mk(GEO.box, lac, .8, .5, .45, 14.0, .25, 9.6, L); mk(GEO.box, oak, .85, .04, .5, 14.0, .52, 9.6, L); mk(GEO.cyl, brass, .1, .1, .1, 14.0, .6, 9.6, L);
+  const inc = mk(GEO.cylL, mat('#ff8a3a', { em: 2 }), .006, .2, .006, 14.0, .74, 9.6, L, false);
+  mk(GEO.box, mat('#efe4c8', { rough: .95 }), .5, .7, .02, 14.0, 1.3, 9.12, L, false); mk(GEO.box, dark, .56, .04, .04, 14.0, 1.66, 9.13, L, false); mk(GEO.box, mat('#2a1a10'), .02, .5, .025, 14.0, 1.3, 9.135, L, false);
+  mk(GEO.cyl, stone, .48, .18, .48, 14.3, .09, 12.2, L); const water = mk(GEO.circ, mat('#1f3a40', { rough: .1, metal: .3 }), .4, 1, .4, 14.3, .185, 12.2, L, false);
+  for (let i = 0; i < 6; i++) { const a = i * 1.05; mk(GEO.dod, stone, .07, .05, .07, 14.3 + Math.cos(a) * .55, .04, 12.2 + Math.sin(a) * .55, L); }
+  mk(GEO.box, bamboo, .05, .3, .05, 14.75, .28, 12.0, L).rotation.z = -.9;
+  for (const [px, pz] of [[13.55, 16.9], [24.45, 12.0]]) { mk(GEO.cyl, mat('#2e3a44', { rough: .5 }), .2, .36, .2, px, .18, pz, L); for (let i = 0; i < 5; i++) { const h = 1.3 + i * .18; mk(GEO.cylL, bamboo, .022, h, .022, px + (i % 3 - 1) * .07, .36 + h / 2, pz + ((i >> 1) % 2 - .5) * .08, L); mk(GEO.coneL, green, .09, .3, .03, px + (i % 3 - 1) * .07 + .08, .36 + h - .1, pz, L).rotation.z = -1; } }
+  mk(GEO.box, oak, .5, .45, .5, 24.3, .22, 16.6, L); mk(GEO.cyl, mat('#6a3a2a'), .2, .1, .2, 24.3, .5, 16.6, L); mk(GEO.cylL, dark, .03, .3, .03, 24.3, .7, 16.6, L).rotation.z = .4;
+  for (const [bx, by, bs] of [[24.18, .86, .2], [24.42, .78, .15], [24.3, .95, .14]]) mk(GEO.ico, mat('#3f6a3a', { flat: true }), bs, bs * .55, bs, bx, by, 16.6, L);
+  for (let i = 0; i < 4; i++) { const p = mk(GEO.box, i % 2 ? paper : mat('#e8dcc0', { rough: .95 }), .55, 1.2, .03, 13.5, .65, 13.9 + i * .52, L); p.rotation.y = Math.PI / 2 + (i % 2 ? .35 : -.35); }
+  // the door out: frame and a split curtain
+  for (const s of [-1, 1]) mk(GEO.box, oak, .14, 1.9, .14, 18.5 + s * .62, .95, 17.9, L); mk(GEO.box, oak, 1.44, .14, .16, 18.5, 1.88, 17.9, L);
+  for (const s of [-1, 1]) mk(GEO.box, mat('#3a4a6a', { rough: .95 }), .56, .5, .02, 18.5 + s * .3, 1.55, 17.85, L, false);
+  // paper lanterns overhead (warm light) and the tea master behind the bar
+  for (const [lx, lz] of [[15.5, 11.2], [19.8, 13.2], [15.4, 15.6], [22.4, 15.2], [17.5, 10.6]]) { mk(GEO.cylL, dark, .01, .3, .01, lx, 2.35, lz, L, false); const lp = mk(GEO.sph, mat('#f0c890', { em: 1.5, emc: '#ff9a40' }), .17, .21, .17, lx, 2.05, lz, L, false); R3.flames.push(lp);
+    for (const y of [1.85, 2.25]) mk(GEO.cyl, dark, .12, .02, .12, lx, y, lz, L, false); R3.torches.push({ x: lx, y: 1.9, z: lz, col: '#ffb060' }); }
+  hv2Fig({ body: '#c8742a', hatType: 'hair', hair: '#d8d4cc', skin: '#e0b48a', cape: '#5a3a1a' }, 21.9, 9.55, -Math.PI / 2);
+  // steam from the kettle and incense smoke
+  R3.anim.push(() => { if (G.parts.length > 900) return; if (Math.random() < .25) G.parts.push({ x: 23.6 * TILE + rnd(-3, 3), y: 10.05 * TILE, z: 1.4, vx: rnd(-4, 4), vy: rnd(-4, 4), vz: rnd(.35, .6), g: 0, life: 1.6, max: 1.6, col: '#e8e4dc', size: 5 });
+    if (Math.random() < .12) G.parts.push({ x: 14 * TILE, y: 9.6 * TILE, z: .85, vx: rnd(-2, 2), vy: rnd(-2, 2), vz: rnd(.25, .4), g: 0, life: 2.2, max: 2.2, col: '#bfb4a8', size: 3.5 }); });
+  R3.sun.intensity = .3; R3.hemi.intensity = .5; R3.scene.fog = new T3.Fog('#140c08', 14, 34); R3.scene.background = new T3.Color('#140c08');
 }
 
+// furniture in the teahouse blocks you (circles and boxes, in tiles); the tile table and the bar stay reachable
+const HV2_COL = { c: [[17.5, 12.5, .7], [15.2, 15.3, .62], [22.2, 15.0, .62], [14.3, 12.2, .55], [24.3, 16.6, .35], [13.55, 16.9, .28], [24.45, 12.0, .28]], b: [[19.55, 9, 24.25, 10.4], [13, 9, 14.45, 9.85], [13, 13.55, 13.75, 15.75]] };
+function hv2Push() { const r = P.r * .6 / TILE; let px = P.x / TILE, py = P.y / TILE;
+  for (const [cx, cy, cr] of HV2_COL.c) { const dx = px - cx, dy = py - cy, d = Math.hypot(dx, dy), rr = cr + r; if (d < rr && d > .001) { px = cx + dx / d * rr; py = cy + dy / d * rr; } }
+  for (const [x0, y0, x1, y1] of HV2_COL.b) { if (px > x0 - r && px < x1 + r && py > y0 - r && py < y1 + r) { const o = [[px - (x0 - r), 0], [(x1 + r) - px, 1], [py - (y0 - r), 2], [(y1 + r) - py, 3]].sort((a, b) => a[0] - b[0])[0];
+    if (o[1] === 0) px = x0 - r; else if (o[1] === 1) px = x1 + r; else if (o[1] === 2) py = y0 - r; else py = y1 + r; } }
+  P.x = px * TILE; P.y = py * TILE; }
 // ---------- cart: walls you off, a dodge roll smashes it ----------
 { const _uH = update; update = function (dt) { _uH(dt); if (!P || !S || !G.inTown) return;
-  if (G.teahouse) { if (P.y > 17.55 * TILE && Math.abs(P.x - 18.5 * TILE) < TILE) hv2Leave(); return; }
+  if (G.teahouse) { hv2Push(); if (P.y > 17.55 * TILE && Math.abs(P.x - 18.5 * TILE) < TILE) hv2Leave(); return; }
   const c = HV2.cart, cx = c.x * TILE, cy = c.y * TILE, d = Math.hypot(P.x - cx, P.y - cy), rr = c.r * TILE + P.r * .6;
   if (d >= rr || HV2.broken > G.t) return;
   if (P.dodgeT > 0) { HV2.broken = G.t + 12; const s = hv2S(); s.cab++; saveGame();
