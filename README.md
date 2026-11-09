@@ -29,4 +29,6 @@ Icons are built from [game-icons.net](https://game-icons.net) silhouettes by Lor
 
 Music is from [OpenGameArt.org](https://opengameart.org) by Matthew Pablo, The Cynic Project (cynicmusic), Hitctrl, RandomMind, Alexandr Zhelanov, CleytonKauffman, Patrick Maney, BossLevelVGM, Tausdei and Mega Pixel Music Lab, under CC0 and CC-BY 3.0/4.0. The full per-track list with links is in [`assets/music/CREDITS.md`](assets/music/CREDITS.md). The game streams them from `assets/music/`, so keep that folder next to `index.html`.
 
+Fonts: [Cinzel](https://github.com/NDISCOVER/Cinzel) by Natanael Gama and [Alegreya Sans](https://github.com/huertatipografica/Alegreya-Sans) by Huerta Tipográfica, both under the [SIL Open Font License 1.1](https://openfontlicense.org) (license texts in `assets/fonts/`). The game loads them from `assets/fonts/`; the offline build embeds them.
+
 Made by GrimL0ck & neonxsl.

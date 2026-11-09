@@ -1,4 +1,4 @@
-// ================= NO-SCROLL LAYOUT: every menu fits the screen (section tabs → pagination → gentle fit) =================
+// ================= MENU FIT: fixed-size frame, scrolling body; long sectioned menus get section tabs =================
 const FIT = { sec: {}, page: {} };
 const FIT_DEF = { portal: 'last' };
 const FIT_NOPAGE = ['settings', 'log', 'map', 'inv', 'skills', 'paragon', 'craft', 'pause', 'stash', 'shop'];
@@ -42,18 +42,15 @@ function fitPaginate(key) {
   return true;
 }
 function fitMenu() {
-  panel.classList.toggle('setp', G.menu === 'settings');
-  if (!G.menu || FIT_SKIP.includes(G.menu)) { panel.style.zoom = ''; return; }
-  panel.style.removeProperty('--fitz'); const inner = panel; inner.classList.remove('fitz');
+  // The menu frame now has one fixed size (see ui3_size in 6_ui.js) and its body scrolls, so nothing here may zoom,
+  // paginate or resize the panel. Only very long menus with several <h3> sections get section tabs.
+  panel.classList.toggle('setp', G.menu === 'settings'); panel.classList.remove('fitz'); panel.style.removeProperty('--fitz');
+  if (!G.menu || FIT_SKIP.includes(G.menu) || !panel.classList.contains('ui3f')) return;
   const key = G.menu + (G.menu === 'wiki' ? ':' + (WIKI_Q ? 'q' : WIKI_TAB) : '');
-  if (!fitOver()) return;
-  if (!['stash', 'shop', 'jewel', 'wander', 'craft'].includes(G.menu)) fitSections(key);
-  if (!FIT_NOPAGE.includes(G.menu)) for (let pass = 0; pass < 2 && fitOver(); pass++) if (!fitPaginate(key + ':' + pass)) break;
-  if (fitOver()) { // gentle final fit: shrink a little (never below 82%)
-    const minZ = innerHeight < 760 ? .66 : innerHeight < 900 ? .74 : .82; const r = Math.max(minZ, Math.min(panel.clientHeight / panel.scrollHeight, panel.clientWidth / panel.scrollWidth) - .01); panel.classList.add('fitz'); let z = r; panel.style.setProperty('--fitz', z.toFixed(3)); for (let i = 0; i < 6 && fitOver() && z > minZ - .08; i++) { z -= .025; panel.style.setProperty('--fitz', z.toFixed(3)); } }
+  if (!fitOver() || ['stash', 'shop', 'jewel', 'wander', 'craft'].includes(G.menu)) return;
+  fitSections(key);
 }
 { const _rmF = renderMenu; renderMenu = function () { _rmF(); try { fitMenu(); } catch (e) { console.warn('fit', e); } }; }
-{ const _wrF = wikiRender; wikiRender = function () { _wrF(); try { if (G.menu === 'wiki' && !FIT.inWiki) { FIT.inWiki = 1; fitPaginate('wiki:' + (WIKI_Q ? 'q' : WIKI_TAB)); FIT.inWiki = 0; } } catch (e) { FIT.inWiki = 0; } }; }
 { const _omF = openMenu; openMenu = function (n) { if (n !== G.menu) FIT.page = {}; _omF(n); }; }
 { const _smF = MENUS.smith; MENUS.smith = () => { const h = _smF(); const i = h.indexOf('<div class="smrow"'); return i < 0 ? h : h.slice(0, i) + '<h3>' + ico('anvil') + ' Upgrade & Reforge</h3>' + h.slice(i); }; }
 { const _stF = MENUS.settings; MENUS.settings = () => { const h = _stF(); const a = h.indexOf('<div class="card"'), backTag = '<div class="btn bigb" onclick="backMenu()">Back</div>', b = h.lastIndexOf(backTag); if (a < 0 || b < a) return h; return h.slice(0, a) + '<div class="setgrid">' + h.slice(a, b) + '</div>' + h.slice(b); }; }

@@ -376,8 +376,8 @@
     const rc = RAR[r].c;
     if (r >= 2) { mk(GEO.oct, mat(rc, { em: 1.6 + r * .3, flat: true }), .03, .04, .03, gp[0], gp[1], gp[2], g, false); }
     if (r >= 3) g.traverse(o => { if (o.isMesh && o.material && o.material.metalness > .5 && o.material.emissive && o.material.emissive.getHex() === 0 && o.material.color.getHSL({}).l > .2) { o.material = o.material.clone(); o.material.emissive = new T3.Color(rc); o.material.emissiveIntensity = Math.min(.2, .04 + .02 * (r - 3)); } });
-    if (r >= 4 || inf || mastered) { const col = inf ? inf.col : mastered ? '#ffd27a' : rc; const glow = mk(GEO.sph, basic(col, { op: .35, add: 1 }), .09, .09, .09, tp[0], tp[1], tp[2], g, false); glow.userData.wglow = 1;
-      if (it.t !== 'staff') { const line = mk(GEO.box, basic(col, { op: .3, add: 1 }), Math.max(.1, tip * .85), .012, .012, tip * .5, .03, 0, g, false); line.userData.wglow = 1; } }
+    if (r >= 4 || inf || mastered) { const col = inf ? inf.col : mastered ? '#ffd27a' : rc; const glow = new T3.Group(); glow.position.set(tp[0], tp[1], tp[2]); g.add(glow); glow.userData.wglow = 1;
+      if (it.t !== 'staff') { const line = mk(GEO.box, basic(col, { op: .18, add: 1 }), Math.max(.1, tip * .85), .012, .012, tip * .5, .03, 0, g, false); line.userData.wglow = 1; } }
     g.userData.fx = { col: inf ? inf.col : (r >= 4 || mastered) ? (mastered ? '#ffd27a' : rc) : null, tip };
     return g;
   };

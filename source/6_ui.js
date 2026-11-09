@@ -3,22 +3,52 @@ const ov = $('ov'), panel = $('panel'), tip = $('tip');
 const MENUS = {};
 const LOCKED_MENUS = ['title', 'class', 'dead', 'intro', 'confirm', 'dialog', 'boon'];
 const CHAR_TABS = [['inv', ico('bag') + ' Inventory', 'I'], ['skills', ico('sparkle') + ' Skills', 'K'], ['paragon', '✦ Constellation', 'P'], ['quests', ico('scroll') + ' Bounties', 'J'], ['achieve', ico('trophy') + ' Feats', 'O'], ['journal', ico('book') + ' Journal', 'L'], ['bestiary', ico('wolf') + ' Bestiary', 'B'], ['arsenal', ico('swords') + ' Arsenal', 'N'], ['wardrobe', ico('crown') + ' Wardrobe', 'G'], ['map', ico('map') + ' Map', 'M']];
+// menu shell state: last rendered menu (scroll resets when the menu changes) and the close-fade timer
+const ui3_shell = { last: null, outT: 0 };
+// frame kinds: 'f' = the one fixed-size window every menu shares, 's' = fixed small dialog, '' = unframed (title screen, class pick, NPC dialogue)
+const UI3_SMALL = ['confirm', 'confirmDel', 'confirmReset', 'duelask', 'dead', 'bosschoice'], UI3_BARE = ['title', 'class', 'dialog'];
+// tabbed menus share one fixed frame (no resizing between tabs); other popups fit their content
+function ui3_kind(m) { return !m || UI3_BARE.includes(m) ? '' : UI3_SMALL.includes(m) ? 's' : TAB_NAMES[m] ? 'f' : 'm'; }
 function openMenu(name) {
   if (G.menu && G.menu !== name && (name === 'help' || name === 'settings' || name === 'wiki')) G.prevMenu = G.menu;
+  clearTimeout(ui3_shell.outT); ov.classList.remove('ui3-out');
   G.menu = name; ov.classList.add('show'); mouse.down = false; hideTip(); renderMenu();
 }
 function closeMenu() {
   if (G.menu === 'inv') S.inv.forEach(i => i.isNew = false);
-  G.menu = null; ov.classList.remove('show'); hideTip(); if (G.mode === 'play' && S) saveGame();
+  const was = G.menu; G.menu = null; ui3_shell.last = null; ov.classList.remove('show'); hideTip();
+  if (was && ui3_kind(was)) { ov.classList.add('ui3-out'); clearTimeout(ui3_shell.outT); ui3_shell.outT = setTimeout(() => ov.classList.remove('ui3-out'), 110); }
+  if (G.mode === 'play' && S) saveGame();
+}
+// fixed frame size in screen pixels (divided by the panel's own zoom so Interface size scales the content, not the window)
+function ui3_size() {
+  const k = panel.classList.contains('ui3f') ? 'f' : panel.classList.contains('ui3s') ? 's' : panel.classList.contains('ui3m') ? 'm' : '';
+  if (!k) { panel.style.removeProperty('--ui3w'); panel.style.removeProperty('--ui3h'); return; }
+  const z = parseFloat(getComputedStyle(panel).zoom) || 1, ui = (S && S.opts && +S.opts.ui) || 1;
+  const W = k === 's' ? Math.min(640 * ui, innerWidth * .92) : k === 'm' ? Math.min(900 * ui, innerWidth * .92) : Math.min(1180 * ui, innerWidth * .94), H = k === 'f' ? Math.min(780 * ui, innerHeight * .9) : innerHeight * .86;
+  panel.style.setProperty('--ui3w', (W / z).toFixed(1) + 'px'); panel.style.setProperty('--ui3h', (H / z).toFixed(1) + 'px');
+}
+addEventListener('resize', () => { try { if (G.menu) ui3_size(); } catch (e) { } });
+// title bar: the menu's first heading moves into a header that stays put while the body scrolls
+function ui3_head() {
+  if (!panel.classList.contains('ui3f') && !panel.classList.contains('ui3s') && !panel.classList.contains('ui3m')) return;
+  const pc = panel.querySelector(':scope > .pclose'); let h = null;
+  if (panel.querySelector('.ui3-head')) { if (pc && panel.querySelector('.ui3-x')) pc.remove(); return; }
+  for (const c of panel.children) { if (c === pc) continue; h = c.tagName === 'H2' ? c : c.firstElementChild && c.firstElementChild.tagName === 'H2' ? c.firstElementChild : null; break; }
+  if (!h && !pc) return;
+  const hd = document.createElement('div'); hd.className = 'ui3-head ui3-tb' + (h ? '' : ' ui3-noh');
+  if (h) hd.appendChild(h); if (pc) hd.appendChild(pc);
+  panel.insertBefore(hd, panel.firstChild);
 }
 function backMenu() { const p = G.prevMenu; G.prevMenu = null; if (p) openMenu(p); else closeMenu(); }
 function renderMenu() {
-  const f = MENUS[G.menu]; const st = panel.scrollTop;
-  panel.className = 'panel' + (['title', 'class', 'confirm'].includes(G.menu) ? ' ttl' : '') + (G.menu === 'dialog' ? ' dlg' : '') + (TAB_NAMES[G.menu] && S ? ' tabbed' : '');
+  const f = MENUS[G.menu]; const st = G.menu === ui3_shell.last ? panel.scrollTop : 0; ui3_shell.last = G.menu; const fk = ui3_kind(G.menu);
+  panel.className = 'panel' + (['title', 'class'].includes(G.menu) ? ' ttl' : '') + (G.menu === 'dialog' ? ' dlg' : '') + (TAB_NAMES[G.menu] && S ? ' tabbed' : '') + (fk ? ' ui3' + fk : '');
   ov.style.background = G.menu === 'title' || G.menu === 'class' || G.menu === 'confirm' ? 'radial-gradient(ellipse at center,rgba(0,0,0,.15),rgba(0,0,0,.65))' : G.menu === 'dialog' ? 'linear-gradient(transparent 55%,rgba(0,0,0,.7))' : '';
   ov.classList.toggle('dlgov', G.menu === 'dialog');
   panel.innerHTML = f ? f() : '';
   if (S && G.menu && !TAB_NAMES[G.menu] && !LOCKED_MENUS.includes(G.menu) && !['victory', 'slots', 'report'].includes(G.menu)) panel.insertAdjacentHTML('afterbegin', '<div class="pclose" title="Close (Esc)" onclick="backMenu()">✕</div>');
+  try { ui3_head(); ui3_size(); } catch (e) { console.warn('ui3', e); }
   panel.scrollTop = st;
   if (G.menu === 'map') { const c = $('mapc'); if (c) drawBigMap(c); }
   if (G.menu === 'wiki') { wikiRender(); const q = $('wikiq'); if (q && WIKI_Q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
@@ -27,8 +57,8 @@ const TAB_GROUPS = [[ico('wizard') + ' Character', ['inv', 'skills', 'paragon', 
 const TAB_NAMES = { inv: [ico('bag') + ' Inventory', 'I'], skills: [ico('sparkle') + ' Skills', 'K'], paragon: ['✦ Constellation', 'P'], wardrobe: [ico('crown') + ' Wardrobe', 'G'], quests: [ico('scroll') + ' Bounties', 'J'], season: [ico('medal') + ' Season', 'Y'], achieve: [ico('trophy') + ' Feats', 'O'], journal: [ico('book') + ' Journal', 'L'], bestiary: [ico('wolf') + ' Bestiary', 'B'], arsenal: [ico('swords') + ' Arsenal', 'N'], wiki: [ico('help') + ' Wiki', 'H'], map: [ico('map') + ' Map', 'M'] };
 function tabs(cur) {
   const grp = TAB_GROUPS.find(g => g[1].includes(cur)) || TAB_GROUPS[0];
-  return `<div class="tabs grp">${TAB_GROUPS.map(g => `<div class="tab ${g === grp ? 'on' : ''}" onclick="openMenu('${g[1][0]}')">${g[0]}</div>`).join('')}<div style="flex:1"></div><div class="tab" onclick="closeMenu()" title="Close (Esc)">✕</div></div>` +
-    (grp[1].length > 1 ? `<div class="tabs sub">${grp[1].map(t => `<div class="tab ${t === cur ? 'on' : ''}" onclick="openMenu('${t}')">${TAB_NAMES[t][0]} <span class="dim">${TAB_NAMES[t][1]}</span></div>`).join('')}</div>` : '');
+  return `<div class="ui3-head ui3-tabhead"><div class="tabs grp">${TAB_GROUPS.map(g => `<div class="tab ${g === grp ? 'on' : ''}" onclick="openMenu('${g[1][0]}')">${g[0]}</div>`).join('')}<div class="ui3-sp"></div><div class="tab ui3-x" onclick="closeMenu()" title="Close (Esc)">✕</div></div>` +
+    (grp[1].length > 1 ? `<div class="tabs sub">${grp[1].map(t => `<div class="tab ${t === cur ? 'on' : ''}" onclick="openMenu('${t}')">${TAB_NAMES[t][0]} <kbd class="ui3-key">${TAB_NAMES[t][1]}</kbd></div>`).join('')}</div>` : '') + '</div>';
 }
 ov.addEventListener('mousedown', e => { if (e.target === ov && G.menu && !LOCKED_MENUS.includes(G.menu)) closeMenu(); });
 function onKey(k) {
