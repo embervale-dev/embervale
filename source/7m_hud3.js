@@ -85,9 +85,9 @@ ${P} #hud #h-slots .slot{box-sizing:border-box!important;width:52px!important;he
 ${P} #hud #h-slots .slot.ready{border-color:#a8824a!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.7),inset 0 0 10px rgba(255,200,110,.12),0 0 0 1px rgba(232,194,122,.12)!important}
 ${P} #hud #h-slots .slot:hover{border-color:var(--gold2)!important}
 ${P} #hud #h-slots .slot.emp{opacity:.45}
-${P} #hud #h-slots :is(#slv,#slp,#slw){width:42px!important;height:42px!important}
+${P} #hud #h-slots :is(#slv,#slp,#slw){width:52px!important;height:52px!important}
 ${P} #hud #h-slots #slv{margin-left:8px;border-radius:50%!important}
-${P} #hud #h-slots .slot .ic{font-size:27px!important;z-index:0;transition:filter .15s}
+${P} #hud #h-slots :is(#slv,#slp,#slw) .ic{font-size:27px!important}
 ${P} #hud #h-slots :is(#slv,#slp,#slw) .ic{font-size:21px!important}
 ${P} #hud #h-slots .slot .ic2{font-size:13px!important;opacity:.7;z-index:1}
 ${P} #hud #h-slots .slot .cd{z-index:1}

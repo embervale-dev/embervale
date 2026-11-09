@@ -623,3 +623,5 @@ html body#px #panel.ui3fix{height:var(--ui3h,80vh)!important;max-height:none!imp
 #panel .m3wpa{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
 @media (max-width:900px){#panel .m3w{grid-template-columns:1fr}#panel .m3wl{position:static}}
 `; document.head.appendChild(st); }
+// popups whose content has a fixed max-width (boss choice, death screen, ...) keep that content centred
+{ const st = document.createElement('style'); st.id = 'm3-center'; st.textContent = `html body#px #panel:is(.ui3s,.ui3m,.ui3f) > :is(div,section)[style*="width"]{margin-left:auto!important;margin-right:auto!important}`; document.head.appendChild(st); }
