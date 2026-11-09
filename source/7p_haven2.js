@@ -7,11 +7,11 @@ TITLES.push({ k: 'cabbage', n: 'Friend of Cabbages', c: () => S && S.hv2 && S.hv
   { k: 'lotus', n: 'of the White Lotus', c: () => S && S.hv2 && S.hv2.psWins >= 5, how: 'Win five games at the teahouse table' });
 
 // ---------- the teahouse interior is its own little map ----------
-{ const _gT = genTown; genTown = function () { if (!G.teahouse) return _gT(); const m = makeMap(38, 28); m.kind = 'town'; carve(m, 13, 9, 12, 9); m.rooms = [{ x: 13, y: 9, w: 12, h: 9, cx: 18, cy: 13 }]; return m; }; }
+{ const _gT = genTown; genTown = function () { if (!G.teahouse) return _gT(); const m = makeMap(38, 28); m.kind = 'town'; carve(m, 13, 9, 12, 9); if (G.tunOpen) { carve(m, 7, 15, 6, 2); carve(m, 3, 12, 4, 6); } m.rooms = [{ x: 13, y: 9, w: 12, h: 9, cx: 18, cy: 13 }]; return m; }; }
 function hv2Enter() { G.teaGo = true; closeMenu(); sfx('shrine'); goTown(); }
 function hv2Leave() { G.teahouse = false; goTown(); placePlayer(32, 16); const g = G.npcs.find(n => n.hv2 === 'gate'); if (g) g.near = true; }
 { const _gtH = goTown; goTown = function () {
-  G.teahouse = !!G.teaGo; G.teaGo = false; _gtH();
+  G.teahouse = !!G.teaGo; G.teaGo = false; G.tunOpen = false; _gtH();
   if (G.teahouse) {
     G.npcs = [{ n: 'Tile table', x: 17.5, y: 12.5, col: '#e8d6a8', menu: 'paisho', hv2: 'table' }, { n: 'The tea master', x: 22.5, y: 10.6, col: '#d89a4a', menu: 'teamaster', hv2: 'tea' }]
       .map(n => ({ ...n, x: n.x * TILE, y: n.y * TILE, near: false }));
@@ -98,7 +98,7 @@ function hv2Interior() {
     for (let i = 0; i < n; i++) { const cx = (i + .5) * len / n, w = len / n - .14; mk(GEO.box, paper, w, 1.38, .02, cx, 1.31, .01, g, false);
       for (let k = 1; k < 4; k++) mk(GEO.box, oak2, .025, 1.38, .035, cx - w / 2 + k * w / 4, 1.31, .02, g, false);
       for (let k = 1; k < 4; k++) mk(GEO.box, oak2, w, .025, .035, cx, .62 + k * 1.38 / 4, .02, g, false); } return g; };
-  wall(X0 + .05, Z0 + .05, X1 - .05, Z0 + .05); wall(X0 + .05, Z1 - .05, X0 + .05, Z0 + .05); wall(X1 - .05, Z0 + .05, X1 - .05, Z1 - .05);
+  wall(X0 + .05, Z0 + .05, X1 - .05, Z0 + .05); const TUN = !!G.tunOpen; if (TUN) { wall(X0 + .05, 14.95, X0 + .05, Z0 + .05); wall(X0 + .05, Z1 - .05, X0 + .05, 17.05); } else wall(X0 + .05, Z1 - .05, X0 + .05, Z0 + .05); wall(X1 - .05, Z0 + .05, X1 - .05, Z1 - .05);
   // the tea bar along the back wall: lacquered counter, shelves of tins and pots, a brazier with a steaming kettle
   mk(GEO.box, lac, 4.6, .82, .55, 21.9, .41, 10.05, L); mk(GEO.box, oak, 4.75, .07, .66, 21.9, .85, 10.05, L); mk(GEO.box, brass, 4.6, .03, .02, 21.9, .7, 10.33, L, false);
   for (const sy of [1.25, 1.75]) { mk(GEO.box, oak, 4.2, .05, .28, 21.9, sy, 9.25, L); for (let i = 0; i < 9; i++) { const k = (i * 7 + (sy > 1.5 ? 3 : 0)) % 5;
@@ -133,14 +133,15 @@ function hv2Interior() {
   for (const [px, pz] of [[13.55, 16.9], [24.45, 12.0]]) { mk(GEO.cyl, mat('#2e3a44', { rough: .5 }), .2, .36, .2, px, .18, pz, L); for (let i = 0; i < 5; i++) { const h = 1.3 + i * .18; mk(GEO.cylL, bamboo, .022, h, .022, px + (i % 3 - 1) * .07, .36 + h / 2, pz + ((i >> 1) % 2 - .5) * .08, L); mk(GEO.coneL, green, .09, .3, .03, px + (i % 3 - 1) * .07 + .08, .36 + h - .1, pz, L).rotation.z = -1; } }
   mk(GEO.box, oak, .5, .45, .5, 24.3, .22, 16.6, L); mk(GEO.cyl, mat('#6a3a2a'), .2, .1, .2, 24.3, .5, 16.6, L); mk(GEO.cylL, dark, .03, .3, .03, 24.3, .7, 16.6, L).rotation.z = .4;
   for (const [bx, by, bs] of [[24.18, .86, .2], [24.42, .78, .15], [24.3, .95, .14]]) mk(GEO.ico, mat('#3f6a3a', { flat: true }), bs, bs * .55, bs, bx, by, 16.6, L);
-  for (let i = 0; i < 4; i++) { const p = mk(GEO.box, i % 2 ? paper : mat('#e8dcc0', { rough: .95 }), .55, 1.2, .03, 13.5, .65, 13.9 + i * .52, L); p.rotation.y = Math.PI / 2 + (i % 2 ? .35 : -.35); }
+  for (let i = 0; i < 4; i++) { const p = mk(GEO.box, i % 2 ? paper : mat('#e8dcc0', { rough: .95 }), .55, 1.2, .03, 13.5, .65, (TUN ? 12.85 : 13.9) + i * .52, L); p.rotation.y = Math.PI / 2 + (i % 2 ? .35 : -.35); }
   // the door out: frame and a split curtain
   for (const s of [-1, 1]) mk(GEO.box, oak, .14, 1.9, .14, 18.5 + s * .62, .95, 17.9, L); mk(GEO.box, oak, 1.44, .14, .16, 18.5, 1.88, 17.9, L);
   for (const s of [-1, 1]) mk(GEO.box, mat('#3a4a6a', { rough: .95 }), .56, .5, .02, 18.5 + s * .3, 1.55, 17.85, L, false);
   // paper lanterns overhead (warm light) and the tea master behind the bar
   for (const [lx, lz] of [[15.5, 11.2], [19.8, 13.2], [15.4, 15.6], [22.4, 15.2], [17.5, 10.6]]) { mk(GEO.cylL, dark, .01, .3, .01, lx, 2.35, lz, L, false); const lp = mk(GEO.sph, mat('#f0c890', { em: 1.5, emc: '#ff9a40' }), .17, .21, .17, lx, 2.05, lz, L, false); R3.flames.push(lp);
     for (const y of [1.85, 2.25]) mk(GEO.cyl, dark, .12, .02, .12, lx, y, lz, L, false); R3.torches.push({ x: lx, y: 1.9, z: lz, col: '#ffb060' }); }
-  hv2Fig({ body: '#c8742a', hatType: 'hair', hair: '#d8d4cc', skin: '#e0b48a', cape: '#5a3a1a' }, 21.9, 9.55, -Math.PI / 2);
+  HV2.master = hv2Fig({ body: '#c8742a', hatType: 'hair', hair: '#d8d4cc', skin: '#e0b48a', cape: '#5a3a1a' }, 21.9, 9.55, -Math.PI / 2); hv2Horn(HV2.master);
+  if (TUN) hv2Tunnel();
   // steam from the kettle and incense smoke
   R3.anim.push(() => { if (G.parts.length > 900) return; if (Math.random() < .25) G.parts.push({ x: 23.6 * TILE + rnd(-3, 3), y: 10.05 * TILE, z: 1.4, vx: rnd(-4, 4), vy: rnd(-4, 4), vz: rnd(.35, .6), g: 0, life: 1.6, max: 1.6, col: '#e8e4dc', size: 5 });
     if (Math.random() < .12) G.parts.push({ x: 14 * TILE, y: 9.6 * TILE, z: .85, vx: rnd(-2, 2), vy: rnd(-2, 2), vz: rnd(.25, .4), g: 0, life: 2.2, max: 2.2, col: '#bfb4a8', size: 3.5 }); });
@@ -149,7 +150,8 @@ function hv2Interior() {
 
 // furniture in the teahouse blocks you (circles and boxes, in tiles); the tile table and the bar stay reachable
 const HV2_COL = { c: [[17.5, 12.5, .7], [15.2, 15.3, .62], [22.2, 15.0, .62], [14.3, 12.2, .55], [24.3, 16.6, .35], [13.55, 16.9, .28], [24.45, 12.0, .28]], b: [[19.55, 9, 24.25, 10.4], [13, 9, 14.45, 9.85], [13, 13.55, 13.75, 15.75]] };
-function hv2Push() { const r = P.r * .6 / TILE; let px = P.x / TILE, py = P.y / TILE;
+function hv2Col() { const t = !!G.tunOpen; HV2_COL.b[2] = t ? [13, 12.5, 13.75, 14.7] : [13, 13.55, 13.75, 15.75]; }
+function hv2Push() { hv2Col(); const r = P.r * .6 / TILE; let px = P.x / TILE, py = P.y / TILE;
   for (const [cx, cy, cr] of HV2_COL.c) { const dx = px - cx, dy = py - cy, d = Math.hypot(dx, dy), rr = cr + r; if (d < rr && d > .001) { px = cx + dx / d * rr; py = cy + dy / d * rr; } }
   for (const [x0, y0, x1, y1] of HV2_COL.b) { if (px > x0 - r && px < x1 + r && py > y0 - r && py < y1 + r) { const o = [[px - (x0 - r), 0], [(x1 + r) - px, 1], [py - (y0 - r), 2], [(y1 + r) - py, 3]].sort((a, b) => a[0] - b[0])[0];
     if (o[1] === 0) px = x0 - r; else if (o[1] === 1) px = x1 + r; else if (o[1] === 2) py = y0 - r; else py = y1 + r; } }
@@ -196,6 +198,8 @@ const HV2_SAY = [
   'It is wise to draw strength from many places. A single root breaks in the wind.',
   'Hope is something you give yourself. Nobody can hand it to you across the counter.',
   'Even the coldest night is followed by a sunrise. I would know, I have watched many.',
+  'This old house has more doors than it shows. Some of them only open if you lean on them.',
+  'Feel that draught by the paper screen? The wind always knows a way through.',
 ];
 MENUS.teamaster = () => { const s = hv2S(), line = HV2_SAY[(s.teas + (HV2.sayI || 0)) % HV2_SAY.length], until = S.teaUntil || 0, on = until > Date.now();
   return `<div class="hv2tea"><h2>The tea master</h2><p class="hv2q">"${line}"</p>
@@ -325,3 +329,114 @@ function psAnswer(yes) { const a = PSG.ask; PSG.ask = null; if (!a) { closeMenu(
 const HV2_ROOM = { ...TOWN, n: 'The Jasmine Dragon', fl: '#6e4c30', fl2: '#644428', wl: '#3e2a1c', wt: '#5a3e28', bg: '#120c08', sky: '#ffd8a8', gnd: '#2a1a10', sun: '#ffc890', dec: 'none', wd: 'none' };
 { const _crH = curReg; curReg = function () { return G.teahouse && G.inTown ? HV2_ROOM : _crH(); }; }
 for (const fn of ['update', 'drawOverlay', 'updateHUD']) { const orig = window[fn]; window[fn] = function () { if (!G.teahouse || !S || !S.retPortal) return orig.apply(this, arguments); const r = S.retPortal; S.retPortal = null; try { return orig.apply(this, arguments); } finally { S.retPortal = r; } }; }
+
+// ================= more for the teahouse: tea brewing, music night, the passage, a greeting, the society =================
+TITLES.push({ k: 'tunnel', n: 'of the Secret Tunnel', c: () => S && S.hv2 && S.hv2.tunnelIn, how: 'Find the way the wind goes in the teahouse' });
+
+// ---------- a small synth: a reedy horn and a plucked string, original tunes only ----------
+function hv2Voice(kind, f, t, dur, vol, dest) {
+  const o = AC.createOscillator(), o2 = AC.createOscillator(), g = AC.createGain(), lp = AC.createBiquadFilter(), now = AC.currentTime + t;
+  if (kind === 'horn') { o.type = 'sawtooth'; o2.type = 'triangle'; o2.detune.value = 7; lp.type = 'lowpass'; lp.frequency.value = 950; lp.Q.value = 1.2;
+    const lfo = AC.createOscillator(), lg = AC.createGain(); lfo.frequency.value = 5.2; lg.gain.value = 0; lg.gain.setValueAtTime(0, now); lg.gain.linearRampToValueAtTime(f * .006, now + Math.min(.45, dur * .6)); lfo.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency); lfo.start(now); lfo.stop(now + dur + .3);
+    g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(vol, now + .09); g.gain.setTargetAtTime(vol * .7, now + .12, .2); g.gain.setTargetAtTime(0, now + dur, .12);
+    if (noiseBuf) { const n = AC.createBufferSource(), bp = AC.createBiquadFilter(), ng = AC.createGain(); n.buffer = noiseBuf; bp.type = 'bandpass'; bp.frequency.value = f * 2; bp.Q.value = 3; ng.gain.setValueAtTime(vol * .35, now); ng.gain.setTargetAtTime(0, now + .08, .08); n.connect(bp); bp.connect(ng); ng.connect(dest); n.start(now); n.stop(now + .4); } }
+  else { o.type = 'triangle'; o2.type = 'square'; o2.detune.value = 1200; lp.type = 'lowpass'; lp.frequency.value = 2400; g.gain.setValueAtTime(vol, now); g.gain.setTargetAtTime(0, now + .01, dur * .35); }
+  o.frequency.value = o2.frequency.value = f; const g2 = AC.createGain(); g2.gain.value = kind === 'horn' ? .45 : .12; o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(dest);
+  o.start(now); o2.start(now); o.stop(now + dur + .6); o2.stop(now + dur + .6); }
+const HV2_NOTE = n => 440 * Math.pow(2, (n - 69) / 12);
+// [midi note or 0 for a rest, beats]; composed for Embervale in a slow pentatonic teahouse style
+const HV2_SONGS = {
+  dusk: { bpm: 66, v: 'horn', n: [[62, 1], [65, 1], [67, 2], [69, 1.5], [67, .5], [65, 2], [62, 1], [60, 1], [62, 3], [0, 1], [69, 1], [72, 1], [74, 2], [72, 1], [69, 1], [67, 2], [65, 1.5], [67, .5], [69, 3], [0, 1], [67, 1], [65, 1], [62, 2], [60, 1], [57, 1], [60, 2], [62, 4]] },
+  river: { bpm: 72, v: 'horn', n: [[57, 1], [60, 1], [62, 1.5], [64, .5], [67, 2], [64, 1], [62, 1], [60, 2], [57, 2], [0, 1], [64, 1], [67, 1], [69, 2], [72, 1.5], [69, .5], [67, 2], [64, 1], [62, 1], [64, 3], [0, 1], [60, 1], [62, 1], [57, 2], [55, 1], [57, 5]] },
+  tunnel: { bpm: 148, v: 'pluck', n: [[67, .5], [72, .5], [72, .5], [74, .5], [76, 1], [72, 1], [69, .5], [71, .5], [72, .5], [74, .5], [76, 1.5], [0, .5], [76, .5], [79, .5], [77, .5], [76, .5], [74, 1], [71, 1], [72, 2]] },
+};
+function hv2Song(k, onEnd) { initAudio(); if (!AC || !master) { if (onEnd) onEnd(); return 0; } const S_ = HV2_SONGS[k], b = 60 / S_.bpm, dest = AC.createGain(); dest.gain.value = .9; dest.connect(master);
+  try { if (typeof sendBus === 'function') { const sb = sendBus(); if (sb) { const sg = AC.createGain(); sg.gain.value = .35; dest.connect(sg); sg.connect(sb); } } } catch (e) { }
+  let t = .05; for (const [n, beats] of S_.n) { if (n) hv2Voice(S_.v, HV2_NOTE(n), t, beats * b * .95, S_.v === 'horn' ? .16 : .12, dest); t += beats * b; }
+  if (onEnd) setTimeout(onEnd, (t + .4) * 1000); return t; }
+
+// ---------- music night: the tea master lifts his horn and plays ----------
+function hv2Horn(h) { if (!h || !h.head) return; const g = new T3.Group(); g.position.set(.12, -.06, 0); g.rotation.z = -1.3; h.head.add(g); const b = mat('#b08a3a', { metal: .8, rough: .3 });
+  mk(GEO.cylL, b, .012, .28, .012, 0, .14, 0, g, false); mk(GEO.cone, b, .05, .1, .05, 0, .32, 0, g, false); g.visible = false; h.horn = g;
+  R3.anim.push(() => { const on = HV2.playing && G.teahouse; g.visible = on; if (!on || typeof applyPose !== 'function') return; const q = blankPose(); q.aRz = 2.2; q.aLz = 2.0; q.aRy = .5; q.aLy = -.5; q.headPitch = .25 + Math.sin(G.t * 1.5) * .05; applyPose(h, q);
+    if (Math.random() < .2) G.parts.push({ x: 22.4 * TILE, y: 9.55 * TILE, z: 1.35, vx: rnd(-10, 10), vy: rnd(10, 26), vz: rnd(.4, .7), g: 0, life: 1.8, max: 1.8, col: '#ffe0a0', size: 4 }); }); }
+function hv2Music(k) { if (HV2.playing) return; HV2.playing = k; closeMenu(); toast('The tea master raises his horn...', '#e8c27a'); hv2Song(k, () => { HV2.playing = null; }); }
+
+// ---------- tea brewing ----------
+const HV2_LEAF = {
+  jasmine: { n: 'Jasmine', d: '+10% experience', st: 'xp', v: 10, col: '#f2ead8' },
+  ginseng: { n: 'Ginseng', d: '+6% move speed', st: 'moveSpd', v: 6, col: '#c8a86a' },
+  dragon: { n: 'White dragon bush', d: 'Small white blossoms. +5% damage', st: 'dmg', v: 5, col: '#f8f4f0' },
+  jade: { n: 'White jade bush', d: 'Small white blossoms. Looks just like it.', st: 'moveSpd', v: -15, col: '#f4f6f0', bad: 1 },
+};
+function hv2Brew(k) { const L = HV2_LEAF[k]; if (!L) return; const s = hv2S(); s.teas++; S.brew = { k, until: Date.now() + (L.bad ? 120000 : 600000) }; calcStats();
+  if (L.bad) { toast('"Ah. That was white jade. Very poisonous. You will be fine... in a little while."', '#9ad0a0'); sfx('hurt'); }
+  else { P.hp = ST.maxHp; P.mp = ST.maxMp; sfx('shrine'); toast(`${L.n} tea: ${L.d.replace(/^Small white blossoms\. /, '')} for 10 minutes`, '#e8c27a'); }
+  saveGame(); renderMenu(); }
+{ const _csB = calcStats; calcStats = function () { const r = _csB.apply(this, arguments); const b = S && S.brew; if (b && b.until > Date.now() && HV2_LEAF[b.k]) { const L = HV2_LEAF[b.k]; ST[L.st] = (ST[L.st] || 0) + L.v; } return r; }; }
+{ let chk = 0, pale = false; const _uB = update; update = function (dt) { _uB(dt); if (!S) return;
+  if ((chk -= dt) <= 0) { chk = 4; if (S.brew && S.brew.until < Date.now()) { S.brew = null; calcStats(); } }
+  const bad = S.brew && HV2_LEAF[S.brew.k] && HV2_LEAF[S.brew.k].bad, m = R3 && R3.pl && R3.pl.body;
+  if (m && m.emissive && (bad || pale)) { pale = !!bad; m.emissive.set(bad ? '#5a8a5a' : '#000000'); m.emissiveIntensity = bad ? .45 : 0; } }; }
+MENUS.teamaster = () => { const s = hv2S(), line = HV2_SAY[(s.teas + (HV2.sayI || 0)) % HV2_SAY.length], b = S.brew && S.brew.until > Date.now() ? S.brew : null;
+  return `<div class="hv2tea"><h2>The tea master</h2><p class="hv2q">"${line}"</p>
+  <h4>Brew a pot</h4><div class="hv2leaf">${Object.keys(HV2_LEAF).map(k => { const L = HV2_LEAF[k]; return `<button onclick="hv2Brew('${k}')" ${b ? 'disabled' : ''}><i style="background:${L.col}"></i><b>${L.n}</b><small>${L.bad ? HV2_LEAF.dragon.d.split('.')[0] + '.' : L.d}</small></button>`; }).join('')}</div>
+  <p class="dim">${b ? `Your ${HV2_LEAF[b.k].n.toLowerCase()} tea lasts ${Math.ceil((b.until - Date.now()) / 60000)} more min.` : 'One pot at a time. A cup also restores your life and mana.'}</p>
+  <h4>Music night</h4><div><span class="btn ${HV2.playing ? 'dis' : ''}" onclick="hv2Music('dusk')">Ask for a song at dusk</span> <span class="btn ${HV2.playing ? 'dis' : ''}" onclick="hv2Music('river')">Ask for the river song</span></div>
+  <div style="margin-top:12px"><span class="btn" onclick="HV2.sayI=(HV2.sayI||0)+1;renderMenu()">Ask for advice</span> <span class="btn" onclick="closeMenu()">Leave</span></div></div>`; };
+
+// ---------- the secret passage: lean into the nook behind the paper screen ----------
+function hv2Tunnel() { const L = R3.lvl, rock = mat('#4a4038', { rough: .95, flat: true }), dark = mat('#2a1c14');
+  for (let x = 7.2; x < 13; x += .55) for (const z of [15.05, 16.95]) { const h = hash(x * 10 | 0, z * 10 | 0); mk(GEO.dod, rock, .22 + (h % 5) * .03, .35 + (h % 7) * .04, .2, x, .2, z, L); }
+  for (let i = 0; i < 6; i++) { const a = i * 1.1; mk(GEO.oct, mat(i % 2 ? '#8ad0c0' : '#c0a0ff', { em: 1.4, flat: true }), .07, .16, .07, 3.6 + (i % 3) * 1.2, .16, 12.4 + (i > 2 ? 5.1 : 0), L, false); }
+  for (const [lx, lz] of [[9.5, 15.2], [5, 12.4]]) { mk(GEO.box, dark, .06, .3, .06, lx, 1.05, lz, L, false); const f = mk(GEO.sphL, mat('#ffb050', { em: 3 }), .08, .12, .08, lx, 1.28, lz, L, false); R3.flames.push(f); R3.torches.push({ x: lx, y: 1.4, z: lz + .3, col: '#ffa040' }); }
+  // a carving of a lotus on the chamber wall, and an old chest
+  const cv = document.createElement('canvas'); cv.width = cv.height = 128; const x = cv.getContext('2d'); x.fillStyle = '#5a4a3c'; x.fillRect(0, 0, 128, 128); x.strokeStyle = '#d8c8a8'; x.lineWidth = 3; x.translate(64, 70);
+  for (let i = 0; i < 8; i++) { x.save(); x.rotate(i * Math.PI / 4); x.beginPath(); x.ellipse(0, -24, 9, 24, 0, 0, 6.3); x.stroke(); x.restore(); } x.beginPath(); x.arc(0, 0, 8, 0, 6.3); x.stroke();
+  const t = new T3.CanvasTexture(cv); t.colorSpace = T3.SRGBColorSpace; const pm = new T3.MeshStandardMaterial({ map: t, roughness: .9 }); const pl = mk(GEO.box, pm, 1.4, 1.4, .05, 5, 1.0, 12.05, L, false); pl.userData.ownMat = true;
+  const cg = new T3.Group(); cg.position.set(4.8, 0, 15.4); L.add(cg); mk(GEO.box, mat('#6a4428'), .7, .4, .45, 0, .2, 0, cg); mk(GEO.box, mat('#7a5232'), .72, .14, .47, 0, .46, 0, cg); for (const s of [-1, 1]) mk(GEO.box, mat('#b08a3a', { metal: .8, rough: .35 }), .05, .55, .49, s * .25, .27, 0, cg);
+  R3.anim.push(() => { cg.rotation.y = 0; cg.children[1].position.y = hv2S().tchest ? .52 : .46; }); }
+function hv2OpenPassage() { const s = hv2S(); if (G.tunOpen) return; const first = !s.tunnel; G.tunOpen = true; s.tunnel = true; saveGame(); carve(M, 7, 15, 6, 2); carve(M, 3, 12, 4, 6); hv2Col();
+  if (!G.npcs.some(n => n.hv2 === 'chest')) G.npcs.push({ n: 'Old chest', x: 4.8 * TILE, y: 15.4 * TILE, col: '#b08a3a', menu: 'hv2chest', hv2: 'chest', near: false });
+  shake(first ? 4 : 1.5); sfx('stairs'); if (first) toast('Something clicks behind the paper screen. A cold draught pours in...', '#e8c27a'); buildLevel(); }
+// the passage seals itself again once you step back into the room, so nobody watching your screen sees it
+function hv2ClosePassage() { if (!G.tunOpen) return; G.tunOpen = false; for (let y = 12; y < 18; y++) for (let x = 3; x < 13; x++) M.t[y * M.w + x] = 0; hv2Col(); G.npcs = G.npcs.filter(n => n.hv2 !== 'chest'); sfx('click'); buildLevel(); }
+{ const _gtT = goTown; goTown = function () { _gtT(); if (G.teahouse && G.tunOpen && !G.npcs.some(n => n.hv2 === 'chest')) G.npcs.push({ n: 'Old chest', x: 4.8 * TILE, y: 15.4 * TILE, col: '#b08a3a', menu: 'hv2chest', hv2: 'chest', near: false }); }; }
+{ const _uP = update; update = function (dt) { _uP(dt); if (!G.teahouse || !P || !S || G.menu) return; const s = hv2S(), px = P.x / TILE, pz = P.y / TILE;
+  if (!G.tunOpen) { if (px < 13.65 && pz > 15.7 && pz < 16.7) { HV2.nookT = (HV2.nookT || 0) + dt; if (HV2.nookT > (s.tunnel ? 1 : 2)) { HV2.nookT = 0; hv2OpenPassage(); } } else HV2.nookT = 0; return; }
+  if (px > 14.6) { hv2ClosePassage(); return; }
+  const inT = px < 12.9 && pz > 14.9 && pz < 17.1; if (inT && !HV2.inT && (!HV2.tunT || G.t - HV2.tunT > 25)) { HV2.tunT = G.t; hv2Song('tunnel'); if (!s.tunnelIn) { s.tunnelIn = true; saveGame(); toast(ico('star') + ' New title: <b>of the Secret Tunnel</b>', '#e8c27a'); } } HV2.inT = inT; }; }
+MENUS.hv2chest = () => { const s = hv2S(); return `<div class="hv2gate"><h2>An old chest</h2>${s.tchest ? '<p class="dim">Empty now, apart from dust and a dried lotus petal.</p>' : '<p>Under a dried lotus petal: a pouch of coins and a bundle of Ember Marks.</p><span class="btn" onclick="hv2Loot()">Take them</span>'} <span class="btn" onclick="closeMenu()">Close</span></div>`; };
+function hv2Loot() { const s = hv2S(); if (s.tchest) return; s.tchest = true; const g = Math.round(500 * Math.pow(1.12, maxPw())); S.gold += g; S.marks += 150; sfx('gold'); toast(`+${fmt(g)} gold, +150 Ember Marks`, '#ffd27a'); saveGame(); renderMenu(); }
+UI3_SMALL.push('hv2chest');
+
+// ---------- "flameo": a fiery salute in multiplayer chat ----------
+function hv2Flameo(x, y) { for (let i = 0; i < 26; i++) { const a = rnd(-.6, .6) - Math.PI / 2; G.parts.push({ x: x + rnd(-6, 6), y: y + rnd(-6, 6), z: 1.3, vx: Math.cos(a) * rnd(20, 70), vy: rnd(-25, 25), vz: rnd(1.4, 2.8), g: .6, life: .9, max: .9, col: ['#ffb040', '#ff7a20', '#ffe080'][i % 3], size: 5 }); }
+  ringFx(x, y, 34, '#ff9a3a', .4); dmgText(x, y - 40, 'Flameo!', '#ffb040', true, 2.4); sfx('boom'); }
+{ const _ncF = netChat; netChat = function (text) { _ncF(text); if (/flameo/i.test(String(text || '')) && P && G.mode === 'play') hv2Flameo(P.x, P.y); }; }
+{ const _nrF = netRecv; netRecv = function (c, m) { _nrF(c, m); if (m && m.t === 'chat' && /flameo/i.test(String(m.text || ''))) { const p = NET.players.get(m.id); if (p && p.area === netArea() && G.mode === 'play') hv2Flameo(p.rx, p.ry); } }; }
+
+// ---------- the society: ten wins at the table earn a white lotus tile ----------
+{ const _tg = MENUS.teagate; MENUS.teagate = () => { const s = hv2S(); let h = _tg(); if (s.gate && s.psWins >= 10 && !s.lotusTile) h = h.replace('<span class="btn bigb"', `<p class="hv2q">"Ten harmonies at our table. You understand the old ways. Take this, friend of the lotus."</p><span class="btn" onclick="hv2Society()">Accept the white lotus tile</span> <span class="btn bigb"`);
+  else if (s.gate && !s.lotusTile) h = h.replace('</p>', `</p><p class="dim">"Win at the tile table often enough, and the society may have a gift for you." (${Math.min(10, s.psWins)}/10)</p>`); return h; }; }
+function hv2Society() { const s = hv2S(); if (s.lotusTile || s.psWins < 10) return; if (S.inv.length >= S.invMax) { toast('Make room in your bag first', '#ff8a8a'); return; }
+  const it = genItem(maxPw() + 2, { slot: 'amulet', r: Math.min(RAR.length - 1, 6) }); it.name = 'White Lotus Tile'; it.isNew = true; S.inv.push(it); if (typeof noteFound === 'function') noteFound(it);
+  s.lotusTile = true; sfx('legend'); toast(`Received: <span style="color:${RAR[it.r].c}">White Lotus Tile</span>`, '#ffe9a0'); saveGame(); renderMenu(); }
+
+{ const st = document.createElement('style'); st.id = 'hv2-css2'; st.textContent = `
+#panel .hv2tea h4{margin:14px 0 8px;font:600 15px var(--f-body);color:var(--text)}
+#panel .hv2leaf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:520px;margin:0 auto}
+#panel .hv2leaf button{display:grid;grid-template-columns:18px 1fr;column-gap:10px;text-align:left;align-items:center;padding:9px 12px;border-radius:8px!important;background:#1d1724;border:1px solid #3a2f44;color:var(--text);cursor:pointer;font-family:var(--f-body)}
+#panel .hv2leaf button:hover:not(:disabled){border-color:#7a6040}#panel .hv2leaf button:disabled{opacity:.5;cursor:default}
+#panel .hv2leaf i{grid-row:1/3;width:14px;height:14px;border-radius:50%!important;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+#panel .hv2leaf b{font-size:14.5px}#panel .hv2leaf small{font-size:12.5px;color:var(--dim)}
+`; document.head.appendChild(st); }
+
+// ---------- while the tea master plays, the music and the ambient sound fade almost to silence ----------
+HV2.duck = 1;
+{ const _mvD = musicVol; musicVol = function () { return _mvD.apply(this, arguments) * (HV2.duck ?? 1); }; }
+{ const _uD = update; update = function (dt) { _uD(dt); const want = HV2.playing ? .06 : 1, d0 = HV2.duck; if (Math.abs(want - d0) < .002) return;
+  HV2.duck = d0 + (want - d0) * Math.min(1, dt * (want < d0 ? 2.5 : 1.2));   // fades out in about a second, back in a little slower
+  if (!AC) return; const t = AC.currentTime;
+  try { if (MUS && MUS.gain && !MUS.pend) { MUS.gain.gain.cancelScheduledValues(t); MUS.gain.gain.setValueAtTime(musicVol() * .55, t); } } catch (e) { }
+  try { if (AMB && AMB.out) { AMB.out.gain.cancelScheduledValues(t); AMB.out.gain.setValueAtTime(avol() * HV2.duck, t); } } catch (e) { } }; }
