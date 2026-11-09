@@ -508,7 +508,7 @@ function havenBuild() {
 { const _uTC = update;
   update = function (dt) {
     _uTC(dt);
-    if (!P || !G.inTown || !TWN.col || !TWN.col.length) return;
+    if (!P || !G.inTown || G.teahouse || !TWN.col || !TWN.col.length) return;
     for (const c of TWN.col) { const dx = P.x - c.x, dy = P.y - c.y, rr = c.r + P.r * .6, d = Math.hypot(dx, dy);
       if (d < rr) { const k = d > .01 ? rr / d : 0; if (k) { P.x = c.x + dx * k; P.y = c.y + dy * k; } else P.y = c.y + rr; } }
   };

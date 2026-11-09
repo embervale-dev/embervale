@@ -9888,7 +9888,7 @@ makeHumanoid = function (o) {
     if (cls === 'war') put(a, 'armM' + KB, metalM, () => [[ell(.096, .078, .096, { th1: 1.35, nu: 14, nv: 5 }), ST], [new T3.TorusGeometry(.094, .01, 5, 16).rotateX(PI / 2).translate(0, .017, 0), GD]]);
     const h = new T3.Group(); h.position.set(0, -.38, 0); h.rotation.z = -Math.PI / 2; a.add(h); return { a, h };
   };
-  const R = arm(-.27), Lf = arm(.27);
+  const R = arm(-.232), Lf = arm(.232);   // shoulders tucked against the torso (at .27 a gap showed between body and arm)
   mk(GEO.circ, basic('#000000', { op: .32 }), .3, 1, .3, 0, .012, 0, g, false);
   return { g, root, hips, chest, head, legL: LL.L, legR: LR.L, kneeL: LL.K, kneeR: LR.K, armR: R.a, hand: R.h, armL: Lf.a, handL: Lf.h, torso, body, cape, hat, face, hatType: o.hatType };
 };
@@ -15074,7 +15074,7 @@ function havenBuild() {
 { const _uTC = update;
   update = function (dt) {
     _uTC(dt);
-    if (!P || !G.inTown || !TWN.col || !TWN.col.length) return;
+    if (!P || !G.inTown || G.teahouse || !TWN.col || !TWN.col.length) return;
     for (const c of TWN.col) { const dx = P.x - c.x, dy = P.y - c.y, rr = c.r + P.r * .6, d = Math.hypot(dx, dy);
       if (d < rr) { const k = d > .01 ? rr / d : 0; if (k) { P.x = c.x + dx * k; P.y = c.y + dy * k; } else P.y = c.y + rr; } }
   };
@@ -16939,15 +16939,40 @@ function hv2TownProps() {
   mk(GEO.box, mat('#2a1a10'), .06, .38, .9, gx - .14, 1.72, gz, L); mk(GEO.box, mat('#e8c27a', { em: .5 }), .07, .22, .72, gx - .16, 1.72, gz, L, false);
   hv2Lantern(gx - .3, 1.45, gz - .95, '#ffb050'); hv2Lantern(gx - .3, 1.45, gz + .95, '#ffb050');
   hv2Fig({ body: '#4f6a46', hatType: 'hair', hair: '#e0ddd0', skin: '#e2c09a' }, HV2.gate.x + .15, gz + .8, Math.PI);
-  // the cabbage cart
+  // the cabbage cart: plank bed, spoked wheels, a striped canopy, and a heaped load of leafy cabbages
   const g = new T3.Group(); g.position.set(HV2.cart.x, 0, HV2.cart.y); g.rotation.y = .4; L.add(g); HV2.grp = g;
-  mk(GEO.box, wood, 1.1, .1, .7, 0, .5, 0, g); for (const s of [-1, 1]) { mk(GEO.box, wood, 1.1, .2, .05, 0, .62, s * .33, g); mk(GEO.box, wood, .05, .2, .7, s * .53, .62, 0, g); }
-  for (const s of [-1, 1]) { const w = mk(GEO.cyl, dark, .26, .06, .26, -.15, .26, s * .4, g); w.rotation.x = Math.PI / 2; }
-  mk(GEO.box, wood, .8, .05, .05, .9, .45, 0, g); mk(GEO.box, wood, .05, .5, .05, .45, .25, -.25, g);
-  const cab = new T3.Group(); g.add(cab); const cm = [mat('#7ab84a', { rough: .7 }), mat('#9ad060', { rough: .7 }), mat('#5e9a3a', { rough: .7 })];
-  for (let i = 0; i < 14; i++) { const a = i * 2.4, r = (i % 5) * .08; mk(GEO.sph, cm[i % 3], .13, .12, .13, Math.cos(a) * r * 2.2, .66 + (i > 8 ? .14 : 0), Math.sin(a) * r * 1.2, cab); }
-  hv2Fig({ body: '#7a5a3a', hatType: 'hair', hair: '#2a1a10', skin: '#d8a878' }, HV2.cart.x + .1, HV2.cart.y - .9, -1.2);
-  R3.anim.push(() => { const b = HV2.broken > G.t; cab.visible = !b; g.rotation.z = b ? .25 : 0; });
+  const plank = mat('#8a6238', { rough: .85 }), plank2 = mat('#76522e', { rough: .85 }), iron = mat('#3a3a40', { metal: .7, rough: .45 });
+  for (let k = 0; k < 5; k++) mk(GEO.box, k % 2 ? plank : plank2, 1.14, .05, .14, 0, .5, -.28 + k * .14, g);
+  for (const s2 of [-1, 1]) { for (let k = 0; k < 2; k++) mk(GEO.box, k ? plank : plank2, 1.14, .09, .04, 0, .58 + k * .1, s2 * .35, g); mk(GEO.box, plank2, .04, .19, .74, s2 * .55, .63, 0, g); }
+  for (const s2 of [-1, 1]) { const wg = new T3.Group(); wg.position.set(-.12, .27, s2 * .42); g.add(wg);
+    const rim = mk(GEO.tor, plank2, .26, .26, .4, 0, 0, 0, wg); for (let k = 0; k < 6; k++) { const sp = mk(GEO.box, plank, .02, .48, .03, 0, 0, 0, wg); sp.rotation.z = k * Math.PI / 6; }
+    mk(GEO.cyl, iron, .05, .08, .05, 0, 0, 0, wg).rotation.x = Math.PI / 2; }
+  for (const s2 of [-1, 1]) { const sh = mk(GEO.box, plank, .9, .045, .045, .95, .44, s2 * .18, g); sh.rotation.z = -.12; }
+  mk(GEO.box, plank2, .05, .44, .05, .5, .22, -.28, g); mk(GEO.box, plank2, .05, .44, .05, .5, .22, .28, g);
+  for (const [px, pz] of [[-.5, -.3], [-.5, .3], [.5, -.3], [.5, .3]]) mk(GEO.cylL, plank2, .02, .9, .02, px, 1.05, pz, g);
+  for (let k = 0; k < 6; k++) mk(GEO.box, mat(k % 2 ? '#e8dcc0' : '#6a8a4a', { rough: .9 }), .2, .03, .76, -.5 + k * .2, 1.52 + Math.sin(k / 5 * Math.PI) * .05, 0, g);
+  // cabbage: a pale core wrapped in curled leaves (built once, instanced)
+  if (!HV2.cabGeo) { const parts = [], add = (geo, col, m4) => { geo = geo.toNonIndexed(); geo.applyMatrix4(m4); const n = geo.attributes.position.count, cc = new Float32Array(n * 3), c3 = new T3.Color(col); for (let q = 0; q < n; q++) { cc[q * 3] = c3.r; cc[q * 3 + 1] = c3.g; cc[q * 3 + 2] = c3.b; } geo.setAttribute('color', new T3.BufferAttribute(cc, 3)); parts.push(geo); };
+    const M4 = () => new T3.Matrix4(), e = new T3.Euler(), q4 = new T3.Quaternion();
+    add(new T3.SphereGeometry(.62, 12, 9), '#cfe3a2', M4().makeScale(1, .92, 1));
+    for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2, leaf = new T3.SphereGeometry(1, 10, 7, 0, 1.5, .15, 1.75); e.set(-.35 - (k % 2) * .15, a, 0); q4.setFromEuler(e);
+      add(leaf, k % 2 ? '#7fb24e' : '#93c25e', M4().compose(new T3.Vector3(Math.sin(a) * .08, -.05, Math.cos(a) * .08), q4, new T3.Vector3(.78, .74, .78))); }
+    for (let k = 0; k < 4; k++) { const a = k / 4 * Math.PI * 2 + .4, leaf = new T3.SphereGeometry(1, 8, 6, 0, 1.3, .9, 1.2); e.set(.15, a, 0); q4.setFromEuler(e); add(leaf, '#5f9440', M4().compose(new T3.Vector3(0, -.12, 0), q4, new T3.Vector3(.95, .7, .95))); }
+    let tot = 0; parts.forEach(p => tot += p.attributes.position.count); const pos = new Float32Array(tot * 3), col = new Float32Array(tot * 3); let o = 0;
+    parts.forEach(p => { pos.set(p.attributes.position.array, o * 3); col.set(p.attributes.color.array, o * 3); o += p.attributes.position.count; });
+    const G2 = new T3.BufferGeometry(); G2.setAttribute('position', new T3.BufferAttribute(pos, 3)); G2.setAttribute('color', new T3.BufferAttribute(col, 3)); G2.computeVertexNormals(); HV2.cabGeo = G2;
+    HV2.cabMat = new T3.MeshStandardMaterial({ vertexColors: true, roughness: .75, side: T3.DoubleSide }); }
+  const spots = []; for (let r = 0; r < 3; r++) for (let c2 = 0; c2 < 4 - r; c2++) for (let d = 0; d < 3 - r; d++) spots.push([-.39 + c2 * .26 + r * .13, .68 + r * .17, -.22 + d * .22 + r * .11]);
+  const cab = new T3.InstancedMesh(HV2.cabGeo, HV2.cabMat, spots.length); cab.castShadow = true; cab.receiveShadow = true;
+  spots.forEach(([cx, cy, cz], k) => { const m4 = new T3.Matrix4(), sc = .15 + (k % 3) * .012; m4.compose(new T3.Vector3(cx, cy, cz), new T3.Quaternion().setFromEuler(new T3.Euler((k % 4) * .3, k * 1.7, (k % 3) * .25)), new T3.Vector3(sc, sc, sc)); cab.setMatrixAt(k, m4); });
+  g.add(cab);
+  // a crate and a basket of spares on the ground
+  mk(GEO.box, plank, .4, .32, .4, .2, .16, -.75, g); const sp2 = new T3.InstancedMesh(HV2.cabGeo, HV2.cabMat, 3); [[.12, .38, -.8], [.28, .38, -.7], [.2, .5, -.75]].forEach(([cx, cy, cz], k) => { const m4 = new T3.Matrix4(); m4.compose(new T3.Vector3(cx, cy, cz), new T3.Quaternion().setFromEuler(new T3.Euler(0, k * 2, .3)), new T3.Vector3(.14, .14, .14)); sp2.setMatrixAt(k, m4); }); sp2.castShadow = true; g.add(sp2);
+  // the merchant: apron and a wide straw hat
+  const mh = hv2Fig({ body: '#6a7a4a', hatType: 'hair', hair: '#2a1a10', skin: '#d8a878' }, HV2.cart.x + .1, HV2.cart.y - .9, -1.2);
+  if (mh.head) { const hat = mat('#d8c07a', { rough: .9 }); mk(GEO.cyl, hat, .3, .02, .3, 0, .2, 0, mh.head); mk(GEO.cone, hat, .16, .14, .16, 0, .27, 0, mh.head); }
+  if (mh.chest) mk(GEO.box, mat('#e8dcc0', { rough: .9 }), .03, .34, .22, .17, .05, 0, mh.chest);
+  R3.anim.push(() => { const b = HV2.broken > G.t; cab.visible = !b; g.rotation.z = b ? .18 : 0; });
 }
 function hv2Interior() {
   const L = R3.lvl, wood = mat('#6a4428'), dark = mat('#3a2416'), floor = mat('#7a5232', { rough: .8 });
@@ -16959,8 +16984,8 @@ function hv2Interior() {
   // the tile table: low table, board top with the classic quartered pattern, cushions
   mk(GEO.cyl, dark, .9, .4, .9, 17.5, .2, 12.5, L);
   const bt = document.createElement('canvas'); bt.width = bt.height = 256; const x = bt.getContext('2d');
-  x.fillStyle = '#e8dcc0'; x.beginPath(); x.arc(128, 128, 126, 0, 6.3); x.fill();
-  for (let q = 0; q < 4; q++) { x.save(); x.translate(128, 128); x.rotate(q * Math.PI / 2); x.fillStyle = '#b23a2a'; x.beginPath(); x.moveTo(0, 0); x.lineTo(118, -118 * .42); x.lineTo(118 * .42, -118); x.closePath(); x.fill(); x.restore(); }
+  x.fillStyle = '#b48a5c'; x.beginPath(); x.arc(128, 128, 126, 0, 6.3); x.fill();
+  for (let q = 0; q < 4; q++) { x.save(); x.translate(128, 128); x.rotate(q * Math.PI / 2); x.fillStyle = 'rgba(140,50,36,.18)'; x.beginPath(); x.moveTo(0, 0); x.lineTo(118, -118 * .42); x.lineTo(118 * .42, -118); x.closePath(); x.fill(); x.restore(); }
   x.strokeStyle = 'rgba(40,20,10,.5)'; x.lineWidth = 1; for (let i = 1; i < 9; i++) { x.beginPath(); x.moveTo(i * 28.4, 0); x.lineTo(i * 28.4, 256); x.stroke(); x.beginPath(); x.moveTo(0, i * 28.4); x.lineTo(256, i * 28.4); x.stroke(); }
   const tex = new T3.CanvasTexture(bt); tex.colorSpace = T3.SRGBColorSpace; const bm = new T3.MeshStandardMaterial({ map: tex, roughness: .6 });
   const top = mk(GEO.circ, bm, .82, 1, .82, 17.5, .415, 12.5, L, false); top.userData.ownMat = true;
@@ -17067,7 +17092,26 @@ function psClick(i) { if (!PSG.on || PSG.win >= 0 || PSG.turn !== PSG.me) return
   if (h.f + h.l > 0) { if (PSG.b[i] < 0) psPlay(PSG.me, { k: 'p', i, t: PSG.useLotus && h.l ? 2 : h.f ? PSG.me : 2 }); PSG.useLotus = false; return; }
   if (PSG.b[i] === PSG.me) { PSG.sel = PSG.sel === i ? -1 : i; renderMenu(); return; }
   if (PSG.sel >= 0 && PSG.b[i] < 0) psPlay(PSG.me, { k: 'm', i: PSG.sel, j: i }); }
-function psTile(v) { if (v < 0) return ''; if (v === 2) return '<i class="pst l"></i>'; return `<i class="pst p${v}"></i>`; }
+// tiles are round wooden discs carved with a flower: a red rose, a white jasmine, and the white lotus
+const PS_SVG = (() => {
+  const petals = (n, r, w, col, rot = 0) => Array.from({ length: n }, (_, i) => `<ellipse cx="0" cy="${-r}" rx="${w}" ry="${r}" fill="${col}" transform="rotate(${rot + i * 360 / n})"/>`).join('');
+  const disc = (face, rim) => `<circle r="47" fill="${rim}"/><circle r="41" fill="${face}"/>`;
+  // natural wood tiles with carved, nearly monochrome flowers
+  const rose = disc('#d9c29a', '#8a6a44') + petals(5, 16, 9, '#8a3a2c') + '<circle r="5" fill="#d9c29a"/>';
+  const jasmine = disc('#5a3c26', '#2e1d12') + petals(6, 17, 6.5, '#e6d6b4') + '<circle r="5" fill="#5a3c26"/>';
+  const lotus = disc('#efe6d2', '#b09a70') + petals(8, 18, 6, '#d6c6a2', 22.5) + petals(8, 13, 5, '#fbf7ee') + '<circle r="5" fill="#c9a86a"/>';
+  const wrap = (g, k) => `<svg class="pst ${k}" viewBox="-50 -50 100 100" aria-hidden="true">${g}</svg>`;
+  return { 0: wrap(rose, 'p0'), 1: wrap(jasmine, 'p1'), 2: wrap(lotus, 'l') };
+})();
+// the board: a wooden circle, a carved grid through the points, faint red and white gardens
+const PS_BOARD = (() => {
+  const S = 426, c = S / 2, R = 206, at = k => 51 + k * 54; let g = '';
+  for (let k = 0; k < 7; k++) { const v = at(k), h = Math.sqrt(Math.max(0, R * R - (v - c) * (v - c))); g += `<line x1="${v}" y1="${c - h}" x2="${v}" y2="${c + h}"/><line x1="${c - h}" y1="${v}" x2="${c + h}" y2="${v}"/>`; }
+  const tri = (a, col) => { const p = [[0, 0], [Math.cos(a - .42) * R, Math.sin(a - .42) * R], [Math.cos(a + .42) * R, Math.sin(a + .42) * R]].map(q => (q[0] + c).toFixed(1) + ',' + (q[1] + c).toFixed(1)).join(' '); return `<polygon points="${p}" fill="${col}"/>`; };
+  let gard = ''; for (let q = 0; q < 4; q++) { gard += tri(q * Math.PI / 2 + Math.PI / 4, 'rgba(140,50,36,.16)'); gard += tri(q * Math.PI / 2, 'rgba(255,248,230,.22)'); }
+  return `<svg class="psbg" viewBox="0 0 ${S} ${S}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${R + 8}" fill="#4a2f1c"/><circle cx="${c}" cy="${c}" r="${R}" fill="#b48a5c"/>${gard}<g stroke="rgba(60,36,20,.45)" stroke-width="1.2">${g}</g><circle cx="${c}" cy="${c}" r="${R}" fill="none" stroke="#3a2416" stroke-width="2"/></svg>`;
+})();
+function psTile(v) { return v < 0 ? '' : PS_SVG[v]; }
 function psLeave() { if (PSG.on && PSG.mode === 'net' && PSG.win < 0) duelSend(PSG.opp, { t: 'psend' }); PSG.on = false; renderMenu(); }
 MENUS.paisho = () => {
   const s = hv2S();
@@ -17079,8 +17123,8 @@ MENUS.paisho = () => {
   const me = PSG.me, h = PSG.hand, myTurn = PSG.turn === me && PSG.win < 0, place = h[me].f + h[me].l > 0;
   const status = PSG.win === 2 ? 'The garden is still. A draw.' : PSG.win === me ? 'Harmony! You win.' : PSG.win >= 0 ? `${esc(PSG.oppName)} found harmony first.` : myTurn ? (place ? 'Your turn: place a tile.' : 'Your turn: pick a tile, then a free point next to it.') : `${esc(PSG.oppName)} is thinking...`;
   const cells = PSG.b.map((v, i) => psOK(i) ? `<div class="psc${PSG.sel === i ? ' sel' : ''}${myTurn && (place ? v < 0 : v === me || (PSG.sel >= 0 && v < 0)) ? ' can' : ''}" onclick="psClick(${i})">${psTile(v)}</div>` : '<div class="psx"></div>').join('');
-  const handRow = p => `<div class="psh"><b>${p === me ? 'You' : esc(PSG.oppName)}</b>${'<i class="pst p' + p + '"></i>'.repeat(h[p].f)}${h[p].l ? '<i class="pst l"></i>' : ''}</div>`;
-  return `<div class="hv2ps"><h2>The tile table</h2>${handRow(1 - me)}<div class="psb">${cells}</div>${handRow(me)}
+  const handRow = p => `<div class="psh${PSG.turn === p && PSG.win < 0 ? ' on' : ''}"><b>${p === me ? 'You' : esc(PSG.oppName)}</b><span>${PS_SVG[p].repeat(h[p].f)}${h[p].l ? PS_SVG[2] : ''}</span>${h[p].f + h[p].l ? '' : '<em>all tiles in play</em>'}</div>`;
+  return `<div class="hv2ps"><h2>The tile table</h2>${handRow(1 - me)}<div class="psb">${PS_BOARD}${cells}</div>${handRow(me)}
   <p class="hv2st">${status}</p><div>${myTurn && place && h[me].l ? `<span class="btn ${PSG.useLotus ? 'on' : ''}" onclick="PSG.useLotus=!PSG.useLotus;renderMenu()">Place the lotus next</span>` : ''}
   ${PSG.win >= 0 ? `<span class="btn" onclick="${PSG.mode === 'bot' ? "psNew('bot',0,null);renderMenu()" : 'psLeave()'}">${PSG.mode === 'bot' ? 'Play again' : 'Back'}</span>` : `<span class="btn" onclick="psLeave()">Resign</span>`} <span class="btn" onclick="closeMenu()">Close</span></div></div>`;
 };
@@ -17106,18 +17150,19 @@ function psAnswer(yes) { const a = PSG.ask; PSG.ask = null; if (!a) { closeMenu(
 #panel .hv2ps>p{max-width:520px;font-size:14.5px;margin:0}
 #panel .hv2ps h4{margin:10px 0 0;font:600 15px var(--f-body);color:var(--text)}
 #panel .hv2pr{display:flex;gap:12px;align-items:center;justify-content:space-between;width:min(320px,90%);padding:6px 10px;background:#1a1520;border-radius:6px}
-#panel .psb{display:grid;grid-template-columns:repeat(7,46px);grid-template-rows:repeat(7,46px);gap:3px;padding:12px;border-radius:50%;background:#e8dcc0;box-shadow:inset 0 0 0 6px #6a4428,0 8px 24px rgba(0,0,0,.5)}
-#panel .psc{border-radius:50%;background:rgba(178,58,42,.18);display:grid;place-items:center;position:relative}
-#panel .psc:nth-child(odd){background:rgba(120,80,40,.14)}
-#panel .psc.can{cursor:pointer}#panel .psc.can:hover{background:rgba(214,168,82,.45)}
-#panel .psc.sel{box-shadow:0 0 0 3px #3a8a5a inset}
+#panel .psb{position:relative;display:grid;grid-template-columns:repeat(7,50px);grid-template-rows:repeat(7,50px);gap:4px;padding:26px;width:426px;height:426px;box-sizing:border-box;filter:drop-shadow(0 12px 22px rgba(0,0,0,.55))}
+#panel .psb .psbg{position:absolute;inset:0;width:100%;height:100%}
+#panel .psc{border-radius:50%!important;display:grid;place-items:center;position:relative}
+#panel .psc::after{content:'';position:absolute;width:5px;height:5px;border-radius:50%!important;background:rgba(50,30,16,.55)}
+#panel .psc:has(.pst)::after{display:none}
+#panel .psc.can{cursor:pointer}#panel .psc.can:hover{background:rgba(255,240,210,.28)!important}
+#panel .psc.sel{box-shadow:0 0 0 2px #f2e6c8!important}
 #panel .psx{visibility:hidden}
-#panel .pst{width:34px;height:34px;border-radius:50%;display:inline-block;box-shadow:0 2px 3px rgba(0,0,0,.4),inset 0 0 0 2px rgba(0,0,0,.25)}
-#panel .pst.p0{background:radial-gradient(circle,#ffd0c0 0 18%,#c8402e 20% 100%)}
-#panel .pst.p1{background:radial-gradient(circle,#c8402e 0 16%,#f4efe4 18% 100%)}
-#panel .pst.l{background:radial-gradient(circle,#ffd86a 0 22%,#fffaf0 24% 100%);box-shadow:0 0 0 2px #d2a453,0 2px 3px rgba(0,0,0,.4)}
-#panel .psh{display:flex;gap:4px;align-items:center;min-height:30px}
-#panel .psh b{margin-right:8px;font-size:14px}#panel .psh .pst{width:22px;height:22px}
+#panel svg.pst{width:44px;height:44px;display:block;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+#panel .psh{display:flex;gap:10px;align-items:center;min-height:34px;padding:4px 12px;border-radius:999px!important;border:1px solid transparent}
+#panel .psh.on{border-color:rgba(214,168,82,.5);background:rgba(214,168,82,.08)}
+#panel .psh b{font-size:15px;min-width:74px;text-align:right}#panel .psh span{display:flex;gap:3px}#panel .psh svg.pst{width:26px;height:26px}
+#panel .psh em{font-size:13px;color:var(--dim)}
 #panel .hv2st{font-size:16px;color:var(--gold2);margin:4px 0}
 `; document.head.appendChild(st); }
 // ================= MAIN LOOP =================

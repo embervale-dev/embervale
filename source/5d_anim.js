@@ -194,7 +194,7 @@ makeHumanoid = function (o) {
     if (cls === 'war') put(a, 'armM' + KB, metalM, () => [[ell(.096, .078, .096, { th1: 1.35, nu: 14, nv: 5 }), ST], [new T3.TorusGeometry(.094, .01, 5, 16).rotateX(PI / 2).translate(0, .017, 0), GD]]);
     const h = new T3.Group(); h.position.set(0, -.38, 0); h.rotation.z = -Math.PI / 2; a.add(h); return { a, h };
   };
-  const R = arm(-.27), Lf = arm(.27);
+  const R = arm(-.232), Lf = arm(.232);   // shoulders tucked against the torso (at .27 a gap showed between body and arm)
   mk(GEO.circ, basic('#000000', { op: .32 }), .3, 1, .3, 0, .012, 0, g, false);
   return { g, root, hips, chest, head, legL: LL.L, legR: LR.L, kneeL: LL.K, kneeR: LR.K, armR: R.a, hand: R.h, armL: Lf.a, handL: Lf.h, torso, body, cape, hat, face, hatType: o.hatType };
 };
