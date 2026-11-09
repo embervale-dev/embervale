@@ -268,3 +268,8 @@ function psAnswer(yes) { const a = PSG.ask; PSG.ask = null; if (!a) { closeMenu(
 #panel .psh em{font-size:13px;color:var(--dim)}
 #panel .hv2st{font-size:16px;color:var(--gold2);margin:4px 0}
 `; document.head.appendChild(st); }
+
+// ---------- the teahouse is not Haven: no garden flowers on its floor, no return portal, warm wooden colours ----------
+const HV2_ROOM = { ...TOWN, n: 'The Jasmine Dragon', fl: '#6e4c30', fl2: '#644428', wl: '#3e2a1c', wt: '#5a3e28', bg: '#120c08', sky: '#ffd8a8', gnd: '#2a1a10', sun: '#ffc890', dec: 'none', wd: 'none' };
+{ const _crH = curReg; curReg = function () { return G.teahouse && G.inTown ? HV2_ROOM : _crH(); }; }
+for (const fn of ['update', 'drawOverlay', 'updateHUD']) { const orig = window[fn]; window[fn] = function () { if (!G.teahouse || !S || !S.retPortal) return orig.apply(this, arguments); const r = S.retPortal; S.retPortal = null; try { return orig.apply(this, arguments); } finally { S.retPortal = r; } }; }
