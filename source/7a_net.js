@@ -59,7 +59,7 @@ function netRecv(c, m) {
     case 'town': if (NET.coopGuest) { NET.coopGuest = false; toast(ico('globe') + ' The party returned to Haven', '#9ad0ff'); goTown(); } break;
     case 'hit': if (NET.host) { const e = G.ens.find(x => x.nid === m.nid && !x.dead); if (e) { NET.applying = 1; try { hurtEnemy(e, m.amt, { noProc: true, crit: m.crit, col: '#9ad0ff' }); } finally { NET.applying = 0; } } } break;
     case 'dmg': if (G.mode === 'play' && !G.inTown) hurtPlayer(m.amt, null); break;
-    case 'duelreq': if (m.from && m.from !== NET.id) { if (G.mode !== 'play' || G.boss || G.duel || NET.duelReq || (G.menu && !['mp', 'pause'].includes(G.menu))) { duelSend(m.from, { t: 'duelno', reason: 'busy' }); break; } NET.duelReq = m; openMenu('duelask'); } break;
+    case 'duelreq': if (m.from && m.from !== NET.id) { if (G.mode !== 'play' || G.duel || G.tutorial) { duelSend(m.from, { t: 'duelno', reason: 'busy' }); break; } if (typeof duelAsk === 'function') duelAsk(m); else { NET.duelReq = m; openMenu('duelask'); } } break;
     case 'duelok': if (NET.pendingDuel && NET.pendingDuel === m.from) { NET.pendingDuel = null; if (NET.host) bcast({ t: 'town' }, m.from); startDuel(m.from, 0); } break;
     case 'duelno': if (NET.pendingDuel && NET.pendingDuel === m.from) { NET.pendingDuel = null; toast(`${ico('globe')} ${m.reason === 'busy' ? 'They are busy right now' : 'Duel declined'}`, '#9ab0d0'); } break;
     case 'duel': if (!NET.host && c.peer.startsWith(PEER_PREFIX)) startDuel(m.from, 1); break;

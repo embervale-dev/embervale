@@ -65,7 +65,7 @@ function startRift(t, i) { const A = atlas(); if (!atlasOn()) return toast('Defe
   if (t > A.tier) return toast('Clear a Rift on the tier before to open this one', '#ff8a8a'); if (typeof NET !== 'undefined' && NET.coopGuest) return toast('Only the party leader can open a Rift', '#ff8a8a');
   const n = tierNodes(t)[i]; if (!n) return; const O = RIFT_OBJ[n.ob]; closeMenu(); RIFT_PEND = { ...n, i };
   enterFloor(n.reg, O.room === 'arena' ? BOSS_F : ri(1, 4)); }
-{ const _rlR = resetLevel; resetLevel = function () { _rlR(); G.rift = null; if (RIFT_PEND) { const n = RIFT_PEND; RIFT_PEND = null; G.rift = { T: n.t, i: n.i, ob: n.ob, mods: n.mods, bonus: n.bonus, reg: n.reg, st: 'go', time: 0, prog: 0, need: 1, wT: 2, wave: 0, esc: 0, items: [] }; } }; }
+{ const _rlR = resetLevel; resetLevel = function () { _rlR(); G.rift = null; if (RIFT_PEND) { const n = RIFT_PEND; RIFT_PEND = null; G.rift = { daily: !!n.daily, T: n.t, i: n.i, ob: n.ob, mods: n.mods, bonus: n.bonus, reg: n.reg, st: 'go', time: 0, prog: 0, need: 1, wT: 2, wave: 0, esc: 0, items: [] }; } }; }
 { const _cpR = calcPw; calcPw = function () { if (G.rift && S) return Math.max(1, regionPw() + Math.floor(G.rift.T / 2)); return _cpR(); }; }
 { const _gdR = genDungeon; genDungeon = function (f) { if (G.rift) G.mod = null; return _gdR(f); }; }
 { const _blR = buildLevel; buildLevel = function () { if (G.rift && !G.inTown) { G.stairs = null; G.totem = null; G.memory = null; G.mod = null; } return _blR.apply(this, arguments); }; }
@@ -114,7 +114,8 @@ function riftCollect() { let n = 0; for (const p of G.pick) { if (p.dead || p.k 
   if (typeof autoSalvOk === 'function' && autoSalvOk(it)) { noteFound(it); S.shards += SALV[it.r] || 0; continue; } it.isNew = true; (S.inv.length < S.invMax ? S.inv : S.stash).push(it); noteFound(it); n++; } return n; }
 function riftDone() { const R = G.rift, A = atlas(), O = RIFT_OBJ[R.ob]; R.st = 'done'; const fast = R.time <= O.par;
   for (const e of G.ens) if (!e.dead && !e.prop && (e.riftW || R.ob === 'survive' || R.ob === 'siphon')) { e.dead = true; burst(e.x, e.y, O.col, 10, 160, .5, 3, .5); }
-  const first = !tierCleared(R.T), wasMaster = tierMastered(R.T); A.clr[R.T] = A.clr[R.T] || {}; A.clr[R.T][R.i] = 1; if (R.T >= A.tier) A.tier = R.T + 1; const mastered = !wasMaster && tierMastered(R.T);
+  const first = !R.daily && !tierCleared(R.T), wasMaster = tierMastered(R.T); if (!R.daily) { A.clr[R.T] = A.clr[R.T] || {}; A.clr[R.T][R.i] = 1; if (R.T >= A.tier) A.tier = R.T + 1; } const mastered = !R.daily && !wasMaster && tierMastered(R.T);
+  if (R.daily && A.daily !== dayId()) { A.daily = dayId(); G.later.push({ t: .4, fn: () => { const it = genItem(regionPw() + 2 + Math.floor(R.T / 3), { minR: R.T >= 10 ? 5 : 4, bonus: .4 }); dropItem(it, P.x, P.y); A.sh += 25; toast(`${ico('sun')} Daily Rift reward: +25 shards and ${RAR[it.r].n} ${it.name}`, '#ffd27a'); } }); }
   A.streak = (A.streak || 0) + 1; const lore = pasR('lore'), esc = Math.max(.4, 1 - R.esc * .15);
   let sh = Math.round((4 + R.T * 1.2) * nodeRw(R) * (1 + Math.min(.5, (A.streak - 1) * .1)) * (1 + lore * .1) * (R.bonus === 'shards' ? 1.5 : 1) * esc * (fast ? 1.2 : 1) * (R.ob === featOb() ? 1.5 : 1)); if (first) sh += 10 + R.T * 2; if (mastered) sh += 15 + R.T * 3; A.sh += sh;
   const best = A.best[R.ob]; if (!best || R.time < best) A.best[R.ob] = Math.round(R.time);
@@ -211,6 +212,15 @@ WIKI_TXT.world.push(['The Rift Atlas', 'Opens after you defeat The Unmaker (Ways
 .rfeat{font-size:11px;padding:1px 6px;border-radius:8px;background:rgba(255,210,122,.16);border:1px solid rgba(255,210,122,.5);color:#ffd27a;vertical-align:middle}
 .apas{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(214,168,82,.15)}.apip{display:inline-flex;gap:3px}.apip i{width:12px;height:7px;border-radius:4px;background:rgba(255,255,255,.12)}.apip i.on{background:#c08aff;box-shadow:0 0 6px #c08aff}`;
   document.head.appendChild(st); }
+
+// ---------- Daily Rift: one special Rift a day near your best tier, with a guaranteed Legendary+ first clear ----------
+function dailyNode() { const A = atlas(), d = dayId(), rnd_ = riftRng(d * 2654435761 + A.seed), objs = Object.keys(RIFT_OBJ).filter(k => k !== 'warden'), pool = RIFT_MODS.slice(), mods = [];
+  while (mods.length < 2) mods.push(pool.splice(Math.floor(rnd_() * pool.length), 1)[0].k);
+  return { t: Math.max(1, A.tier - 1), ob: objs[Math.floor(rnd_() * objs.length)], reg: Math.floor(rnd_() * NREG), mods, bonus: Object.keys(RIFT_BONUS)[Math.floor(rnd_() * 5)], daily: 1 }; }
+function startDaily() { if (!atlasOn()) return; if (typeof NET !== 'undefined' && NET.coopGuest) return toast('Only the party leader can open a Rift', '#ff8a8a'); const n = dailyNode(), O = RIFT_OBJ[n.ob]; closeMenu(); RIFT_PEND = { ...n, i: -1 }; enterFloor(n.reg, O.room === 'arena' ? BOSS_F : ri(1, 4)); }
+{ const _amD = MENUS.atlas; MENUS.atlas = () => { const h = _amD(); if (!atlasOn()) return h; const A = atlas(), n = dailyNode(), O = RIFT_OBJ[n.ob], done = A.daily === dayId();
+  const card = `<div class="card rnode" style="--oc:#ffd27a;margin:6px 0!important"><div class="rnh">${ico('sun')} <b>Daily Rift</b> <span class="dim" style="font-size:12px">new one in ${untilStr(nextDay())}</span></div><div>${ico(O.ic)} <b style="color:${O.col}">${O.n}</b> • Tier ${n.t} • ${REG[n.reg].n} • ${n.mods.map(k => `<span class="rmod">${RIFT_MODS.find(m => m.k === k).n}</span>`).join(' ')}</div><div class="dim">${done ? 'Today\'s bonus claimed — you can still run it for normal rewards.' : 'First clear today: a guaranteed Legendary+ item and +25 Atlas Shards.'}</div><span class="btn" onclick="startDaily()">${ico('portal')} Enter the Daily Rift</span></div>`;
+  return h.replace('<div class="atrack">', card + '<div class="atrack">'); }; }
 // ================= ABYSS EVENTS: optional bonus objectives so no two Abyss floors feel the same =================
 // ~35% of normal Abyss floors roll one: a Champion Pack, a Gilded Thief, a Rift Tear (stand inside while foes pour out) or a Treasure Hoard guarded by elites.
 const AEV = {
