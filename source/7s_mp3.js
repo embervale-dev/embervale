@@ -43,10 +43,10 @@ function giftClean(raw) { try { if (!raw || typeof raw !== 'object' || JSON.stri
     if (Array.isArray(s.sock)) it.sock = s.sock.slice(0, 4).map(g => g && GEMS[g.g] ? { g: g.g, t: clamp(g.t | 0, 0, 9) } : null);
     return it; } catch (e) { return null; } }
 let GIFT_TO = null;
-function giftOpen(id) { id = cleanId(id); if (!netOn() || !NET.players.has(id)) return toast('That player is not in your room', '#ff8a8a'); GIFT_TO = id; openMenu('gift'); }
+function giftOpen(id) { id = cleanId(id); if (!netOn() || !NET.players.has(id)) return toast('That player is not in your room', '#ff8a8a'); GIFT_TO = id; openMenu('pgift'); }
 function giftSend(itemId) { const it = S.inv.find(i => i.id === itemId); if (!it || !GIFT_TO || !NET.players.has(GIFT_TO)) return; if (it.r >= 4 && !confirm(`Give ${it.name} (${RAR[it.r].n}) to ${pName(GIFT_TO)}?`)) return;
   const copy = JSON.parse(JSON.stringify(it)); S.inv.splice(S.inv.indexOf(it), 1); duelSend(GIFT_TO, { t: 'gift', it: copy, name: netName() }); hideTip(); sfx('gold'); toast(`${ico('gift')} Sent <span style="color:${RAR[it.r].c}">${esc(it.name)}</span> to ${esc(pName(GIFT_TO))}`, '#ffd27a'); netPost(`${ico('gift')} You gave <b>${esc(it.name)}</b> to ${esc(pName(GIFT_TO))}`); saveGame(); renderMenu(); }
-MENUS.gift = () => { const to = GIFT_TO && NET.players.get(GIFT_TO); if (!to) return `<h2>${ico('gift')} Send a gift</h2><div class="card">That player has left the room.</div><span class="btn" onclick="closeMenu()">Close</span>`;
+MENUS.pgift = () => { const to = GIFT_TO && NET.players.get(GIFT_TO); if (!to) return `<h2>${ico('gift')} Send a gift</h2><div class="card">That player has left the room.</div><span class="btn" onclick="closeMenu()">Close</span>`;
   const items = S.inv.slice().sort((a, b) => b.r - a.r);
   return `<h2>${ico('gift')} Send a gift to <span style="color:${esc(to.col)}">${esc(to.name)}</span></h2><div class="dim">Click an item in your bag to give it away. Equipped gear stays with you. Gifts arrive in their bag (or stash when the bag is full).</div>
   <div class="giftg">${items.length ? items.map(it => `<div class="cell giftc" style="border-color:${RAR[it.r].c}" onmouseenter="tipItem(${it.id},event)" onmousemove="moveTip(event)" onmouseleave="hideTip()" onclick="giftSend(${it.id})">${icon(it)}</div>`).join('') : '<div class="dim">Your bag is empty.</div>'}</div>
